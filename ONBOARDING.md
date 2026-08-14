@@ -152,6 +152,8 @@ Do **not** seed fake veteran cases in `PRODUCTION`.
 
 1. **Passwordless auth:** magic link / email OTP / phone OTP where supported ([AUTH.md](AUTH.md)). Phone OTP depends on D-003; if SMS is `UNAVAILABLE`, do not offer phone OTP as if it worked.
 2. **Enrollment into the Pilot.** This is consent **to participate** in the Pilot, not a Trusted Circle boolean and not a blanket share grant ([CONSENT.md](CONSENT.md), [PILOT.md](PILOT.md)).
+
+   MVP identity-proofing (`INFERRED` operational default; D-016 remains open): enrollment is **self-attested veteran status** plus a working email and/or phone via passwordless auth ([AUTH.md](AUTH.md)). No VA identity API, no DD-214 upload, and no in-person proofing are required for the 25–50 Santa Clara County pilot. Do not invent a VA partnership. Whether a later proofing step is required is D-016.
 3. **Explain what SUAS is and is not:** not 911, not an EHR, not a diagnosis tool. Use approved copy where it exists. If D-012 / product-explainer copy is unset, use the standing non-goal statements from [PRODUCT.md](PRODUCT.md) / [SAFETY.md](SAFETY.md) — do not invent marketing or compliance claims. Do not claim HIPAA.
 4. **First Check-In after enrollment.** The veteran **can abandon**. Incomplete / abandoned is handled per [CHECKINS.md](CHECKINS.md). A Check-In is not a Support Signal.
 5. **Optional Trusted Circle invites.** Not required to complete first-run.
@@ -266,6 +268,7 @@ Illegal: completing enrollment without a published questionnaire → `409` or `4
 | Trusted Contact grants | Accept first-run displays actual `can_receive` / `can_view` scopes; no “you are in the circle” as visibility. |
 | Org-admin isolation | Org-admin cannot publish questionnaire / signal rules; cannot read other tenants. |
 | Commands | Bootstrap and enrollment are the listed commands; no unauthenticated signup dump. |
+| Enrollment proofing | `complete-enrollment` succeeds without a VA identity check, DD-214 upload, or in-person proofing step. Schema/API reject DD-214 and SSN fields ([PRIVACY.md](PRIVACY.md)). |
 | UI string forbid | Onboarding copy has no `HIPAA compliant` / `CCPA compliant`. |
 | Audit | Checklist close emits Audit Events; steps are readable on `GET /admin/bootstrap/status`. |
 

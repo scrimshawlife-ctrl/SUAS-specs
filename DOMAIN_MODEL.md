@@ -149,7 +149,7 @@ Deletion: operational entities may be soft-deleted. Domain Events and Audit Even
 - **Required:** `support_case_id`, `veteran_profile_id`, `tenant_id`, `status`, `opened_at`.
 - **Optional:** `priority_signal_level`, `closed_at`, `settlement_id`.
 - **Sensitive:** yes.
-- **Authz:** assigned responder; org queue per CASES; veteran (limited); SUAS-admin audited.
+- **Authz:** assigned responder; org queue per CASES; veteran (limited — [CASES.md](CASES.md) section 8); SUAS-admin audited.
 
 ## CaseAssignment
 
@@ -166,7 +166,17 @@ Deletion: operational entities may be soft-deleted. Domain Events and Audit Even
 - **Lifecycle:** created; may be amended via a new note (preferred) or an amendment record. Do not silently rewrite.
 - **Required:** `case_note_id`, `support_case_id`, `author_user_id`, `body`, `created_at`.
 - **Sensitive:** body (malicious-content risk; see [SECURITY.md](SECURITY.md)).
-- **Authz:** assigned responder; org-admin of owning org (read); SUAS-admin audited. Veteran visibility is `DECISION_PENDING` and must not default to full note access.
+- **Authz:** assigned responder; org-admin of owning org (read); SUAS-admin audited. Veteran visibility of full Case Notes is denied in MVP (`INFERRED` operational default; D-015 remains open if the owner later wants veterans to see notes). Do not invent a clinical chart. See [CASES.md](CASES.md) section 8.
+
+## ContactAttempt
+
+- **Purpose:** First-class log of a Responder contact with a Veteran on a Support Case. Not a Case Note.
+- **Owner:** Cases.
+- **Lifecycle:** created by `log-contact-attempt`; may be completed by `complete-contact` (outcome + `completed_at`). History via `RESPONDER_CONTACT_LOGGED`.
+- **Required:** `contact_attempt_id`, `support_case_id`, `actor_id`, `at`, `channel`, `outcome`, `created_at`.
+- **Optional:** `completed_at`.
+- **Authz:** assigned responder; org-admin of owning org (read); SUAS-admin audited. Veteran cannot read (D-015).
+- **Spec:** [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [API.md](API.md) section 11.1.
 
 ## FollowUp
 
@@ -245,13 +255,14 @@ Deletion: operational entities may be soft-deleted. Domain Events and Audit Even
 
 ## Notification
 
-- **Purpose:** One send attempt record.
+- **Purpose:** One logical send. Not one row per retry.
 - **Owner:** Notifications.
-- **Lifecycle:** `QUEUED` → `SENT` | `FAILED` → `DELIVERED` | `BOUNCED` | `UNDELIVERABLE` (delivery_status as available).
+- **Lifecycle:** `delivery_status` on the single row: `QUEUED` → `SENT` | `FAILED` → `DELIVERED` | `BOUNCED` | `UNDELIVERABLE`.
 - **Required:** `notification_id`, `recipient_user_id` (or address id), `reason`, `channel` (`EMAIL`|`SMS`|`IN_APP`), `consent_basis`, `template_version`, `created_at`.
-- **Optional:** `sent_at`, `delivery_status`.
+- **Optional:** `sent_at`, `delivery_status`, `attempt_count`, `last_attempt_at`.
 - **Sensitive:** address, body.
 - **Authz:** system write; recipient read own; SUAS-admin audit.
+- **Attempts:** each send attempt appends an immutable Audit Event. No child attempt table. See [NOTIFICATIONS.md](NOTIFICATIONS.md) section 5.
 - **Spec:** [NOTIFICATIONS.md](NOTIFICATIONS.md).
 
 ## NotificationPreference
