@@ -1,7 +1,7 @@
 # STATUS.md — SUAS specification status (v0.1.0)
 
 **SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
-**Related:** [README.md](README.md), [ROADMAP.md](ROADMAP.md), [VERSIONING.md](VERSIONING.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md)
+**Related:** [README.md](README.md), [ROADMAP.md](ROADMAP.md), [VERSIONING.md](VERSIONING.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md)
 
 ---
 
@@ -95,6 +95,7 @@ Overall MVP gate: `NOT_READY`.
 - MVP veteran visibility (`INFERRED`; D-015 open): own Check-Ins, own Service Request status, Settlement fields written for them, Follow-Up prompts; not full Case Notes, not other veterans, not responder queue fields, not other orgs
 - Notification attempt shape: one Notification row; retries append immutable Audit Events ([NOTIFICATIONS.md](NOTIFICATIONS.md))
 - Contact log commands specified: `log-contact-attempt`, `complete-contact` ([API.md](API.md))
+- Friction analysis exists ([FRICTION.md](FRICTION.md)); proposed D-012 / D-014 closes are **not** accepted
 
 **Open:** see [DECISIONS.md](DECISIONS.md). Do not guess.
 

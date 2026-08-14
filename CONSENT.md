@@ -1,6 +1,6 @@
 # CONSENT.md — First-class Consent Grants (SUAS v0.1)
 
-**Related:** [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [SAFETY.md](SAFETY.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [PRIVACY.md](PRIVACY.md), [EVENT_MODEL.md](EVENT_MODEL.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md)
+**Related:** [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [SAFETY.md](SAFETY.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [PRIVACY.md](PRIVACY.md), [EVENT_MODEL.md](EVENT_MODEL.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [FRICTION.md](FRICTION.md)
 
 **Actors:** Veteran (grantor), Trusted Contact / Responder / Organization / Service Provider / System (grantees), SUAS System Administrator (audit only).
 

@@ -1,6 +1,6 @@
 # SAFETY.md — Red-state behavior and safety non-goals (SUAS v0.1)
 
-**Related:** [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [CONSENT.md](CONSENT.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [ARCHITECTURE.md](ARCHITECTURE.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md), [PRODUCT.md](PRODUCT.md)
+**Related:** [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [CONSENT.md](CONSENT.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [ARCHITECTURE.md](ARCHITECTURE.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md), [PRODUCT.md](PRODUCT.md), [FRICTION.md](FRICTION.md)
 
 **Actors:** Veteran, Responder, Trusted Contact (only if granted), SUAS System Administrator, System.
 

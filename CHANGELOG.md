@@ -31,4 +31,9 @@ Format: version, date, lifecycle, summary. Dates are recorded in America/Los_Ang
 - Recorded MVP enrollment as self-attest + working email and/or phone; no VA identity API, no DD-214 upload, no in-person proofing for this pilot.
 - Recorded MVP veteran visibility: own Check-Ins, own Service Request status, Settlement fields written for them, Follow-Up prompts; not full Case Notes.
 
+**Same-day friction analysis (still `0.1.0` / `draft`; not a bump to 0.2.0; not `accepted`):**
+
+- Added [FRICTION.md](FRICTION.md) — user and infra friction; three proposed engineering paths (consent presets + help-first; fixture-first LOCAL bootstrap; capability-port LOCAL adapters). Not implementation authority. Not a decision close.
+- Proposed (not accepted) owner closes: D-014 `GEOCODE_MAPS` not required for MVP; D-012 narrow 911 + 988 display-only. D-001–D-016 remain open.
+
 No implementation code is included. No specification artifact is `accepted` or `released`.
