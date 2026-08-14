@@ -1,7 +1,8 @@
 # GLOSSARY.md — Canonical terms (SUAS v0.1)
 
 **Authority:** This file is the terminology authority. All other specs must use these terms exactly.  
-**Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md)
+**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
+**Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md)
 
 Terms are not interchangeable. Do not alias them in implementation or documentation.
 
@@ -19,6 +20,8 @@ The system identifier for Shut Up and Serve. SUAS is a consent-governed veteran 
 ## Veteran
 
 The person whose need is being coordinated. The primary data subject and the only party who can grant or revoke Consent Grants about their own data, except where a documented legal process applies (`DECISION_PENDING`; do not invent). A Veteran has a `VeteranProfile` and may enroll in a Pilot.
+
+MVP enrollment (`INFERRED`; D-016): self-attested veteran status plus a working email and/or phone via passwordless auth. No VA identity API, no DD-214 upload, no in-person proofing for the Santa Clara County pilot. See [ONBOARDING.md](ONBOARDING.md).
 
 ---
 
@@ -162,7 +165,9 @@ The binding of a Responder (or Service Provider) to a Support Case or Service Re
 
 ## Case Note
 
-A timestamped note on a Support Case. Notes are not Follow-Ups, not Settlements, and not state transitions.
+A timestamped note on a Support Case. Notes are not Follow-Ups, not Settlements, not state transitions, and not Contact Attempts.
+
+MVP visibility (`INFERRED`; D-015): veterans cannot see full Case Notes. See [CASES.md](CASES.md) section 8. Do not invent a clinical chart.
 
 ---
 
@@ -193,6 +198,31 @@ The domain-facing interface (for example `SmsPort`, `EmailPort`, `AuthPort`) tha
 ## First-run / Bootstrap Checklist
 
 The gated, persisted, auditable sequence that makes an empty environment operable ([ONBOARDING.md](ONBOARDING.md)). Runs once per environment (`LOCAL` / `TEST` / `STAGING` / `PRODUCTION`). Closing it emits Audit Events. Distinct from Pilot enrollment and from Trusted Circle membership.
+
+---
+
+## Contact Attempt
+
+A first-class log of a Responder contact with a Veteran on a Support Case. Created by `POST /cases/{id}/commands/log-contact-attempt` and `POST /cases/{id}/commands/complete-contact`. Required fields: `at`, `channel`, `outcome`, `actor_id`. Emits `RESPONDER_CONTACT_LOGGED`. A Case Note is not a substitute.
+
+See [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [API.md](API.md).
+
+---
+
+## Forbidden aliases
+
+Do not use these as contract names (API resources, state names, glossary substitutes, or UI labels that leak into contracts). See [SPEC-001.md](SPEC-001.md) and [PRODUCT.md](PRODUCT.md) section 6.
+
+| Forbidden | Use instead |
+|---|---|
+| ticket | Support Case |
+| alert (as the signal) | Support Signal |
+| referral (as the request) | Service Request |
+| case (as the request) | Service Request |
+| HIPAA-compliant / HIPAA compliant | `HIPAA_APPLICABILITY = DECISION_PENDING` |
+| AI-powered, smart matching, seamless, intelligent, automatically handles | omit; specify exact behavior |
+
+"Trusted-contact alert" is a named notify action, not an alias of Support Signal.
 
 ---
 

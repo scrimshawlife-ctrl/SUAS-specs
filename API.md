@@ -1,6 +1,6 @@
 # API.md — Resource/domain contract (SUAS v0.1)
 
-**Related:** [AUTH.md](AUTH.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [EVENT_MODEL.md](EVENT_MODEL.md), [VERSIONING.md](VERSIONING.md), [SECURITY.md](SECURITY.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md)
+**Related:** [AUTH.md](AUTH.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [EVENT_MODEL.md](EVENT_MODEL.md), [VERSIONING.md](VERSIONING.md), [SECURITY.md](SECURITY.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md)
 
 **Status:** `draft` / contract version `0.1.0`. This is a **resource/domain contract**, not an implementation. Transport is HTTPS JSON unless a later spec says otherwise.
 
@@ -46,6 +46,8 @@ All paths below are relative to `/api/v0` while the contract is 0.x. A released 
 
 `POST /cases/{id}/commands/claim`  
 `POST /cases/{id}/commands/assign`  
+`POST /cases/{id}/commands/log-contact-attempt`  
+`POST /cases/{id}/commands/complete-contact`  
 `POST /cases/{id}/commands/escalate`  
 `POST /cases/{id}/commands/resolve`  
 `POST /service-requests/{id}/commands/submit`  
@@ -123,6 +125,7 @@ Contract version in `VERSIONING.md`. Breaking path or semantics = MAJOR. Clients
 - `GET /veterans/me` `PATCH /veterans/me`
 - `POST /check-ins` `POST /check-ins/{id}/responses` `POST /check-ins/{id}/commands/complete`
 - `GET /cases` `GET /cases/{id}` `POST /cases` + commands in §3.1
+- `GET /cases/{id}/contact-attempts` (assigned responder / org-admin; not veteran-visible)
 - `GET /service-requests` `POST /cases/{id}/service-requests` + commands
 - `GET /resources` `POST /admin/resources` `POST /admin/resources/{id}/commands/verify`
 - `POST /referrals` `POST /referrals/{id}/commands/send`
@@ -133,6 +136,29 @@ Contract version in `VERSIONING.md`. Breaking path or semantics = MAJOR. Clients
 - `GET /admin/audit-events` `POST /admin/questionnaire-versions/{id}/commands/publish`
 - `GET /admin/bootstrap/status` `POST /admin/bootstrap/commands/complete-step` ([ONBOARDING.md](ONBOARDING.md))
 - `POST /veterans/me/commands/complete-enrollment` ([ONBOARDING.md](ONBOARDING.md))
+
+---
+
+## 11.1 Contact log commands
+
+Style matches existing `/commands/` paths. Do not use `POST /cases/{id}/contact-attempts` as the write path.
+
+| Method / path | Action | Required body fields | Event |
+|---|---|---|---|
+| `POST /cases/{id}/commands/log-contact-attempt` | `CONTACT_ATTEMPT` | `at`, `channel`, `outcome`, `actor_id` | `RESPONDER_CONTACT_LOGGED` |
+| `POST /cases/{id}/commands/complete-contact` | `CONTACT_COMPLETE` | `at`, `channel`, `outcome`, `actor_id` | `RESPONDER_CONTACT_LOGGED` |
+
+Rules:
+
+1. `at` is the contact timestamp. Missing `at` → `400`.
+2. `channel` is required constrained text. MVP codes: `EMAIL`, `SMS`, `IN_APP`, `PHONE`. `PHONE` is responder-initiated voice, not a Notification `PUSH` channel.
+3. `outcome` is required constrained text. MVP codes: `PENDING`, `REACHED`, `NO_ANSWER`, `LEFT_MESSAGE`, `DECLINED`, `UNABLE`. `log-contact-attempt` may use `PENDING`. `complete-contact` must not use `PENDING`.
+4. `actor_id` is recorded on the Contact Attempt. The server binds the actor from the session; a body `actor_id` that does not match the session → `403`.
+5. Active CaseAssignment is required ([RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md)). Otherwise `403`.
+6. A Case Note is **not** a substitute. `POST` of a Case Note must not create a Contact Attempt and must not emit `RESPONDER_CONTACT_LOGGED`.
+7. Veterans cannot read contact-attempt rows (D-015 / [CASES.md](CASES.md) section 8).
+
+See [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [EVENT_MODEL.md](EVENT_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md).
 
 ---
 
@@ -147,3 +173,5 @@ Contract version in `VERSIONING.md`. Breaking path or semantics = MAJOR. Clients
 ## 13. Testability
 
 API suite in [TESTING.md](TESTING.md): authz matrix, tenant 404, illegal transition 409, idempotent retry, consent deny 403.
+
+Contact log: missing `at`/`channel`/`outcome`/`actor_id` → 400; no active assignment → 403; Case Note create does not emit `RESPONDER_CONTACT_LOGGED`; veteran `GET /cases/{id}/contact-attempts` is denied.

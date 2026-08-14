@@ -4,17 +4,19 @@
 
 This is an ordered specification-and-handoff roadmap, not a wishlist. Each item has an objective, dependencies, required specs, exit criteria, and an implementation handoff. Implementation authority remains `NOT_YET_RELEASED` until the relevant specs are `released`.
 
-Current phase: `SPECIFICATION_BOOTSTRAP`. Recommended next run: spec review/acceptance toward SPEC-001, **not** implementation. See [SPEC_AUDIT.md](SPEC_AUDIT.md).
+Current phase: `SPECIFICATION_BOOTSTRAP`. SPEC-001 is `READY_FOR_REVIEW` ([SPEC-001.md](SPEC-001.md)); it is not `accepted`. Owner review is the next step, **not** implementation. See [SPEC_AUDIT.md](SPEC_AUDIT.md).
 
 ---
 
 ## SPEC-001 — Accept the v0.1 product and authority set
 
+- **Status:** `READY_FOR_REVIEW` (not `accepted`; not `released`). Worksheet: [SPEC-001.md](SPEC-001.md).
 - **Objective:** Review and accept [README.md](README.md), [PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md).
 - **Dependencies:** This bootstrap stack exists (`OBSERVED`).
 - **Required specs:** the files listed above.
 - **Exit criteria:** Those files marked `accepted` for stack `0.1.0`; terminology frozen; no remaining aliasing of non-interchangeable concepts.
 - **Implementation handoff:** None. Implementation must not start on product identity alone.
+- **Acceptance:** only `@scrimshawlife-ctrl` may set lifecycle to `accepted` after the [SPEC-001.md](SPEC-001.md) checklist is complete. Agents must not self-accept.
 
 ## SPEC-002 — Accept consent, privacy, and safety boundaries
 
