@@ -1,6 +1,6 @@
 # ONBOARDING.md — Admin first-run and first-time user experience (SUAS v0.1)
 
-**Related:** [ADMIN.md](ADMIN.md), [AUTH.md](AUTH.md), [PILOT.md](PILOT.md), [SAFETY.md](SAFETY.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [RESOURCES.md](RESOURCES.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [API.md](API.md), [DEPLOYMENT.md](DEPLOYMENT.md), [DECISIONS.md](DECISIONS.md)
+**Related:** [ADMIN.md](ADMIN.md), [AUTH.md](AUTH.md), [PILOT.md](PILOT.md), [SAFETY.md](SAFETY.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [RESOURCES.md](RESOURCES.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [API.md](API.md), [DEPLOYMENT.md](DEPLOYMENT.md), [DECISIONS.md](DECISIONS.md), [FRICTION.md](FRICTION.md)
 
 **Status:** `draft` / `0.1.0`. First-run is a **gated bootstrap**, not a growth tour.
 
