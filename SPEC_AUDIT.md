@@ -5,7 +5,7 @@
 **Phase:** `SPECIFICATION_BOOTSTRAP`  
 **Auditor role:** specification bootstrap (this file is not a legal or security certification)
 
-**Related:** [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md), [ROADMAP.md](ROADMAP.md), [README.md](README.md)
+**Related:** [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md), [ROADMAP.md](ROADMAP.md), [README.md](README.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md)
 
 ---
 
@@ -33,6 +33,7 @@ Markdown and hygiene only. No application or production code. No git clone.
 - [DATA_MODEL.md](DATA_MODEL.md)
 - [EVENT_MODEL.md](EVENT_MODEL.md)
 - [API.md](API.md)
+- [APIS.md](APIS.md)
 
 ### Domain
 - [AUTH.md](AUTH.md)
@@ -55,6 +56,8 @@ Markdown and hygiene only. No application or production code. No git clone.
 - [ADMIN.md](ADMIN.md)
 - [SECURITY.md](SECURITY.md)
 - [PRIVACY.md](PRIVACY.md)
+- [COMPLIANCE.md](COMPLIANCE.md)
+- [ONBOARDING.md](ONBOARDING.md)
 - [PILOT.md](PILOT.md)
 - [ANALYTICS.md](ANALYTICS.md)
 - [TESTING.md](TESTING.md)
@@ -98,6 +101,9 @@ These are specified and must not be reopened without a spec change:
 25. Roadmap: SPEC-001 through SPEC-015.
 26. MVP gates: AUTH, CONSENT, CHECK-IN, COORDINATION, SAFETY, PRIVACY, OPERATIONS, REPORTING — all `NOT_READY`.
 27. Epistemic labels: `OBSERVED`, `INFERRED`, `SPECULATIVE`, `NOT_COMPUTABLE`, `DECISION_PENDING`, `FUTURE`.
+28. Compliance is a **register**, not a claim. [COMPLIANCE.md](COMPLIANCE.md) does not make SUAS HIPAA-compliant, CCPA-compliant, TCPA-compliant, or anything-compliant. Counsel + D-006 own legal classification. D-013 (counsel review of the register) is required before pilot operation.
+29. External APIs are **capability ports** (`SmsPort`, `EmailPort`, `AuthPort`, plus `RELATIONAL_DB` / `APP_HOST`). Vendors D-001–D-005 remain open. D-014 (geocoding/maps) is open. No 911 / VA / Medi-Cal clients in MVP. See [APIS.md](APIS.md).
+30. First-run is a gated, persisted, auditable bootstrap. Empty responder queue is valid. No PRODUCTION demo-case seeding. See [ONBOARDING.md](ONBOARDING.md).
 
 ---
 
@@ -119,6 +125,8 @@ From [DECISIONS.md](DECISIONS.md):
 | D-010 | Service funding |
 | D-011 | Exact Support Signal scoring rules |
 | D-012 | Approved safety copy |
+| D-013 | Counsel review of COMPLIANCE.md regime register before pilot |
+| D-014 | Whether a geocoding/maps API is required for MVP |
 
 ---
 
@@ -168,6 +176,8 @@ Do not invent values for:
 - Medi-Cal eligibility or billability
 - Responder coverage hours and headcount
 - Legal classification (HIPAA applicability)
+- Counsel review of the compliance register (D-013)
+- Whether a geocoding/maps API is required (D-014)
 - Retention durations
 - Published QuestionnaireVersion content
 - Exact signal scoring rules and thresholds
@@ -194,7 +204,7 @@ Suggested review order:
 
 1. [README.md](README.md), [PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [AGENTS.md](AGENTS.md)
 2. [DECISIONS.md](DECISIONS.md) — confirm the open list is complete
-3. [CONSENT.md](CONSENT.md), [SAFETY.md](SAFETY.md), [PRIVACY.md](PRIVACY.md)
+3. [CONSENT.md](CONSENT.md), [SAFETY.md](SAFETY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [ONBOARDING.md](ONBOARDING.md)
 4. [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md) state machines
 5. Promote SPEC-001 files to `accepted` when the review bar in [CONTRIBUTING.md](CONTRIBUTING.md) is met
 

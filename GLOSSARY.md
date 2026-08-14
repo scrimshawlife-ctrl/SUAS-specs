@@ -1,7 +1,7 @@
 # GLOSSARY.md — Canonical terms (SUAS v0.1)
 
 **Authority:** This file is the terminology authority. All other specs must use these terms exactly.  
-**Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md)
+**Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md)
 
 Terms are not interchangeable. Do not alias them in implementation or documentation.
 
@@ -169,6 +169,30 @@ A timestamped note on a Support Case. Notes are not Follow-Ups, not Settlements,
 ## QuestionnaireVersion
 
 An immutable published version of the Check-In questionnaire. Check-Ins always reference a specific `QuestionnaireVersion`.
+
+---
+
+## Compliance Register
+
+The inventory in [COMPLIANCE.md](COMPLIANCE.md) of legal and regulatory regimes that might apply to SUAS, with epistemic status and operational controls. A register is **not** a claim of compliance. Counsel and D-006 own legal classification. The register does not make SUAS HIPAA-compliant, CCPA-compliant, TCPA-compliant, or anything-compliant.
+
+---
+
+## External API
+
+A third-party service capability required to operate the MVP loop (for example SMS delivery, email delivery, auth challenge, application host, relational database). Inventoried in [APIS.md](APIS.md) as **capability IDs**, not vendor names. Distinct from the SUAS product API contract in [API.md](API.md).
+
+---
+
+## Capability Port
+
+The domain-facing interface (for example `SmsPort`, `EmailPort`, `AuthPort`) that a module calls instead of a vendor SDK. Vendor SDKs live only in adapters. Domain tests use fakes. Do not import a vendor name into domain specs. See [APIS.md](APIS.md).
+
+---
+
+## First-run / Bootstrap Checklist
+
+The gated, persisted, auditable sequence that makes an empty environment operable ([ONBOARDING.md](ONBOARDING.md)). Runs once per environment (`LOCAL` / `TEST` / `STAGING` / `PRODUCTION`). Closing it emits Audit Events. Distinct from Pilot enrollment and from Trusted Circle membership.
 
 ---
 
