@@ -5,7 +5,7 @@
 **Phase:** `SPECIFICATION_BOOTSTRAP`  
 **Auditor role:** specification bootstrap (this file is not a legal or security certification)
 
-**Related:** [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md), [ROADMAP.md](ROADMAP.md), [README.md](README.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md)
+**Related:** [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md), [ROADMAP.md](ROADMAP.md), [README.md](README.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [FRICTION.md](FRICTION.md)
 
 ---
 
@@ -25,6 +25,7 @@ Markdown and hygiene only. No application or production code. No git clone.
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [CHANGELOG.md](CHANGELOG.md)
 - [SPEC-001.md](SPEC-001.md)
+- [FRICTION.md](FRICTION.md)
 - [CODEOWNERS](CODEOWNERS)
 - [.gitignore](.gitignore)
 
@@ -154,6 +155,10 @@ No remaining internal contradiction was found in state names, event names, role 
 10. Notification attempt shape was "implementation may pick." Specified: one Notification row; retries append immutable Audit Events; no child table.
 11. Case Note veteran visibility and enrollment identity-proofing were `NOT_COMPUTABLE`. Recorded as `INFERRED` MVP defaults; opened D-015 and D-016 without closing them.
 12. Alias scan of the seven SPEC-001 files found no remaining contract aliases. Forbidden-alias list added to [GLOSSARY.md](GLOSSARY.md).
+
+**Friction analysis pass (same day, still `0.1.0` / `draft`):**
+
+13. Added [FRICTION.md](FRICTION.md). Names user and infra friction and three proposed paths. Does not close D-001–D-016. Does not authorize implementation. Proposed D-012 / D-014 closes remain unaccepted. No partners, vendors, HIPAA status, signal weights, or local crisis-resource lists invented.
 
 ---
 
