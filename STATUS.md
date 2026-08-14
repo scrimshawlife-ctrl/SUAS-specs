@@ -1,6 +1,6 @@
 # STATUS.md — SUAS specification status (v0.1.0)
 
-**Related:** [README.md](README.md), [ROADMAP.md](ROADMAP.md), [VERSIONING.md](VERSIONING.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md)
+**Related:** [README.md](README.md), [ROADMAP.md](ROADMAP.md), [VERSIONING.md](VERSIONING.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md)
 
 ---
 
@@ -85,6 +85,9 @@ Overall MVP gate: `NOT_READY`.
 - Pilot size and county
 - Epistemic labeling
 - Cross-repo authority (specs canonical; implementation cites)
+- Compliance is a **register**, not a claim ([COMPLIANCE.md](COMPLIANCE.md))
+- External APIs are capability ports; vendors D-001–D-005 remain open ([APIS.md](APIS.md))
+- First-run is a gated, auditable bootstrap ([ONBOARDING.md](ONBOARDING.md))
 
 **Open:** see [DECISIONS.md](DECISIONS.md). Do not guess.
 

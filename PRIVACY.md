@@ -1,6 +1,6 @@
 # PRIVACY.md — Data minimization and collection boundaries (SUAS v0.1)
 
-**Related:** [SECURITY.md](SECURITY.md), [CONSENT.md](CONSENT.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [PRODUCT.md](PRODUCT.md), [DECISIONS.md](DECISIONS.md)
+**Related:** [SECURITY.md](SECURITY.md), [COMPLIANCE.md](COMPLIANCE.md), [CONSENT.md](CONSENT.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [PRODUCT.md](PRODUCT.md), [DECISIONS.md](DECISIONS.md)
 
 ---
 
@@ -96,4 +96,4 @@ Durations are D-007 `DECISION_PENDING`. Until closed:
 
 ## 10. Links
 
-[SECURITY.md](SECURITY.md), [CONSENT.md](CONSENT.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [PRODUCT.md](PRODUCT.md), [DECISIONS.md](DECISIONS.md), [TESTING.md](TESTING.md)
+[SECURITY.md](SECURITY.md), [COMPLIANCE.md](COMPLIANCE.md), [CONSENT.md](CONSENT.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [PRODUCT.md](PRODUCT.md), [DECISIONS.md](DECISIONS.md), [TESTING.md](TESTING.md)

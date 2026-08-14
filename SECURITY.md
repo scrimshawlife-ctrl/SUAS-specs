@@ -1,6 +1,6 @@
 # SECURITY.md — Security controls and threats (SUAS v0.1)
 
-**Related:** [AUTH.md](AUTH.md), [PRIVACY.md](PRIVACY.md), [ADMIN.md](ADMIN.md), [EVENT_MODEL.md](EVENT_MODEL.md), [DEPLOYMENT.md](DEPLOYMENT.md), [PRODUCT.md](PRODUCT.md)
+**Related:** [AUTH.md](AUTH.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [ADMIN.md](ADMIN.md), [EVENT_MODEL.md](EVENT_MODEL.md), [DEPLOYMENT.md](DEPLOYMENT.md), [PRODUCT.md](PRODUCT.md), [ONBOARDING.md](ONBOARDING.md)
 
 ---
 
@@ -13,6 +13,8 @@ HIPAA_APPLICABILITY = DECISION_PENDING
 ```
 
 D-006 remains open. Implementation must not display "HIPAA compliant" or similar.
+
+The regime register is [COMPLIANCE.md](COMPLIANCE.md). That file does not make SUAS HIPAA-compliant or anything-compliant.
 
 ---
 
