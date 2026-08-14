@@ -1,0 +1,30 @@
+# CODEOWNERS
+# spec_version: 0.1.0
+# status: DRAFT
+# phase: SPECIFICATION_BOOTSTRAP
+
+# Ownership policy for the bootstrap specification set.
+# [OBSERVED] All files are currently assigned to one owner.
+# [INFERRED] Centralized ownership reduces ambiguity during initial bootstrap.
+# [SPECULATIVE] Additional owners or path-specific ownership may be introduced
+# in later phases after review workload and partner participation are known.
+# Review guidance:
+# - changes should preserve cross-file consistency
+# - changes should update DECISIONS.md when adding unresolved choices
+# - changes should update CHANGELOG.md and STATUS.md when release-relevant
+# Related specs:
+# - CONTRIBUTING.md
+# - STATUS.md
+# - DECISIONS.md
+# - VERSIONING.md
+# Process notes:
+# - ownership does not override required review discipline
+# - unresolved decisions still require ADR updates
+# - owner assignment does not imply implementation approval
+# - pilot readiness remains tracked in STATUS.md
+# - future path-based ownership should be introduced deliberately
+# - path ownership changes should be documented in CHANGELOG.md
+# - unresolved risks should remain visible in SPEC_AUDIT.md
+# - ADR review remains required for governance changes
+# Canonical owner mapping:
+* @scrimshawlife-ctrl

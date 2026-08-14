@@ -1,0 +1,33 @@
+# .gitignore
+# spec_version: 0.1.0
+# status: DRAFT
+# phase: SPECIFICATION_BOOTSTRAP
+
+# Repository hygiene rules for a specification-only bootstrap.
+# [OBSERVED] This repository should contain Markdown specifications and a small
+# set of supporting text files only.
+# [OBSERVED] Production build artifacts are out of scope.
+# [INFERRED] Editor and operating-system noise should be ignored to keep
+# specification review clean and diff-friendly.
+# [OBSERVED] No secrets should be stored in the repository.
+# [OBSERVED] No generated runtime artifacts are expected in this phase.
+# [SPECULATIVE] Additional ignore rules may be added later if contribution
+# tooling introduces new local-only files.
+# Related specs:
+# - README.md
+# - CONTRIBUTING.md
+# - SECURITY.md
+# - STATUS.md
+# Review notes:
+# - keep ignore rules minimal
+# - avoid masking authored specification files
+# - prefer explicit entries over broad wildcards
+# - reassess if future tooling is introduced
+# Ignored files and directories follow.
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
