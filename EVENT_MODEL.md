@@ -1,6 +1,6 @@
 # EVENT_MODEL.md — Domain Events and Audit Events (SUAS v0.1)
 
-**Related:** [DATA_MODEL.md](DATA_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [VERSIONING.md](VERSIONING.md), [SECURITY.md](SECURITY.md)
+**Related:** [DATA_MODEL.md](DATA_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [VERSIONING.md](VERSIONING.md), [SECURITY.md](SECURITY.md), [API.md](API.md), [NOTIFICATIONS.md](NOTIFICATIONS.md)
 
 ---
 
@@ -40,7 +40,7 @@ Exactly these types are defined for v0.1. Adding a type is a MINOR spec change.
 | `SUPPORT_SIGNAL_CHANGED` | SupportSignal |
 | `CASE_CREATED` | SupportCase |
 | `CASE_ASSIGNED` | SupportCase / CaseAssignment |
-| `RESPONDER_CONTACT_LOGGED` | SupportCase |
+| `RESPONDER_CONTACT_LOGGED` | SupportCase / ContactAttempt |
 | `CASE_ESCALATED` | SupportCase |
 | `CASE_RESOLVED` | SupportCase |
 | `SERVICE_REQUEST_CREATED` | ServiceRequest |
@@ -57,6 +57,23 @@ Exactly these types are defined for v0.1. Adding a type is a MINOR spec change.
 | `CONSENT_GRANTED` | ConsentGrant |
 | `CONSENT_REVOKED` | ConsentGrant |
 | `TRUSTED_CONTACT_ALERTED` | TrustedContact |
+
+---
+
+### 3.1 `RESPONDER_CONTACT_LOGGED` payload
+
+Emitted by `POST /cases/{id}/commands/log-contact-attempt` and `POST /cases/{id}/commands/complete-contact` ([API.md](API.md) section 11.1). Required payload fields:
+
+| Field | Notes |
+|---|---|
+| `contact_attempt_id` | Row id |
+| `at` | Contact timestamp |
+| `channel` | `EMAIL` / `SMS` / `IN_APP` / `PHONE` |
+| `outcome` | `PENDING` / `REACHED` / `NO_ANSWER` / `LEFT_MESSAGE` / `DECLINED` / `UNABLE` |
+| `actor_id` | Responder user id |
+| `command` | `log-contact-attempt` or `complete-contact` |
+
+A Case Note create must not emit this event.
 
 ---
 

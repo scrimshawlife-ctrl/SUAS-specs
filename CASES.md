@@ -1,6 +1,6 @@
 # CASES.md — Support Case state machine (SUAS v0.1)
 
-**Related:** [DISPATCH.md](DISPATCH.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [EVENT_MODEL.md](EVENT_MODEL.md)
+**Related:** [DISPATCH.md](DISPATCH.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [DECISIONS.md](DECISIONS.md)
 
 **Actors:** System, Responder, Organization Administrator (queue), Veteran (limited), SUAS System Administrator (audit / break-glass).
 
@@ -79,7 +79,8 @@ Every transition records: source, target, actor, prerequisites, Domain Event, ti
 
 ## 6. Notes, linked requests, follow-ups
 
-- Case Notes are not transitions and not Follow-Ups.
+- Case Notes are not transitions, not Follow-Ups, and not Contact Attempts.
+- Contact Attempts use `log-contact-attempt` / `complete-contact` ([API.md](API.md) section 11.1). A Case Note is not a substitute.
 - Service Requests live on the case ([DISPATCH.md](DISPATCH.md)).
 - Follow-Ups are first-class ([FOLLOWUP.md](FOLLOWUP.md)).
 - Escalation is an explicit action, not a note keyword.
@@ -98,8 +99,29 @@ Every transition records: source, target, actor, prerequisites, Domain Event, ti
 
 - Assigned responder: read/write per workflows.
 - Org queue responders: read limited fields of unassigned cases in tenant.
-- Veteran: existence, status, linked request statuses, not necessarily full notes (note visibility `DECISION_PENDING`).
 - Trusted Contact: only with grants; membership insufficient.
+
+### 8.1 Veteran visibility (MVP default, `INFERRED`; D-015 remains open)
+
+This is an operational default so implementation does not invent a clinical chart. D-015 stays open if the owner later wants veterans to see notes.
+
+**Veteran can see (own records only):**
+
+- own Check-Ins
+- own Service Request status
+- Settlement fields written for them
+- Follow-Up prompts addressed to them
+- Support Case existence and status on their own case
+
+**Veteran cannot see:**
+
+- full Case Notes
+- Contact Attempts / the responder contact log
+- other veterans
+- responder internal queue fields (filters, unassigned queue, `active_for_queue` internals, other responders' assignments)
+- other Organizations / other tenants
+
+Do not invent a clinical chart. Case Notes remain responder/org-admin/SUAS-admin artifacts.
 
 ---
 
@@ -120,3 +142,4 @@ Critical suite: **case transitions**.
 - Closure retains history.
 - Reassignment emits `CASE_ASSIGNED` and releases the prior assignment.
 - Resolve without Settlement fails.
+- Veteran cannot read Case Notes or Contact Attempts (D-015 MVP default).

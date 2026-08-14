@@ -32,6 +32,17 @@ Phone OTP depends on D-003 (SMS provider) = `DECISION_PENDING`. Until D-003 is c
 
 **Social login:** not assumed. Do not implement OAuth social providers unless a later spec adds them.
 
+### 2.2 Enrollment identity (MVP, `INFERRED`; D-016 remains open)
+
+Enrollment identity-proofing for the 25–50 Santa Clara County pilot is:
+
+- self-attested veteran status, and
+- a working email and/or phone completed via the passwordless methods in §2.
+
+Not required for MVP enrollment: VA identity API, DD-214 upload, in-person proofing. Do not invent a VA partnership. Whether a later proofing step is required is D-016 `DECISION_PENDING`. See [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md).
+
+This section is **enrollment**, not recovery. Lost-channel recovery in §7 remains a separate `DECISION_PENDING` process.
+
 ### 2.1 Challenge rules
 
 - A challenge (magic-link token or OTP) is single-use, time-bounded (exact TTL `DECISION_PENDING`; implement as a documented constant, recommended starting point 15 minutes — `INFERRED` operational default, not a legal requirement).
@@ -122,3 +133,4 @@ See [TESTING.md](TESTING.md) AUTH gate:
 - Revoked user sessions die.
 - Org-admin cannot authenticate into another org.
 - Rate limits reject tight challenge loops.
+- `complete-enrollment` does not require a VA identity API, DD-214, or in-person proofing step (D-016 MVP default).

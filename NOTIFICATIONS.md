@@ -1,6 +1,6 @@
 # NOTIFICATIONS.md — Notification records and policies (SUAS v0.1)
 
-**Related:** [CONSENT.md](CONSENT.md), [SAFETY.md](SAFETY.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DECISIONS.md](DECISIONS.md)
+**Related:** [CONSENT.md](CONSENT.md), [SAFETY.md](SAFETY.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DECISIONS.md](DECISIONS.md), [DATA_MODEL.md](DATA_MODEL.md)
 
 **Actors:** System (enqueue/send), Veteran / Responder / Trusted Contact (recipients), SUAS System Administrator (templates).
 
@@ -49,7 +49,10 @@ Every Notification records:
 ## 5. Retry
 
 - Failed sends retry with bounded attempts (constant documented; recommended 3 — `INFERRED`).
-- Each attempt is recorded (same logical notification with attempt count, or child rows — pick one in implementation and keep audit).
+- **Shape (specified):** one Notification row per logical send. `delivery_status` transitions on that row (`QUEUED` → `SENT` | `FAILED` → `DELIVERED` | `BOUNCED` | `UNDELIVERABLE`).
+- Each send attempt (initial and retry) appends an **immutable Audit Event** (`action` records the attempt; `target_type` = `Notification`; `target_id` = `notification_id`). Do not mutate prior attempt events.
+- Do **not** use child attempt rows. Events are immutable ([EVENT_MODEL.md](EVENT_MODEL.md)).
+- The Notification row may update `delivery_status`, `attempt_count`, `last_attempt_at`, and `sent_at`. That is the only mutation. Attempt history lives in Audit Events.
 - Exhausted retries: `UNDELIVERABLE`; ops alert ([OPERATIONS.md](OPERATIONS.md)).
 - Safety-critical **decisions** are not retried inside templates; red-state decision happens before enqueue.
 
@@ -90,3 +93,5 @@ Critical suite: **notification consent**.
 - Revoke between enqueue and send → not sent.
 - Preference-off with grant still allows IN_APP if policy says so; SMS/EMAIL honor preference.
 - Missing `consent_basis` rejected.
+- Two retries of one Notification produce one Notification row and at least two Audit Events; prior attempt events are unchanged.
+- No `notification_attempts` child table exists.

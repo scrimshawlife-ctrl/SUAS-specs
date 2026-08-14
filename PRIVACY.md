@@ -47,6 +47,8 @@ Sensitive free-text (notes, check-in free-text, feedback) is stored, access-logg
 
 A Veteran may request an export of their profile, check-ins, grants, cases (veteran-visible fields), requests, and settlements. Exact package format `DECISION_PENDING`. Export is audited.
 
+Veteran-visible fields (`INFERRED` MVP default; D-015): own Check-Ins, own Service Request status, Settlement fields written for them, Follow-Up prompts addressed to them, Support Case existence and status. Export **must not** include full Case Notes, Contact Attempts, other veterans, responder internal queue fields, or other Organizations. See [CASES.md](CASES.md) section 8.
+
 ---
 
 ## 5. Non-goals

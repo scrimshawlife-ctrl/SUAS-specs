@@ -44,6 +44,9 @@ Draft specs are not implementation authority. Tests in `SUAS` must cite this fil
 | Red-state behavior | [SAFETY.md](SAFETY.md) | Resources surfaced; human review prioritized; no emergency auto-dispatch; consent for contacts |
 | Stale-resource handling | [RESOURCES.md](RESOURCES.md) | Warning bands; inactive not assignable |
 | Responder authorization | [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md) | Actions fail without assignment/role |
+| Contact log | [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [API.md](API.md) | `log-contact-attempt` / `complete-contact` require `at`, `channel`, `outcome`, `actor_id` and emit `RESPONDER_CONTACT_LOGGED`; Case Note create does not |
+| Veteran visibility | [CASES.md](CASES.md) section 8 | Veteran cannot read Case Notes, Contact Attempts, other veterans, queue fields, or other orgs; can read own Check-Ins, own Service Request status, Settlement fields written for them, Follow-Up prompts |
+| Notification attempts | [NOTIFICATIONS.md](NOTIFICATIONS.md) | One Notification row; retries append immutable Audit Events; no child attempt table |
 | Audit-event immutability | [EVENT_MODEL.md](EVENT_MODEL.md) | No update/delete via application roles |
 
 A PR that touches a domain without updating or running the matching critical suite is incomplete.
@@ -61,7 +64,7 @@ The MVP is not accepted until **all** gates pass. Status is mirrored in [STATUS.
 | **CHECK-IN** | Versioned questionnaire published in TEST. Incomplete/abandoned handled. Check-In is not treated as a Support Signal. |
 | **COORDINATION** | Case and Service Request machines execute only documented transitions. Assignment is not fulfillment. Responder actions named in [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md) work. |
 | **SAFETY** | Red-state suite green. No emergency auto-dispatch. No diagnosis claim in UI. AI policy respected. |
-| **PRIVACY** | Minimization enforced (no SSN/service-record/medical-history fields). Access logged. No prod data in non-prod. Sensitive values absent from logs. |
+| **PRIVACY** | Minimization enforced (no SSN/service-record/medical-history/DD-214 fields). Access logged. No prod data in non-prod. Sensitive values absent from logs. Enrollment does not require a VA identity API or in-person proofing (D-016 MVP default). |
 | **OPERATIONS** | Coverage, queue review, resource verification, overdue follow-up, incident path exist and are staffed per [OPERATIONS.md](OPERATIONS.md) / [PILOT.md](PILOT.md) (D-009 may still constrain hours but the path exists). |
 | **REPORTING** | Allowed metrics in [ANALYTICS.md](ANALYTICS.md) can be produced. Forbidden clinical metrics are absent. |
 
