@@ -152,6 +152,7 @@ See [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [CONTRIBUTING.md](CO
 | [DATA_MODEL.md](DATA_MODEL.md) | Logical schema |
 | [EVENT_MODEL.md](EVENT_MODEL.md) | Domain and audit events |
 | [API.md](API.md) | Resource/domain contract |
+| [APIS.md](APIS.md) | Necessary-API inventory (Plane A minimum + Plane B capability ports). API.md is the contract; APIS.md is the inventory. |
 
 ### Domain specs
 
@@ -179,6 +180,8 @@ See [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [CONTRIBUTING.md](CO
 |---|---|
 | [SECURITY.md](SECURITY.md) | Controls, threats, HIPAA_APPLICABILITY = DECISION_PENDING |
 | [PRIVACY.md](PRIVACY.md) | Minimization, collection boundaries, retention |
+| [COMPLIANCE.md](COMPLIANCE.md) | Compliance register (not a claim of being compliant) |
+| [ONBOARDING.md](ONBOARDING.md) | Admin first-run bootstrap and first-time user experience |
 | [ADMIN.md](ADMIN.md) | Administration surfaces |
 | [PILOT.md](PILOT.md) | Pilot operations |
 | [ANALYTICS.md](ANALYTICS.md) | Operational metrics only |
