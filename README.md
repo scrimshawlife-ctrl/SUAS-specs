@@ -197,6 +197,7 @@ See [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [CONTRIBUTING.md](CO
 |---|---|
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to change specs |
 | [SPEC-001.md](SPEC-001.md) | SPEC-001 owner-review worksheet (`READY_FOR_REVIEW`, not `accepted`) |
+| [FRICTION.md](FRICTION.md) | User and infra friction; proposed engineering paths (not a decision close; not implementation authority) |
 | [CHANGELOG.md](CHANGELOG.md) | 0.1.0 bootstrap |
 | [SPEC_AUDIT.md](SPEC_AUDIT.md) | Completeness audit of this stack |
 | [CODEOWNERS](CODEOWNERS) | `* @scrimshawlife-ctrl` |
