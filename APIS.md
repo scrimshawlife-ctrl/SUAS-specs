@@ -77,7 +77,10 @@ Membership alone grants no visibility ([TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md)).
 | `POST /referrals` | Draft a Referral. |
 | `POST /referrals/{id}/commands/send` | Send; requires an `ACTIVE` grant. |
 
-Responder contact-log actions (`CONTACT_ATTEMPT`, `CONTACT_COMPLETE`) are named in [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md). [API.md](API.md) does not yet assign dedicated paths. **Do not invent paths.** When specified, they become commands under the case (or a documented contact-log resource) and emit `RESPONDER_CONTACT_LOGGED`. Until then, a Case Note is not a substitute for a contact log.
+| `POST /cases/{id}/commands/log-contact-attempt` | `CONTACT_ATTEMPT`. Required: `at`, `channel`, `outcome`, `actor_id`. Emits `RESPONDER_CONTACT_LOGGED`. |
+| `POST /cases/{id}/commands/complete-contact` | `CONTACT_COMPLETE`. Required: `at`, `channel`, `outcome`, `actor_id`. Emits `RESPONDER_CONTACT_LOGGED`. `outcome` must not be `PENDING`. |
+
+A Case Note is **not** a substitute for a contact log. See [API.md](API.md) section 11.1 and [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md).
 
 ### 2.5 FULFILLMENT
 
@@ -243,6 +246,7 @@ Do not invent a public unauthenticated signup dump. Do not hide bootstrap behind
 | Consent on send | Adapter send path requires `consent_basis` already recorded on the Notification. |
 | Bootstrap | `complete-step` without SUAS-admin + MFA → 403; success emits an Audit Event. |
 | Enrollment | `complete-enrollment` without a session → 401; does not exist as an unauthenticated route. |
+| Contact log | `log-contact-attempt` / `complete-contact` without active assignment → 403; missing `at`/`channel`/`outcome`/`actor_id` → 400; Case Note create does not emit `RESPONDER_CONTACT_LOGGED`. |
 
 API contract tests remain in [TESTING.md](TESTING.md) and [API.md](API.md) §13.
 

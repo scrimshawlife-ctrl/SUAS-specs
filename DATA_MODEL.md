@@ -18,7 +18,7 @@
 | Immutable | no `updated_at` overwrite of business meaning; no `deleted_at` |
 | Enums | stored as constrained text matching this stack's names exactly |
 
-**Mutable operational tables:** User, VeteranProfile, Organization, OrganizationMembership, ResponderProfile, CheckIn (status only), TrustedContact, ConsentGrant (status/revocation fields), SupportCase, CaseAssignment, CaseNote, FollowUp, ServiceRequest, ServiceProvider, ServiceOffer, ServiceFulfillment, Resource, ResourceCategory, Referral, Notification, NotificationPreference, Pilot, PilotEnrollment, Feedback.
+**Mutable operational tables:** User, VeteranProfile, Organization, OrganizationMembership, ResponderProfile, CheckIn (status only), TrustedContact, ConsentGrant (status/revocation fields), SupportCase, CaseAssignment, CaseNote, ContactAttempt (outcome/`completed_at` only), FollowUp, ServiceRequest, ServiceProvider, ServiceOffer, ServiceFulfillment, Resource, ResourceCategory, Referral, Notification (`delivery_status` / `attempt_count` / `last_attempt_at` / `sent_at` only), NotificationPreference, Pilot, PilotEnrollment, Feedback.
 
 **Immutable tables:** QuestionnaireVersion (once `PUBLISHED`), Question and AnswerOption belonging to a published version, CheckInResponse (append; corrections are new rows or new Check-Ins), SupportSignal, ConsentEvent, AuditEvent, DomainEvent.
 
@@ -180,6 +180,22 @@
 - FK `support_case_id`, FK `author_user_id` → users
 - `body`
 - `created_at`, `updated_at`, `deleted_at`
+- Not a Contact Attempt. Veteran cannot read (D-015; [CASES.md](CASES.md) section 8).
+
+### contact_attempts
+- PK `contact_attempt_id`
+- FK `support_case_id`
+- FK `actor_id` → users
+- `tenant_id`
+- `at` (contact timestamp; required)
+- `channel` (`EMAIL`|`SMS`|`IN_APP`|`PHONE`)
+- `outcome` (`PENDING`|`REACHED`|`NO_ANSWER`|`LEFT_MESSAGE`|`DECLINED`|`UNABLE`)
+- `completed_at` nullable
+- `created_at`, `updated_at`
+- `log-contact-attempt` inserts a row (outcome may be `PENDING`)
+- `complete-contact` may set `outcome` + `completed_at` on an existing row, or insert a new row; both emit `RESPONDER_CONTACT_LOGGED`
+- A Case Note is not a substitute
+- Veteran cannot read (D-015)
 
 ### follow_ups
 - PK `follow_up_id`
@@ -288,7 +304,11 @@
 - `consent_basis` (grant id or documented system basis)
 - `template_version`
 - `delivery_status` (`QUEUED`|`SENT`|`FAILED`|`DELIVERED`|`BOUNCED`|`UNDELIVERABLE`)
+- `attempt_count` integer default 0
+- `last_attempt_at` nullable
 - `created_at`, `sent_at` nullable
+- **One row per logical send.** `delivery_status` transitions on this row.
+- Each send attempt (initial and retry) appends an **immutable Audit Event**. Do not mutate prior attempt events. No `notification_attempts` child table.
 - no silent delete of send records
 
 ---
@@ -346,7 +366,8 @@ Envelope details: [EVENT_MODEL.md](EVENT_MODEL.md).
 - `(tenant_id, status)` on support_cases, service_requests, follow_ups.
 - `(veteran_profile_id, computed_at desc)` on support_signals.
 - `(veteran_profile_id, status)` on consent_grants.
-- `(support_case_id)` on service_requests, case_notes, follow_ups, referrals.
+- `(support_case_id)` on service_requests, case_notes, contact_attempts, follow_ups, referrals.
+- `(support_case_id, at)` on contact_attempts.
 - `(last_verified_at)` on resources.
 - `(due_at, status)` on follow_ups.
 
