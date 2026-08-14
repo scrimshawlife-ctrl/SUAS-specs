@@ -1,6 +1,6 @@
 # AUTH.md — Authentication and session authorization (SUAS v0.1)
 
-**Related:** [SECURITY.md](SECURITY.md), [ADMIN.md](ADMIN.md), [PRODUCT.md](PRODUCT.md), [API.md](API.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md)
+**Related:** [SECURITY.md](SECURITY.md), [ADMIN.md](ADMIN.md), [PRODUCT.md](PRODUCT.md), [API.md](API.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [ONBOARDING.md](ONBOARDING.md), [APIS.md](APIS.md)
 
 **Actors:** Veteran, Responder, Organization Administrator, SUAS System Administrator, Trusted Contact (if enrolled), Service Provider user.
 
@@ -11,6 +11,8 @@
 Identify users, issue sessions, enforce MFA where required, invalidate sessions, and recover access without weakening least privilege.
 
 Authentication is not authorization. Authorization is role + tenant + row + consent ([SECURITY.md](SECURITY.md), [CONSENT.md](CONSENT.md)).
+
+First-run: MFA must be enrolled before any other SUAS-admin, org-admin, or responder privileged action. See [ONBOARDING.md](ONBOARDING.md).
 
 ---
 

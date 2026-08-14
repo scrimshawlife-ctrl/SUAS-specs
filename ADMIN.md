@@ -1,12 +1,14 @@
 # ADMIN.md — Administration surfaces (SUAS v0.1)
 
-**Related:** [AUTH.md](AUTH.md), [SECURITY.md](SECURITY.md), [PILOT.md](PILOT.md), [RESOURCES.md](RESOURCES.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md)
+**Related:** [AUTH.md](AUTH.md), [SECURITY.md](SECURITY.md), [PILOT.md](PILOT.md), [RESOURCES.md](RESOURCES.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md)
 
 ---
 
 ## 1. Purpose
 
 Define what Organization Administrators and SUAS System Administrators can manage. **Org-admin ≠ global SUAS-admin.**
+
+Empty-system first-run (bootstrap checklist, MFA-before-writes, environment-class banner) is specified in [ONBOARDING.md](ONBOARDING.md). This file remains the administration-surface contract.
 
 ---
 

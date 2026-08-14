@@ -1,6 +1,6 @@
 # PILOT.md — Santa Clara County pilot (SUAS v0.1)
 
-**Related:** [PRODUCT.md](PRODUCT.md), [OPERATIONS.md](OPERATIONS.md), [ANALYTICS.md](ANALYTICS.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md)
+**Related:** [PRODUCT.md](PRODUCT.md), [OPERATIONS.md](OPERATIONS.md), [ANALYTICS.md](ANALYTICS.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md)
 
 ---
 
@@ -14,6 +14,8 @@
 | Readiness | `NOT_READY` |
 
 Do **not** invent partners. Use `PARTNER_ORG_001`, `PARTNER_ORG_002`, … until D-008 is closed.
+
+Environment bootstrap (empty-system first-run) is [ONBOARDING.md](ONBOARDING.md). Counsel review of the [COMPLIANCE.md](COMPLIANCE.md) register is **D-013** `DECISION_PENDING` and is required before operating this pilot. Closing D-013 is not a compliance claim.
 
 Responder staffing and coverage hours: D-009 `DECISION_PENDING`.
 
@@ -84,7 +86,7 @@ The pilot may exit when **any** of the following is recorded on the Pilot row:
 - Safety or security incident requiring stop (SUAS-admin decision, audited)
 - SPEC-014 waiver or fail that withdraws readiness
 
-MVP gates in [STATUS.md](STATUS.md) must be `READY` (or an explicit spec waiver) before start.
+MVP gates in [STATUS.md](STATUS.md) must be `READY` (or an explicit spec waiver) before start. D-013 must be closed. Environment bootstrap checklist must be `CHECKLIST_COMPLETE` in PRODUCTION ([ONBOARDING.md](ONBOARDING.md)).
 
 ---
 

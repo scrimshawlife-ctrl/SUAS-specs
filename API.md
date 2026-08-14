@@ -1,8 +1,10 @@
 # API.md — Resource/domain contract (SUAS v0.1)
 
-**Related:** [AUTH.md](AUTH.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [EVENT_MODEL.md](EVENT_MODEL.md), [VERSIONING.md](VERSIONING.md), [SECURITY.md](SECURITY.md)
+**Related:** [AUTH.md](AUTH.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [EVENT_MODEL.md](EVENT_MODEL.md), [VERSIONING.md](VERSIONING.md), [SECURITY.md](SECURITY.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md)
 
 **Status:** `draft` / contract version `0.1.0`. This is a **resource/domain contract**, not an implementation. Transport is HTTPS JSON unless a later spec says otherwise.
+
+The inventory of APIs **required to make the MVP loop work** (minimum Plane A endpoints + Plane B capability ports) is [APIS.md](APIS.md). This file remains the contract.
 
 ---
 
@@ -129,6 +131,8 @@ Contract version in `VERSIONING.md`. Breaking path or semantics = MAJOR. Clients
 - `POST /consents` `POST /consents/{id}/commands/revoke`
 - `GET /notifications` `PUT /notifications/preferences`
 - `GET /admin/audit-events` `POST /admin/questionnaire-versions/{id}/commands/publish`
+- `GET /admin/bootstrap/status` `POST /admin/bootstrap/commands/complete-step` ([ONBOARDING.md](ONBOARDING.md))
+- `POST /veterans/me/commands/complete-enrollment` ([ONBOARDING.md](ONBOARDING.md))
 
 ---
 
