@@ -1,6 +1,7 @@
 # VERSIONING.md — Specification and artifact versioning (SUAS v0.1)
 
-**Related:** [STATUS.md](STATUS.md), [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md)
+**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
+**Related:** [STATUS.md](STATUS.md), [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), [SPEC-001.md](SPEC-001.md)
 
 ---
 
@@ -35,9 +36,13 @@ Every versioned specification artifact has exactly one lifecycle state:
 | `released` | Canonical contract. Implementation must conform. | Yes |
 | `superseded` | Replaced by a later released version. Kept for audit. | No (except for historical replay) |
 
-Current stack: `0.1.0` / `draft`. See [STATUS.md](STATUS.md).
+Current stack: `0.1.0` / `draft`. See [STATUS.md](STATUS.md). SPEC-001 is `READY_FOR_REVIEW`; the stack is not `accepted`.
 
 A file in this repository may describe future behavior (`FUTURE`) without that behavior being `released`.
+
+### 3.1 Who may change lifecycle
+
+Only the specification owner (`@scrimshawlife-ctrl`) may move a version from `draft` to `accepted` or from `accepted` to `released`. The owner records that change in [STATUS.md](STATUS.md), [VERSIONING.md](VERSIONING.md), and [CHANGELOG.md](CHANGELOG.md) after the [SPEC-001.md](SPEC-001.md) checklist is complete. Agents and implementers must not self-accept. See [AGENTS.md](AGENTS.md).
 
 ---
 

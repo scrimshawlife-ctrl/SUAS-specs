@@ -21,12 +21,18 @@ The Settlement must record:
 | Item | Meaning |
 |---|---|
 | What was requested | List of Service Requests (category, summary, status) |
-| What occurred | Referrals sent, contacts made (by reference to events/notes), assignments |
+| What occurred | Referrals sent, contacts made (by reference to Contact Attempts / `RESPONDER_CONTACT_LOGGED`; a Case Note is not a substitute), assignments |
 | What was fulfilled | ServiceFulfillment outcomes, including `PARTIAL` / `FAILED` / `CANCELLED` |
 | What remains unresolved | Requests not fulfilled; unmet need text |
 | Who confirmed | Actor ids (responder required; veteran optional) |
 | When | `settled_at` |
 | Remaining Follow-Up | Open follow-ups must be completed, cancelled, or explicitly listed as remaining with owners and due dates |
+
+---
+
+## 2.1 Veteran visibility
+
+The Veteran may read Settlement fields written for them on their own Support Case (`INFERRED` MVP default; [CASES.md](CASES.md) section 8). This is not a clinical outcome and not a chart. Full Case Notes remain hidden (D-015).
 
 ---
 

@@ -23,7 +23,7 @@ Responder staffing and coverage hours: D-009 `DECISION_PENDING`.
 
 ## 2. Enrollment
 
-1. Veteran identity-proofing process is `DECISION_PENDING` (must be documented before SPEC-014).
+1. MVP enrollment identity-proofing (`INFERRED` operational default): self-attested veteran status plus a working email and/or phone via passwordless auth ([AUTH.md](AUTH.md)). No VA identity API, no DD-214 upload, and no in-person proofing are required for this 25–50 veteran Santa Clara County pilot. Do not invent a VA partnership. Whether a later proofing step is required is **D-016** `DECISION_PENDING`.
 2. Create User + VeteranProfile + PilotEnrollment `ENROLLED`.
 3. Emit `VETERAN_ENROLLED`.
 4. Collect only fields in [DOMAIN_MODEL.md](DOMAIN_MODEL.md). Do not collect SSN, service-record dumps, or medical history.

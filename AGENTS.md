@@ -1,6 +1,7 @@
 # AGENTS.md — Required rules for agents and implementers
 
-**Related:** [README.md](README.md), [CONTRIBUTING.md](CONTRIBUTING.md), [VERSIONING.md](VERSIONING.md), [STATUS.md](STATUS.md)
+**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
+**Related:** [README.md](README.md), [CONTRIBUTING.md](CONTRIBUTING.md), [VERSIONING.md](VERSIONING.md), [STATUS.md](STATUS.md), [SPEC-001.md](SPEC-001.md)
 
 This file binds human and automated agents working on SUAS specifications or the SUAS implementation.
 
@@ -49,4 +50,8 @@ Do not write "AI-powered", "smart matching", "seamless", "intelligent", or "auto
 
 ## 5. This repository
 
-Agents working in `SUAS-specs` must not clone implementation repos, must not write application/production code, and must not claim a spec is `released` without an explicit lifecycle change in [VERSIONING.md](VERSIONING.md) and [STATUS.md](STATUS.md).
+Agents working in `SUAS-specs` must not clone implementation repos, must not write application/production code, and must not claim a spec is `accepted` or `released`.
+
+## 6. Acceptance is owner-only
+
+Only the specification owner (`@scrimshawlife-ctrl`) may set lifecycle to `accepted` in [STATUS.md](STATUS.md), [VERSIONING.md](VERSIONING.md), and [CHANGELOG.md](CHANGELOG.md) after the [SPEC-001.md](SPEC-001.md) checklist is complete. Agents must not self-accept. Agents must not tick the SPEC-001 checklist. `accepted` is not `released`. See [VERSIONING.md](VERSIONING.md) section 3.1.

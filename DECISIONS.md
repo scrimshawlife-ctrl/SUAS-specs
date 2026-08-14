@@ -1,6 +1,7 @@
 # DECISIONS.md — Open decisions (do not guess)
 
-**Related:** [STATUS.md](STATUS.md), [PRODUCT.md](PRODUCT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md)
+**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
+**Related:** [STATUS.md](STATUS.md), [PRODUCT.md](PRODUCT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md), [SPEC-001.md](SPEC-001.md)
 
 This file lists decisions that are **not** made in v0.1.0. Implementation must not invent values. Use `DECISION_PENDING` or `NOT_COMPUTABLE` until a later spec version records a decision.
 
@@ -35,6 +36,8 @@ This file lists decisions that are **not** made in v0.1.0. Implementation must n
 | D-012 | Approved safety copy (crisis-resource text shown in red-state) | `DECISION_PENDING` | [SAFETY.md](SAFETY.md) release |
 | D-013 | Counsel review of [COMPLIANCE.md](COMPLIANCE.md) regime register before operating the 25–50 veteran pilot | `DECISION_PENDING` | [PILOT.md](PILOT.md) operation; not a compliance claim |
 | D-014 | Whether a geocoding / maps API is required for MVP (`coverage_geometry` vs county list) | `DECISION_PENDING` | [RESOURCES.md](RESOURCES.md), [APIS.md](APIS.md) `GEOCODE_MAPS` |
+| D-015 | Case-note veteran visibility (whether veterans may see full Case Notes later) | `DECISION_PENDING` (MVP default `INFERRED`: veterans cannot see full Case Notes; not a clinical chart) | [CASES.md](CASES.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [PRODUCT.md](PRODUCT.md) |
+| D-016 | Enrollment identity-proofing beyond self-attest | `DECISION_PENDING` (MVP default `INFERRED`: self-attested veteran status + working email and/or phone via passwordless auth; no VA identity API, no DD-214 upload, no in-person proofing for the 25–50 Santa Clara pilot). Do not invent a VA partnership. | [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [AUTH.md](AUTH.md) |
 
 ---
 

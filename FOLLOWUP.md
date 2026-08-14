@@ -32,6 +32,7 @@ A Follow-Up is a first-class work item. It is **not** a Case Note and **not** a 
 
 - **Due date** required.
 - **Responsibility** required (`responsible_type` + `responsible_id`).
+- Veteran can see Follow-Up prompts addressed to them (`INFERRED` MVP default; [CASES.md](CASES.md) section 8).
 - **Retries:** `retry_count` increments on each unsuccessful contact attempt tied to this follow-up, or on each resend of a due notification. Retry bound `DECISION_PENDING` (document a constant; recommended operational default 3 — `INFERRED`).
 - **Completion:** actor + timestamp. Emit `FOLLOWUP_COMPLETED`.
 - **Reschedule:** reason + new `due_at`. History via events, not silent overwrite of the original due time in the event log.
