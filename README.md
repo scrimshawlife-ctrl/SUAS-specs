@@ -4,6 +4,7 @@
 **System identifier:** SUAS  
 **Specification version:** 0.1.0  
 **Specification status:** `draft` (see [VERSIONING.md](VERSIONING.md))  
+**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
 **Phase:** `SPECIFICATION_BOOTSTRAP` (see [STATUS.md](STATUS.md))
 
 This repository (`SUAS-specs`) is the **canonical specification authority** for Shut Up and Serve. The implementation repository ([SUAS](https://github.com/scrimshawlife-ctrl/SUAS)) must conform to released specifications. Undocumented implementation is not canonical. Gaps discovered during implementation return to this repository as specification work, not as silent product redefinition.
@@ -195,6 +196,7 @@ See [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [CONTRIBUTING.md](CO
 | File | Purpose |
 |---|---|
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to change specs |
+| [SPEC-001.md](SPEC-001.md) | SPEC-001 owner-review worksheet (`READY_FOR_REVIEW`, not `accepted`) |
 | [CHANGELOG.md](CHANGELOG.md) | 0.1.0 bootstrap |
 | [SPEC_AUDIT.md](SPEC_AUDIT.md) | Completeness audit of this stack |
 | [CODEOWNERS](CODEOWNERS) | `* @scrimshawlife-ctrl` |
@@ -213,6 +215,7 @@ See [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [CONTRIBUTING.md](CO
 | Implementation authority | `NOT_YET_RELEASED` |
 | Pilot readiness | `NOT_READY` |
 | Spec version | `0.1.0` (`draft`) |
+| SPEC-001 | `READY_FOR_REVIEW` (not `accepted`) |
 
 See [STATUS.md](STATUS.md).
 

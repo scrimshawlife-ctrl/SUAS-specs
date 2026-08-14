@@ -24,6 +24,7 @@ Markdown and hygiene only. No application or production code. No git clone.
 - [AGENTS.md](AGENTS.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [CHANGELOG.md](CHANGELOG.md)
+- [SPEC-001.md](SPEC-001.md)
 - [CODEOWNERS](CODEOWNERS)
 - [.gitignore](.gitignore)
 
@@ -127,6 +128,8 @@ From [DECISIONS.md](DECISIONS.md):
 | D-012 | Approved safety copy |
 | D-013 | Counsel review of COMPLIANCE.md regime register before pilot |
 | D-014 | Whether a geocoding/maps API is required for MVP |
+| D-015 | Case-note veteran visibility (MVP `INFERRED`: veterans cannot see full Case Notes) |
+| D-016 | Enrollment identity-proofing beyond self-attest (MVP `INFERRED`: self-attest + working email and/or phone) |
 
 ---
 
@@ -144,6 +147,13 @@ During bootstrap writing and inspection:
 8. Thinner first drafts of [ADMIN.md](ADMIN.md), [PRIVACY.md](PRIVACY.md), and [RESOURCES.md](RESOURCES.md) were expanded with events, actors, and links so they are not stubs.
 
 No remaining internal contradiction was found in state names, event names, role names, or repo authority wording.
+
+**SPEC-001 pass (same day, still `0.1.0` / `draft`):**
+
+9. Contact-log paths were unspecified ("do not invent paths"). Specified as `POST /cases/{id}/commands/log-contact-attempt` and `POST /cases/{id}/commands/complete-contact`. Case Note is not a substitute.
+10. Notification attempt shape was "implementation may pick." Specified: one Notification row; retries append immutable Audit Events; no child table.
+11. Case Note veteran visibility and enrollment identity-proofing were `NOT_COMPUTABLE`. Recorded as `INFERRED` MVP defaults; opened D-015 and D-016 without closing them.
+12. Alias scan of the seven SPEC-001 files found no remaining contract aliases. Forbidden-alias list added to [GLOSSARY.md](GLOSSARY.md).
 
 ---
 
@@ -182,31 +192,32 @@ Do not invent values for:
 - Published QuestionnaireVersion content
 - Exact signal scoring rules and thresholds
 - Approved safety copy
-- Identity-proofing steps for enrollment
-- Veteran visibility of full Case Notes
+- Identity-proofing **beyond** the MVP self-attest default (D-016 remains open; MVP rule is specified as `INFERRED`)
+- Whether veterans may later see full Case Notes (D-015 remains open; MVP default is specified as `INFERRED`: cannot see)
 - Exact OTP/session/idle/expiry TTLs (only `INFERRED` recommendations exist)
 - Coverage geometry storage type
 - MFA factor product
 - Dual-control break-glass steps for SUAS-admin recovery
 - Pilot start/end calendar dates
 - Export package format
-- Notification-attempt row shape (single row vs child rows) — implementation may pick one and keep audit
+- (removed) Notification-attempt row shape — now specified: one Notification row + immutable Audit Events per attempt ([NOTIFICATIONS.md](NOTIFICATIONS.md))
 
 ---
 
 ## 7. Recommended next run
 
-**Specification review and acceptance toward [SPEC-001](ROADMAP.md), not implementation.**
+**Owner review of [SPEC-001.md](SPEC-001.md).** SPEC-001 is `READY_FOR_REVIEW`, not `accepted`. Not implementation.
 
-Do not start `SUAS` feature work against this `draft` stack. Do not clone the implementation repository as a substitute for accepting specs.
+Do not start `SUAS` feature work against this `draft` stack. Do not clone the implementation repository as a substitute for accepting specs. Agents must not self-accept.
 
 Suggested review order:
 
-1. [README.md](README.md), [PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [AGENTS.md](AGENTS.md)
-2. [DECISIONS.md](DECISIONS.md) — confirm the open list is complete
-3. [CONSENT.md](CONSENT.md), [SAFETY.md](SAFETY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [ONBOARDING.md](ONBOARDING.md)
-4. [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md) state machines
-5. Promote SPEC-001 files to `accepted` when the review bar in [CONTRIBUTING.md](CONTRIBUTING.md) is met
+1. [SPEC-001.md](SPEC-001.md) checklist — owner ticks; agents leave unchecked
+2. [README.md](README.md), [PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [AGENTS.md](AGENTS.md)
+3. [DECISIONS.md](DECISIONS.md) — confirm D-001 through D-016 remain open
+4. [CONSENT.md](CONSENT.md), [SAFETY.md](SAFETY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [ONBOARDING.md](ONBOARDING.md) (not SPEC-001 acceptance)
+5. [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md) state machines (not SPEC-001 acceptance)
+6. Only `@scrimshawlife-ctrl` may promote SPEC-001 files to `accepted` after the [SPEC-001.md](SPEC-001.md) checklist is complete
 
 ---
 
