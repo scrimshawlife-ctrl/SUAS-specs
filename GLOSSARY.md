@@ -2,7 +2,7 @@
 
 **Authority:** This file is the terminology authority. All other specs must use these terms exactly.  
 **SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
-**Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md)
+**Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md)
 
 Terms are not interchangeable. Do not alias them in implementation or documentation.
 
@@ -191,7 +191,19 @@ A third-party service capability required to operate the MVP loop (for example S
 
 ## Capability Port
 
-The domain-facing interface (for example `SmsPort`, `EmailPort`, `AuthPort`) that a module calls instead of a vendor SDK. Vendor SDKs live only in adapters. Domain tests use fakes. Do not import a vendor name into domain specs. See [APIS.md](APIS.md).
+The domain-facing interface (for example `SmsPort`, `EmailPort`, `AuthPort`) that a module calls instead of a vendor SDK. Vendor SDKs live only in adapters. Domain tests use fakes. Do not import a vendor name into domain specs. See [APIS.md](APIS.md). LOCAL sink adapters (stdout / mailbox file / no real send) are a proposed Path 3 in [FRICTION.md](FRICTION.md); they do not close D-001–D-005.
+
+---
+
+## Consent Preset
+
+A named bundle that **writes** first-class Consent Grant rows in one veteran action. A Consent Preset is not a boolean, not a blanket "I agree," and not a skip of purpose, template version, revoke, or evaluate-at-use. Proposed IDs (analysis in [FRICTION.md](FRICTION.md); not implementation authority): `PRESET_RED_ONLY` (`can_receive` + `RED`), `PRESET_ORANGE_RED` (`can_receive` + `ORANGE` and `can_receive` + `RED`, two rows), `PRESET_SHARE_REQUESTS` (`can_view` + `current_requests`; not `checkin_answers`; not `location`).
+
+---
+
+## Help-first request
+
+A veteran first-run path whose primary call-to-action is an explicit Service Request (`FOOD` / `TRANSPORTATION` / `SHELTER` / `PEER_SUPPORT`). Check-In is optional after, not a first-run blocker. NEED from an explicit request is already allowed ([ONBOARDING.md](ONBOARDING.md), [CHECKINS.md](CHECKINS.md)). Specified as a proposed path in [FRICTION.md](FRICTION.md); not implementation authority.
 
 ---
 
