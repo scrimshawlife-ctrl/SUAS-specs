@@ -1,6 +1,6 @@
 # APIS.md — Necessary-API inventory (SUAS v0.1)
 
-**Related:** [API.md](API.md), [ARCHITECTURE.md](ARCHITECTURE.md), [AUTH.md](AUTH.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [DATA_MODEL.md](DATA_MODEL.md), [DEPLOYMENT.md](DEPLOYMENT.md), [DECISIONS.md](DECISIONS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md), [SAFETY.md](SAFETY.md)
+**Related:** [API.md](API.md), [ARCHITECTURE.md](ARCHITECTURE.md), [AUTH.md](AUTH.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [DATA_MODEL.md](DATA_MODEL.md), [DEPLOYMENT.md](DEPLOYMENT.md), [DECISIONS.md](DECISIONS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md), [SAFETY.md](SAFETY.md), [FRICTION.md](FRICTION.md)
 
 **Status:** `draft` / `0.1.0`. This file is an inventory of APIs **required to make the MVP loop work**. It is not a second contract.
 
