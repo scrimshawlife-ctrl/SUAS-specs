@@ -1,0 +1,23 @@
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# Editors
+*~
+*.swp
+*.swo
+.idea/
+.vscode/
+*.code-workspace
+.project
+.settings/
+
+# Misc junk
+*.log
+*.tmp
+.cache/
