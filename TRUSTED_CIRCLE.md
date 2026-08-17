@@ -1,6 +1,6 @@
 # TRUSTED_CIRCLE.md — Trusted Circle and Trusted Contacts (SUAS v0.1)
 
-**Related:** [CONSENT.md](CONSENT.md), [SAFETY.md](SAFETY.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [GLOSSARY.md](GLOSSARY.md)
+**Related:** [CONSENT.md](CONSENT.md), [SAFETY.md](SAFETY.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [GLOSSARY.md](GLOSSARY.md), [FENCE_POSTS.md](FENCE_POSTS.md)
 
 **Actors:** Veteran, Trusted Contact, System, Responder (does not enumerate the circle without a grant).
 
@@ -54,6 +54,7 @@ A contact may have notification preferences ([NOTIFICATIONS.md](NOTIFICATIONS.md
 - Alert at a signal level: `ACTIVE` grant `can_receive` + that level, and contact not `SUSPENDED`/`REMOVED`/`REVOKED`.
 - View an object: `ACTIVE` grant `can_view` + that object.
 - Red-state: [SAFETY.md](SAFETY.md) §3.3.
+- Graduated activation is driven only by what the Veteran tells SUAS and deterministic consented rules. Do not infer emotion, tone, or suicidality to widen notify scope.
 - Revoking a grant stops future use even if the contact remains `ACCEPTED`.
 - Removing the contact denies all future use regardless of leftover grants (evaluate membership first).
 

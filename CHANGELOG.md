@@ -4,6 +4,21 @@ Dates are America/Los_Angeles (PT). Lifecycle changes are owner-controlled.
 
 ---
 
+## Unreleased — draft Rev 3 fence-post contracts (not a version bump)
+
+**Draft / not implementation authority.** Released `0.1.1` remains the implementation contract. These additions do not bump the stack and do not mark any artifact `accepted` or `released`.
+
+- Added [FENCE_POSTS.md](FENCE_POSTS.md) — Rev 3 fence-post outcomes `G1`–`G14` as draft, testable contracts.
+- Added [SURFACES.md](SURFACES.md) — anonymous public front door vs identified opt-in platform; crossing remains an affirmative act and declining costs nothing.
+- Added [ISLANDS.md](ISLANDS.md) — island config schema, resolve-before-consume behavior, hardcoded 988 / Veterans Crisis Line fallback, and `island_id` isolation boundary.
+- Added [RIDES.md](RIDES.md) — ride-adapter contract with human dispatch, minimized provider payloads, and cost guardrails that fail to a human.
+- Opened D-026 through D-032 for island scope, dispatcher routing operations, resource-list curation, reporting/minimization, dual enrollment/minors, contracting entity, and volunteer-driver screening. D-017–D-025 remain the released production-adapter / scale / recovery ledger.
+- Added an SB 903 / peer-support register row to [COMPLIANCE.md](COMPLIANCE.md) as a `NOT_COMPUTABLE` note only; no legal or compliance claim.
+
+No implementation code is included.
+
+---
+
 ## 0.1.1 — 2026-08-18 — `released`
 
 **Handoff/environment hardening patch. No product/domain/API semantic change.**
@@ -26,6 +41,19 @@ Implementation authority became `RELEASED_FOR_IMPLEMENTATION`; pilot and product
 
 ---
 
+<<<<<<< HEAD
 ## 0.1.0 — 2026-08-14 through 2026-08-18 — pre-release history
 
 The bootstrap/preflight established the canonical loop, staged governance, provider-neutral architecture, MVP reference, scale/resilience contracts, and cross-artifact reconciliation. See [SPEC_AUDIT.md](SPEC_AUDIT.md).
+=======
+**Same-day Rev 3 fence-post contracts (still `0.1.0` / `draft`; not a bump to 0.2.0; not `accepted`):**
+
+- Added [FENCE_POSTS.md](FENCE_POSTS.md) — Rev 3 fence-post outcomes `G1`–`G14` as draft, testable contracts.
+- Added [SURFACES.md](SURFACES.md) — anonymous public front door vs identified opt-in platform; crossing remains an affirmative act and declining costs nothing.
+- Added [ISLANDS.md](ISLANDS.md) — island config schema, resolve-before-consume behavior, hardcoded 988 / Veterans Crisis Line fallback, and `island_id` isolation boundary.
+- Added [RIDES.md](RIDES.md) — ride-adapter contract with human dispatch, minimized provider payloads, and cost guardrails that fail to a human.
+- Opened D-017 through D-023 for island scope, dispatcher routing operations, resource-list curation, reporting/minimization, dual enrollment/minors, contracting entity, and volunteer-driver screening.
+- Added an SB 903 / peer-support register row to [COMPLIANCE.md](COMPLIANCE.md) as a `NOT_COMPUTABLE` note only; no legal or compliance claim.
+
+No implementation code is included. No specification artifact is `accepted` or `released`.
+>>>>>>> 58c171f (docs: add Rev 3 fence-post draft contracts)

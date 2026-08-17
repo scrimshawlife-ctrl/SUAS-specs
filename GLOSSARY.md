@@ -39,6 +39,18 @@ See [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md) and [CONSENT.md](CONSENT.md).
 
 ---
 
+## Surface
+
+One of the two SUAS presentation and interaction boundaries defined in [SURFACES.md](SURFACES.md): the anonymous public front door or the identified opt-in platform. Surfaces are not product "modes." Crossing between them is an affirmative act by the person, and the anonymous front door never creates or updates an identified platform record.
+
+---
+
+## Island
+
+A configuration envelope identified by `island_id` and resolved before use to drive public identity, crisis numbers, resource presentation, geographic bounds, dispatcher routing, funding-rail display, and served-population text. Island isolation is additive to existing tenant isolation and does not settle whether `island_id` equals `tenant_id`. See [ISLANDS.md](ISLANDS.md) and [DECISIONS.md](DECISIONS.md) `D-026`.
+
+---
+
 ## Trusted Contact
 
 A specific person in a Veteran's Trusted Circle. Has an invite/accept lifecycle, a relationship label, granular permissions, and notification preferences. All data access and alerts require a matching Consent Grant.

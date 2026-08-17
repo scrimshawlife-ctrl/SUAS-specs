@@ -34,6 +34,15 @@ Global decisions remain open until explicitly decided. A release-specific `DEFER
 | D-023 | Production performance SLOs/alerts | `DECISION_PENDING` |
 | D-024 | Production RTO/RPO / backup-restore objectives | `DECISION_PENDING` |
 | D-025 | Aggregate reporting privacy/small-cell policy | `DECISION_PENDING` |
+| D-026 | Relationship of `island_id` to existing `tenant_id` / organization scope | `DECISION_PENDING`; draft Rev 3 contract only. Do not assume `island_id == tenant_id`. |
+| D-027 | Dispatcher staffing, hours, and handoff model for island-specific routing | `DECISION_PENDING`; draft Rev 3 contract only |
+| D-028 | Who curates and refreshes the island resource list | `DECISION_PENDING`; draft Rev 3 contract only |
+| D-029 | Institutional reporting requirements vs collect-the-minimum data posture | `DECISION_PENDING`; draft Rev 3 contract only |
+| D-030 | Dual enrollment and minors handling for Rev 3 surfaces | `DECISION_PENDING`; draft Rev 3 contract only |
+| D-031 | Which legal entity contracts for island and ride operations | `DECISION_PENDING`; draft Rev 3 contract only |
+| D-032 | Volunteer-driver insurance and screening requirements | `DECISION_PENDING`; draft Rev 3 contract only |
+
+D-026–D-032 are additive draft questions from Rev 3 fence-post work. They do not replace or close D-017–D-025 in the released v0.1.0 ledger.
 
 ## v0.1.0 release boundary
 
