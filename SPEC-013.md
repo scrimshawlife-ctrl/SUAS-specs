@@ -1,63 +1,22 @@
-# SPEC-013.md — Owner review worksheet: deployment, operations, incident/recovery
+# SPEC-013.md — Owner acceptance record: deployment, operations, incident/recovery
 
-**Status:** `BLOCKED_BY_SPEC_007_SPEC_010_SPEC_011_SPEC_012`  
-**Stack version:** `0.1.0` / `draft`  
-**Owner:** `@scrimshawlife-ctrl`  
-**Roadmap:** [ROADMAP.md](ROADMAP.md) SPEC-013  
-**Required:** [DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md), [SECURITY.md](SECURITY.md), [RESILIENCE.md](RESILIENCE.md)
+**Status:** `accepted`  
+**Accepted:** `2026-08-18` PT  
+**Stack version:** `0.1.0`  
+**Owner:** `@scrimshawlife-ctrl`
 
-Preflight only. No lifecycle advancement.
+The owner accepts the environment, day-2 operations, incident-response, and recovery contracts.
 
----
+Accepted requirements:
 
-## 1. Objective
+- LOCAL/TEST/STAGING/PRODUCTION are isolated for data, secrets, durable work, provider configuration, telemetry, and identities.
+- No production veteran data may enter non-production.
+- Production topology must support stateless application instances and durable workers without domain rewrite.
+- Provider/notification webhook ingress is authenticated; secrets remain deployment-only.
+- Veteran-support operations and platform reliability duties are distinct and owned.
+- Queue/dead-letter/provider-health/`PROVIDER_UNKNOWN`/notification failure, manual fallback, Follow-Up, resource freshness, and recovery paths are observable and operable.
+- Incident response covers tenant/security/session/idempotency/event/queue/provider/notification/support failures while preserving history and assessing veteran-support impact.
+- Restore/replay procedures preserve duplicate-side-effect protection and reconcile pending external work before risky resume.
+- Spec gaps return to `SUAS-specs`.
 
-Accept environment, day-2 operation, incident, and recovery duties without selecting vendors or inventing staffing/SLO/legal timelines.
-
----
-
-## 2. Owner checklist
-
-### Deployment
-- [ ] LOCAL/TEST/STAGING/PRODUCTION are isolated for DB, secrets, queues/jobs, provider config, telemetry, and user data.
-- [ ] No production veteran data reaches non-production.
-- [ ] Production supports stateless app instances + durable workers without domain rewrite.
-- [ ] Provider/notification webhook ingress is authenticated.
-- [ ] Provider secrets remain deployment secrets, not domain/client data.
-- [ ] D-001/D-005/D-022 remain vendor/product decisions rather than architecture facts.
-
-### Operations
-- [ ] Veteran-support operations and platform reliability duties are distinct and owned.
-- [ ] Queue/dead-letter/provider-health/`PROVIDER_UNKNOWN`/notification failure paths are observable and operable.
-- [ ] Provider enable/disable/manual fallback/reconciliation runbooks exist.
-- [ ] Overdue Follow-Up and resource freshness have operational owners.
-- [ ] Scale response begins with measurement/backpressure/capacity/query fixes, not architecture rewrite.
-- [ ] No 24/7/provider-availability claim exceeds actual D-009/contracts.
-
-### Incident response
-- [ ] Incident process covers security, tenant isolation, session revoke, domain/idempotency integrity, queue/event failures, provider/notification failures, and operational support failures.
-- [ ] Containment preserves open Cases/Requests/Attempts/Notifications rather than deleting history.
-- [ ] Ongoing veteran-support impact is assessed during technical incidents.
-- [ ] Evidence includes idempotency, events, Settlement/FulfillmentAttempt/Follow-Up state as relevant.
-- [ ] Restore/replay verification includes duplicate-side-effect protection.
-- [ ] Spec gaps return to SUAS-specs.
-- [ ] No legal notification deadline/severity timer is invented.
-
-### Recovery
-- [ ] Backup/restore process is exercised for target release environment.
-- [ ] D-024 owns RTO/RPO.
-- [ ] Restored queues/provider Attempts/idempotency history are reconciled before workers resume risky external effects.
-
----
-
-## 3. Non-goals
-
-No cloud/DB/queue vendor selection, no 24/7 staffing claim, no legal-deadline invention, no Kubernetes requirement, no auto-dispatch emergency behavior.
-
----
-
-## 4. Exit criteria
-
-SPEC-013 may be accepted after dependencies when environment topology, runbook ownership, incident evidence/recovery semantics, and vendor-neutral operations align across required specs.
-
-**Implementation handoff:** none until SPEC-016 release.
+D-001, D-005, D-009, D-022, D-023, and D-024 remain deferred for this implementation-only release. No production deployment, staffing promise, legal deadline, vendor, Kubernetes requirement, or recovery target is authorized by this acceptance.
