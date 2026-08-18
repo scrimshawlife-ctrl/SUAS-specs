@@ -2,145 +2,111 @@
 
 **Related:** [STATUS.md](STATUS.md), [VERSIONING.md](VERSIONING.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md)
 
-This is an ordered specification-and-handoff roadmap. Governing constraints come first, then behavior/contracts, technical plan, verification, release, conformance, and readiness. Implementation authority remains `NOT_YET_RELEASED` until a released specification cut exists.
+Governing constraints come first, then behavior/contracts, logical/technical plan, verification, release, implementation conformance, and readiness. Implementation authority remains `NOT_YET_RELEASED` until SPEC-016 is actually released by the owner.
 
-Current phase: `SPECIFICATION_BOOTSTRAP`.
-
-Preflight work may prepare later worksheets and repair draft cross-artifact contradictions, but **must not bypass dependencies or change lifecycle**.
+Preflight may prepare blocked worksheets and repair draft contradictions. It never satisfies dependencies or changes lifecycle.
 
 ---
 
-## SPEC-001 — Accept product and authority set
+## SPEC-001 — Product and authority set
+- **Status:** `READY_FOR_REVIEW`
+- **Worksheet:** [SPEC-001.md](SPEC-001.md)
+- **Required:** README, PRODUCT, GLOSSARY, AGENTS, VERSIONING, STATUS, DECISIONS
+- **Exit:** owner accepts terminology/authority/governing principles.
 
-- **Status:** `READY_FOR_REVIEW`.
-- **Worksheet:** [SPEC-001.md](SPEC-001.md).
-- **Objective:** Accept [README.md](README.md), [PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md).
-- **Exit:** terminology/authority frozen for v0.1; owner checklist complete.
-- **Handoff:** none.
-- **Acceptance:** owner-only.
+## SPEC-002 — Consent, privacy, safety, security
+- **Status:** `BLOCKED_BY_SPEC_001`; preflight complete
+- **Worksheet:** [SPEC-002.md](SPEC-002.md)
+- **Required:** CONSENT, PRIVACY, SAFETY, TRUSTED_CIRCLE, SECURITY
+- **Exit:** use-time consent/provider disclosure/safety/security boundaries accepted.
 
-## SPEC-002 — Accept consent, privacy, safety, security boundaries
+## SPEC-003 — Check-In, Support Signal, events
+- **Status:** `BLOCKED_BY_SPEC_001_AND_SPEC_002`; preflight complete
+- **Worksheet:** [SPEC-003.md](SPEC-003.md)
+- **Exit:** questionnaire/versioning, deterministic replay-safe signal settlement, event identity/publication semantics accepted; D-011 remains explicit.
 
-- **Status:** `BLOCKED_BY_SPEC_001`; preflight complete.
-- **Worksheet:** [SPEC-002.md](SPEC-002.md).
-- **Dependencies:** SPEC-001.
-- **Required:** [CONSENT.md](CONSENT.md), [PRIVACY.md](PRIVACY.md), [SAFETY.md](SAFETY.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [SECURITY.md](SECURITY.md).
-- **Exit:** use-time consent, provider disclosure/minimization, safety non-goals, security boundaries accepted; D-006/D-012 handled per release rules.
+## SPEC-004 — Case, Service Request, responder workflow
+- **Status:** `BLOCKED_BY_SPEC_001_AND_SPEC_002`; preflight complete
+- **Worksheet:** [SPEC-004.md](SPEC-004.md)
+- **Exit:** canonical state machines, one-winner concurrency, stale-state/idempotency rules accepted.
 
-## SPEC-003 — Accept Check-In / Support Signal / event contracts
+## SPEC-005 — Resources, Referral, Fulfillment, Follow-Up, Settlement
+- **Status:** `BLOCKED_BY_SPEC_004`; preflight complete
+- **Worksheet:** [SPEC-005.md](SPEC-005.md)
+- **Exit:** resource/live availability distinction, replay-safe Referral/Fulfillment, Follow-Up durable schedule semantics, multi-cycle Settlement history accepted.
 
-- **Status:** `BLOCKED_BY_SPEC_001_AND_SPEC_002`; preflight complete.
-- **Worksheet:** [SPEC-003.md](SPEC-003.md).
-- **Dependencies:** SPEC-001, SPEC-002.
-- **Required:** [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [EVENT_MODEL.md](EVENT_MODEL.md).
-- **Exit:** questionnaire/versioning rules; deterministic/idempotently settled Support Signal engine; replay-safe event semantics accepted; D-011 remains open or is separately decided/deferred; effective-signal data projection handed to SPEC-006.
+## SPEC-006 — Domain/data/event/architecture reconciliation
+- **Status:** `BLOCKED_BY_SPEC_001_THROUGH_SPEC_005`; preflight complete
+- **Worksheet:** [SPEC-006.md](SPEC-006.md)
+- **Exit:** entity ownership, tenancy, deterministic current projections, persistent idempotency, Settlement cycles, Follow-Up stale-job identity, provider-attempt separation accepted as one logical model.
 
-## SPEC-004 — Accept Case / Service Request / responder workflow contracts
+## SPEC-007 — Core architecture, API, auth, notifications, admin
+- **Status:** `BLOCKED_BY_SPEC_006`; preflight complete
+- **Worksheet:** [SPEC-007.md](SPEC-007.md)
+- **Exit:** `/api/v0` contract, persistent command idempotency, horizontal auth/session semantics, durable logical notifications, provider-neutral admin configuration accepted.
 
-- **Status:** `BLOCKED_BY_SPEC_001_AND_SPEC_002`; preflight complete.
-- **Worksheet:** [SPEC-004.md](SPEC-004.md).
-- **Dependencies:** SPEC-001, SPEC-002.
-- **Required:** [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md).
-- **Exit:** state names/transitions frozen; atomic one-winner claim/assignment and idempotency semantics accepted; provider evidence cannot bypass canonical Request/Fulfillment transitions.
+## SPEC-008 — MVP visual/interaction conformance
+- **Status:** `BLOCKED_BY_SPEC_001_SPEC_002_SPEC_007`; preflight complete
+- **Worksheet:** [SPEC-008.md](SPEC-008.md)
+- **Exit:** observed MVP hierarchy/QRF/resources/responder/admin surfaces, truthful production divergences, accessibility, visual-regression contract accepted.
 
-## SPEC-005 — Accept resources, referrals, fulfillment, follow-up, settlement
+## SPEC-009 — Provider-neutral service fulfillment
+- **Status:** `BLOCKED_BY_SPEC_004_THROUGH_SPEC_007`; preflight complete
+- **Worksheet:** [SPEC-009.md](SPEC-009.md)
+- **Exit:** four MVP capability ports, Manual Adapter, provider normalization/idempotency/webhook/privacy/replacement semantics accepted.
 
-- **Status:** `BLOCKED_BY_SPEC_004`; preflight complete.
-- **Worksheet:** [SPEC-005.md](SPEC-005.md).
-- **Dependencies:** SPEC-004.
-- **Required:** [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [FULFILLMENT.md](FULFILLMENT.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md).
-- **Exit:** Resource/live-availability distinction; Referral send idempotency; Fulfillment Attempt/provider/manual semantics; Follow-Up retry/durable due semantics; multi-cycle Settlement history accepted; funding remains future.
+## SPEC-010 — Scaling
+- **Status:** `BLOCKED_BY_SPEC_006_SPEC_007_SPEC_009`; preflight complete
+- **Worksheet:** [SPEC-010.md](SPEC-010.md)
+- **Exit:** stateless app, durable work, atomic commands, bounded APIs, PostgreSQL doctrine, tenant fairness, load evidence accepted. D-021/D-023 own numeric release targets.
 
-## SPEC-006 — Accept domain, data, event, architecture reconciliation
+## SPEC-011 — Resilience/degradation
+- **Status:** `BLOCKED_BY_SPEC_007_SPEC_009_SPEC_010`; preflight complete
+- **Worksheet:** [SPEC-011.md](SPEC-011.md)
+- **Exit:** crash/replay/stale-work/session/event/provider/restore failure semantics accepted; D-024 owns RTO/RPO.
 
-- **Status:** `BLOCKED_BY_SPEC_001_THROUGH_SPEC_005`; preflight complete.
-- **Worksheet:** [SPEC-006.md](SPEC-006.md).
-- **Dependencies:** SPEC-001 through SPEC-005.
-- **Required:** [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md).
-- **Exit:** entity ownership, tenancy, history/current projections, concurrency, command/event idempotency, first-class Settlement cycles, Follow-Up stale-job identity, provider/FulfillmentAttempt separation, and scale-friendly access paths are accepted as one coherent logical model.
-- **Physical representation:** implementation may choose equivalent PostgreSQL mechanisms after release, but must prove the accepted invariants.
+## SPEC-012 — Testing/readiness gates
+- **Status:** `BLOCKED_BY_SPEC_002_THROUGH_SPEC_011`; preflight complete
+- **Worksheet:** [SPEC-012.md](SPEC-012.md)
+- **Exit:** reproducible evidence contract accepted for all 12 gates.
 
-## SPEC-007 — Accept core architecture, API, auth, notifications, admin
+## SPEC-013 — Deployment, operations, incident/recovery
+- **Status:** `BLOCKED_BY_SPEC_007_SPEC_010_SPEC_011_SPEC_012`; preflight complete
+- **Worksheet:** [SPEC-013.md](SPEC-013.md)
+- **Exit:** environments, provider/queue/DB operations, incident evidence, recovery ownership accepted without vendor/legal-timeline invention.
 
-- **Dependencies:** SPEC-006.
-- **Required:** [ARCHITECTURE.md](ARCHITECTURE.md), [API.md](API.md), [APIS.md](APIS.md), [AUTH.md](AUTH.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [ADMIN.md](ADMIN.md).
-- **Exit:** scalable modular monolith; vendor neutrality; API command/idempotency/pagination rules; role boundaries accepted.
+## SPEC-014 — Controlled pilot and analytics
+- **Status:** `BLOCKED_BY_SPEC_001_SPEC_012_SPEC_013`; preflight complete
+- **Worksheet:** [SPEC-014.md](SPEC-014.md)
+- **Exit:** controlled cohort vs traction boundary, provider/operations readiness, exact operational metric definitions, forbidden clinical claims, D-025 reporting privacy boundary accepted.
 
-## SPEC-008 — Accept MVP visual and interaction conformance
-
-- **Dependencies:** SPEC-001, SPEC-002, SPEC-007.
-- **Required:** [MVP_REFERENCE.md](MVP_REFERENCE.md), [PRODUCT.md](PRODUCT.md), [ONBOARDING.md](ONBOARDING.md).
-- **Objective:** referenced MVP is explicit production visual/interaction source of truth with safe production divergences.
-- **Exit:** surfaces/conformance classes/category mapping/accessibility/visual-regression contract accepted.
-
-## SPEC-009 — Accept provider-neutral service fulfillment
-
-- **Dependencies:** SPEC-004 through SPEC-007.
-- **Required:** [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [APIS.md](APIS.md), [FULFILLMENT.md](FULFILLMENT.md), [CONSENT.md](CONSENT.md), [SECURITY.md](SECURITY.md).
-- **Exit:** four MVP capability ports; Manual Adapter; normalization/idempotency/webhook/consent rules accepted; D-017–D-020 may remain open.
-
-## SPEC-010 — Accept scaling contract
-
-- **Dependencies:** SPEC-006, SPEC-007, SPEC-009.
-- **Required:** [SCALING.md](SCALING.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md), [APIS.md](APIS.md).
-- **Exit:** stateless app invariant, durable async, atomic contested commands, bounded APIs, DB doctrine, tenant fairness, observability/load profiles accepted.
-
-## SPEC-011 — Accept resilience/degradation contract
-
-- **Dependencies:** SPEC-007, SPEC-009, SPEC-010.
-- **Required:** [RESILIENCE.md](RESILIENCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
-- **Exit:** timeout/retry/dead-letter/circuit/unknown-outcome/backpressure/restore/failure-drill rules accepted.
-
-## SPEC-012 — Accept testing and readiness gates
-
-- **Dependencies:** SPEC-002 through SPEC-011.
-- **Required:** [TESTING.md](TESTING.md), [STATUS.md](STATUS.md).
-- **Exit:** gate names frozen: AUTH, CONSENT, CHECK-IN, COORDINATION, EXTERNAL_FULFILLMENT, UI_CONFORMANCE, SAFETY, PRIVACY, SCALE, RESILIENCE, OPERATIONS, REPORTING.
-
-## SPEC-013 — Accept deployment, operations, incident/recovery
-
-- **Dependencies:** SPEC-007, SPEC-010, SPEC-011, SPEC-012.
-- **Required:** [DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md), [SECURITY.md](SECURITY.md).
-- **Exit:** environments, durable production jobs, observability/recovery ownership accepted; exact vendors may remain release decisions.
-
-## SPEC-014 — Accept pilot and analytics contracts
-
-- **Dependencies:** SPEC-001, SPEC-012, SPEC-013.
-- **Required:** [PILOT.md](PILOT.md), [ANALYTICS.md](ANALYTICS.md).
-- **Exit:** controlled pilot scope remains explicit; scale envelopes are not forecasts; operational metrics remain non-clinical.
-
-## SPEC-015 — Close or explicitly defer release-blocking decisions
-
-- **Dependencies:** relevant preceding specs.
-- **Required:** [DECISIONS.md](DECISIONS.md) plus affected specs.
-- **At minimum evaluate:** D-001–D-005, D-011–D-014, D-017–D-024.
-- **Exit:** each release-relevant decision is decided or explicitly deferred with non-ship/feature-unavailable boundary.
+## SPEC-015 — Release-blocking decisions / safe deferrals
+- **Status:** `BLOCKED_BY_RELEVANT_SPEC_001_THROUGH_SPEC_014`; preflight complete
+- **Worksheet:** [SPEC-015.md](SPEC-015.md)
+- **Decision scope:** D-001 through D-025
+- **Exit:** every release-relevant decision is explicitly `DECIDED` or safely `DEFERRED_FOR_RELEASE` with a feature-unavailable/manual/default boundary permitted by accepted specs.
 
 ## SPEC-016 — First released specification cut
-
-- **Dependencies:** SPEC-001 through SPEC-015 as applicable.
-- **Required:** entire released set, [CHANGELOG.md](CHANGELOG.md), [STATUS.md](STATUS.md).
-- **Exit:** lifecycle `released`; named artifacts/version become `RELEASED_FOR_IMPLEMENTATION`.
+- **Status:** `BLOCKED_BY_SPEC_001_THROUGH_SPEC_015`
+- **Dependencies:** accepted prerequisite stages + SPEC-015 decision ledger
+- **Required:** named release artifact set, CHANGELOG, STATUS, VERSIONING, release manifest/checklist
+- **Exit:** owner changes named artifacts/version to `released`; implementation authority becomes `RELEASED_FOR_IMPLEMENTATION` only for that released cut.
 
 ## SPEC-017 — Implementation conformance review
+- **Status:** blocked by SPEC-016 + implementation attempt
+- **Exit:** implementation compared against released contracts; gaps return to specs.
 
-- **Dependencies:** SPEC-016 + implementation attempt.
-- **Exit:** implementation compared with released specs including MVP visuals/provider ports/scale/resilience; gaps return to specs.
-
-## SPEC-018 — Pilot / production readiness review
-
-- **Dependencies:** SPEC-016, SPEC-017, implementation and operating plan.
-- **Required:** testing/status/pilot/operations/scale/resilience evidence.
-- **Exit:** required gates READY or explicit owner-approved spec waiver; enabled provider/environment decisions closed; load/failure/restore evidence attached.
+## SPEC-018 — Pilot / production readiness
+- **Status:** blocked by SPEC-016/SPEC-017 + operating evidence
+- **Exit:** launch-required gates READY or explicit owner-approved spec waivers; enabled decisions closed; load/failure/restore/ops evidence attached.
 
 ## SPEC-019 — Post-pilot / post-launch revision
-
-- **Dependencies:** completed/exited launch cycle.
-- **Exit:** measured feedback/scale changes incorporated through a new released revision.
+- **Status:** future
+- **Exit:** measured feedback/scale findings become a new released revision through the same governance model.
 
 ---
 
-## Ordering constraints
+## Ordering constraint
 
 ```text
 SPEC-001
@@ -148,28 +114,24 @@ SPEC-001
   |-- SPEC-004 -- SPEC-005
                  |
                  SPEC-006 -- SPEC-007
-                                |-- SPEC-008  MVP visual contract
-                                |-- SPEC-009  provider ports
-                                      |
-                                      SPEC-010  scale
-                                      |
-                                      SPEC-011  resilience
-                                           |
-                                           SPEC-012 testing/gates
-                                           |
-                                           SPEC-013 deployment/ops
-                                           |
-                                           SPEC-014 pilot/analytics
-                                           |
-                                           SPEC-015 release decisions
-                                           |
-                                           SPEC-016 RELEASE
-                                           |
-                                           SPEC-017 conformance
-                                           |
-                                           SPEC-018 readiness
-                                           |
-                                           SPEC-019 revision
+                                |-- SPEC-008
+                                |-- SPEC-009 -- SPEC-010 -- SPEC-011
+                                                  |          |
+                                                  +-- SPEC-012
+                                                         |
+                                                     SPEC-013
+                                                         |
+                                                     SPEC-014
+                                                         |
+                                                     SPEC-015
+                                                         |
+                                                     SPEC-016 RELEASE
+                                                         |
+                                                     SPEC-017
+                                                         |
+                                                     SPEC-018
+                                                         |
+                                                     SPEC-019
 ```
 
-No implementation milestone may use an MVP, prototype, provider response, queue message, browser state, or physical database shortcut to skip the corresponding accepted/released specification contract.
+No MVP/prototype/provider response/queue message/browser state/physical DB shortcut or implementation default may bypass an accepted/released contract.
