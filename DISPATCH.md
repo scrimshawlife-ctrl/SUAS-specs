@@ -1,92 +1,179 @@
 # DISPATCH.md — Service Request state machine (SUAS v0.1)
 
-**Related:** [CASES.md](CASES.md), [FULFILLMENT.md](FULFILLMENT.md), [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [EVENT_MODEL.md](EVENT_MODEL.md)
+**Status:** `draft` / `0.1.0` / SPEC-004 preflight; not implementation authority.  
+**Related:** [CASES.md](CASES.md), [FULFILLMENT.md](FULFILLMENT.md), [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [EVENT_MODEL.md](EVENT_MODEL.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
-**Actors:** Veteran (request), Responder (triage/match/assign), Service Provider (accept/decline), System (expiry jobs).
+**Actors:** Veteran, Responder, authorized Service Provider identity/manual responder-on-behalf, System jobs.
 
 ---
 
 ## 1. Purpose
 
-A **Service Request** is a specific requested need. It is not a Support Case, not a Referral, and not Fulfillment. Dispatch is the documented transition set for that request.
+A **Service Request** is one specific requested need. It is not a Support Case, Referral, Fulfillment, Provider Offer, or Fulfillment Attempt.
 
-MVP matching is **responder-selected** from the Resource catalog. There is no generative matcher and no unspecified "smart matching."
+MVP matching is responder-selected from the Resource/Provider catalog. No generative or unspecified "smart matching" is permitted.
 
 ---
 
-## 2. Happy-path states
+## 2. States
+
+Happy path:
 
 `CREATED` → `SUBMITTED` → `TRIAGED` → `MATCHING` → `ASSIGNED` → `ACCEPTED` → `IN_PROGRESS` → `FULFILLED` → `CONFIRMED` → `CLOSED`
 
-## 3. Exception states
+Exceptions:
 
 `CANCELLED` | `DECLINED` | `EXPIRED` | `UNFULFILLABLE` | `ESCALATED`
 
-Exception states are terminal for the current attempt except `ESCALATED` (returns to `TRIAGED` or `MATCHING` after human action) and `DECLINED` (may return to `MATCHING` for a new provider). Each return is a documented transition, not an implicit reset.
+Provider integration statuses (`PROVIDER_*`, `MANUAL_*`) belong to Fulfillment Attempt/integration state and are not Service Request states.
+
+---
+
+## 3. Command concurrency invariant
+
+Every state-changing Service Request command is stale-state protected and idempotent.
+
+Required semantics:
+
+1. The mutation validates the expected current request state inside the same atomic write that performs the transition.
+2. Concurrent incompatible commands yield one valid winner; losers receive conflict and create no partial event/effect.
+3. Replaying the same logical command/idempotency key returns the original logical result.
+4. Exactly one logical Domain Event is emitted for a transition where the catalog defines one.
+5. Duplicate jobs/webhooks do not advance the state machine twice.
+6. Provider callbacks are evidence inputs, not privileged raw state transitions.
 
 ---
 
 ## 4. Transitions
 
-Every transition records: source, target, actor, prerequisites, event, timestamps, notifications. **No hidden transitions.**
-
-| Source | Target | Actor | Prerequisites | Event |
+| Source | Target | Actor | Prerequisites | Domain Event |
 |---|---|---|---|---|
-| (none) | `CREATED` | Veteran or Responder | Parent Support Case exists and is not `CLOSED` | `SERVICE_REQUEST_CREATED` |
-| `CREATED` | `SUBMITTED` | Same or assigned Responder | Category in MVP set; required details present | (audit) |
-| `SUBMITTED` | `TRIAGED` | Responder | Case assigned or claim | (audit) |
-| `TRIAGED` | `MATCHING` | Responder | — | (audit) |
-| `MATCHING` | `ASSIGNED` | Responder | Resource or Service Provider selected; consent if disclosing veteran data to provider | `SERVICE_REQUEST_ASSIGNED` |
-| `ASSIGNED` | `ACCEPTED` | Assigned provider or Responder-on-behalf with reason | Provider membership ACTIVE | `SERVICE_ACCEPTED` |
-| `ACCEPTED` | `IN_PROGRESS` | Provider or Responder | Fulfillment `STARTED` | (audit) |
-| `IN_PROGRESS` | `FULFILLED` | Provider or Responder | Fulfillment `COMPLETED` — **not** merely assigned | `SERVICE_FULFILLED` |
-| `FULFILLED` | `CONFIRMED` | Veteran and/or Responder per [FULFILLMENT.md](FULFILLMENT.md) | Confirmation recorded | (audit) |
-| `CONFIRMED` | `CLOSED` | Responder | — | (audit) |
-| `ASSIGNED` | `DECLINED` | Provider | Reason required | (audit) |
-| `DECLINED` | `MATCHING` | Responder | — | (audit) |
-| any non-terminal | `CANCELLED` | Veteran or Responder | Reason | (audit) |
-| `CREATED`/`SUBMITTED`/`TRIAGED`/`MATCHING`/`ASSIGNED` | `EXPIRED` | System | Documented TTL elapsed (`DECISION_PENDING` exact TTL) | (audit) |
-| `TRIAGED`/`MATCHING`/`ASSIGNED`/`DECLINED` | `UNFULFILLABLE` | Responder | Reason; no acceptable resource | (audit) |
-| any non-terminal except `CLOSED` | `ESCALATED` | Responder | `ESCALATE` | (audit; may emit `CASE_ESCALATED`) |
-| `ESCALATED` | `TRIAGED` or `MATCHING` | Responder | After escalation review | (audit) |
+| (none) | `CREATED` | Veteran / Responder | parent Case exists and is not `CLOSED`; creation intent idempotency passes | `SERVICE_REQUEST_CREATED` |
+| `CREATED` | `SUBMITTED` | creator / assigned Responder | valid MVP category + required details | — |
+| `SUBMITTED` | `TRIAGED` | assigned Responder | active Case assignment | — |
+| `TRIAGED` | `MATCHING` | assigned Responder | — | — |
+| `MATCHING` | `ASSIGNED` | assigned Responder | Resource/Service Provider/manual path selected; disclosure consent/basis checked if data leaves SUAS | `SERVICE_REQUEST_ASSIGNED` |
+| `ASSIGNED` | `ACCEPTED` | authorized provider identity or assigned Responder-on-behalf | provider/manual acceptance evidence; actor/basis recorded | `SERVICE_ACCEPTED` |
+| `ACCEPTED` | `IN_PROGRESS` | authorized provider identity or assigned Responder | Fulfillment `STARTED` evidence recorded | — |
+| `IN_PROGRESS` | `FULFILLED` | authorized provider identity or assigned Responder | Fulfillment `COMPLETED` evidence recorded; assignment alone insufficient | `SERVICE_FULFILLED` |
+| `FULFILLED` | `CONFIRMED` | Veteran and/or assigned Responder | confirmation satisfies [FULFILLMENT.md](FULFILLMENT.md) | — |
+| `CONFIRMED` | `CLOSED` | assigned Responder | no unresolved confirmation dispute | — |
+| `ASSIGNED` | `DECLINED` | authorized provider identity / assigned Responder-on-behalf | decline evidence + reason | — |
+| `DECLINED` | `MATCHING` | assigned Responder | prior attempt terminal/recorded; deliberate rematch | — |
+| allowed non-terminal | `CANCELLED` | Veteran / assigned Responder | reason; cancellation authority checked | — |
+| `CREATED`/`SUBMITTED`/`TRIAGED`/`MATCHING`/`ASSIGNED` | `EXPIRED` | System | documented TTL elapsed; stale-state check passes | — |
+| `TRIAGED`/`MATCHING`/`ASSIGNED`/`DECLINED` | `UNFULFILLABLE` | assigned Responder | reason; no acceptable current path | — |
+| assigned non-terminal workflow state | `ESCALATED` | assigned Responder | reason | may emit `CASE_ESCALATED` only when Case escalation is also performed |
+| `ESCALATED` | `TRIAGED` or `MATCHING` | assigned Responder | escalation review complete | — |
 
-`FULFILLED` without confirmation is not `CONFIRMED`. Assignment is never `FULFILLED`.
-
----
-
-## 5. Categories
-
-MVP: `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`.  
-Reserved future: `BENEFITS`, `HOUSING`, `HEALTHCARE_NAVIGATION`, `COMMUNITY`, `OTHER`. Reject unknown codes.
+Exact `allowed non-terminal` cancellation edges are the currently documented pre-closed states excluding already-terminal exception states; implementation must encode the explicit set, not a wildcard that accidentally permits `CLOSED` or invalid historical transitions.
 
 ---
 
-## 6. Consent
+## 5. Provider integration relationship
 
-Assigning a provider who will receive veteran data requires an `ACTIVE` grant or the documented assigned-provider basis covering the fields sent. See [CONSENT.md](CONSENT.md).
+Selecting a provider and obtaining provider-side fulfillment are separate concepts.
+
+```text
+Service Request MATCHING
+   ↓ responder selects path
+Service Request ASSIGNED
+   ↓
+FulfillmentAttempt(s)
+   ↓ normalized provider/manual evidence
+Service Request ACCEPTED / IN_PROGRESS / FULFILLED
+   ↓ SUAS confirmation
+CONFIRMED
+```
+
+Rules:
+
+- `ProviderOffer` is not assignment or fulfillment.
+- `FulfillmentAttempt` status is not Service Request status.
+- A provider webhook cannot directly skip `ASSIGNED → ACCEPTED → IN_PROGRESS → FULFILLED` unless a later accepted contract explicitly adds a valid combined command preserving all prerequisites/events.
+- `PROVIDER_COMPLETED` is evidence for a documented SUAS fulfillment command; it is not auto-confirmation.
+- `PROVIDER_UNKNOWN` never means safe retry or fulfillment failure without reconciliation.
+- Deliberate rematch/reroute creates a new Fulfillment Attempt identity where required by [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
 
 ---
 
-## 7. Notifications
+## 6. Assignment concurrency
 
-On `ASSIGNED`, `ACCEPTED`, `DECLINED`, `FULFILLED`, `CANCELLED`, `EXPIRED`, `ESCALATED` — notify parties who have channel prefs **and** consent/basis. Templates contain no safety-critical branching.
+Provider/resource assignment is a contested mutation when multiple responders or jobs act concurrently.
 
----
+- Assignment validates Case ownership and current Request state at write time.
+- Two competing assignments from `MATCHING` cannot both become the canonical current assignment.
+- The losing command conflicts and must not create a second logical `SERVICE_REQUEST_ASSIGNED` event.
+- A later deliberate rematch is represented by the documented decline/escalate/cancel/re-match flow, not by silently overwriting provider identity.
 
-## 8. Non-goals
-
-- Hidden transitions
-- Auto-fulfill on assign
-- Generative matching
-- Treating Referral send as a Service Request transition
+The exact current-provider/assignment storage representation is reconciled in SPEC-006.
 
 ---
 
-## 9. Testability
+## 7. Categories
 
-Critical suite: **service-request transitions**.
+MVP: `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`.
 
-- Every illegal edge fails.
-- `ASSIGNED` ≠ `FULFILLED`.
-- Confirm requires fulfillment completion.
-- Expired job only fires from listed sources.
+Reserved future: `BENEFITS`, `HOUSING`, `HEALTHCARE_NAVIGATION`, `COMMUNITY`, `OTHER`.
+
+Unknown category codes are rejected.
+
+---
+
+## 8. Consent/privacy
+
+Before a provider receives veteran data, SUAS evaluates the applicable consent/system basis at call time and sends only the minimum provider projection.
+
+A prior assignment/offer does not create perpetual disclosure authorization. Reroutes/new provider disclosures re-evaluate the basis.
+
+See [CONSENT.md](CONSENT.md), [PRIVACY.md](PRIVACY.md), [SECURITY.md](SECURITY.md).
+
+---
+
+## 9. Notifications
+
+State changes may enqueue notifications only for recipients/channels with valid preferences and consent/system basis. Notification lag does not roll back committed request state.
+
+Notification send retry does not replay the underlying Service Request command.
+
+---
+
+## 10. Expiry jobs
+
+Expiry is durable asynchronous work in production.
+
+- Exact TTL remains `DECISION_PENDING`.
+- Duplicate expiry delivery is idempotent.
+- Stale expiry jobs cannot expire a Request that has already moved beyond an allowed source state.
+- Expiry job outage/delay is observable.
+
+---
+
+## 11. Non-goals
+
+- hidden transitions;
+- auto-fulfill on assignment;
+- generative matching;
+- Referral send as a Service Request transition;
+- provider-native status as canonical request state;
+- webhook bypass of authorization/confirmation;
+- silent provider overwrite during reroute;
+- non-atomic contested assignment.
+
+---
+
+## 12. Testability
+
+Critical suite: **Service Request transition/concurrency**.
+
+- every illegal edge fails;
+- repeated command is idempotent;
+- concurrent incompatible transitions yield one valid winner;
+- competing assignment from `MATCHING` produces one canonical assignment/event;
+- `ASSIGNED` is not `FULFILLED`;
+- provider completion cannot auto-confirm;
+- `PROVIDER_UNKNOWN` does not blindly retry/mutate request terminal state;
+- confirm requires valid Fulfillment completion/confirmation evidence;
+- duplicate/stale expiry jobs are harmless;
+- provider disclosure is re-evaluated on reroute;
+- cross-tenant/unauthorized provider actor cannot transition the request.
