@@ -12,146 +12,139 @@
 
 ## 1. Governance frontier
 
-| Stage | Status | Worksheet |
-|---|---|---|
-| SPEC-001 | `READY_FOR_REVIEW` | [SPEC-001.md](SPEC-001.md) |
-| SPEC-002 | `BLOCKED_BY_SPEC_001`; preflight complete | [SPEC-002.md](SPEC-002.md) |
-| SPEC-003 | `BLOCKED_BY_SPEC_001_AND_SPEC_002`; preflight complete | [SPEC-003.md](SPEC-003.md) |
-| SPEC-004 | `BLOCKED_BY_SPEC_001_AND_SPEC_002`; preflight complete | [SPEC-004.md](SPEC-004.md) |
-| SPEC-005 | `BLOCKED_BY_SPEC_004`; preflight complete | [SPEC-005.md](SPEC-005.md) |
-| SPEC-006+ | not owner-preflighted as dedicated worksheets unless otherwise noted in roadmap | [ROADMAP.md](ROADMAP.md) |
-
-Preflight means draft contradictions were repaired and a review worksheet may exist. It does **not** mean the stage is accepted.
-
-Agents must not tick owner checkboxes or change lifecycle.
-
----
-
-## 2. Identity
-
-| Field | Value |
+| Stage | Status |
 |---|---|
-| Product | Shut Up and Serve |
-| System | SUAS |
-| Specification repository | `scrimshawlife-ctrl/SUAS-specs` |
-| Implementation repository | `scrimshawlife-ctrl/SUAS` |
-| Specification version | `0.1.0` |
-| Specification lifecycle | `draft` |
-| Phase | `SPECIFICATION_BOOTSTRAP` |
-| Implementation authority | `NOT_YET_RELEASED` |
-| Pilot readiness | `NOT_READY` |
-| Production readiness | `NOT_READY` |
+| SPEC-001 | `READY_FOR_REVIEW` |
+| SPEC-002 | dependency-blocked; preflight complete |
+| SPEC-003 | dependency-blocked; preflight complete |
+| SPEC-004 | dependency-blocked; preflight complete |
+| SPEC-005 | dependency-blocked; preflight complete |
+| SPEC-006 | dependency-blocked; preflight complete |
+| SPEC-007 | dependency-blocked; preflight complete |
+| SPEC-008 | dependency-blocked; preflight complete |
+| SPEC-009 | dependency-blocked; preflight complete |
+| SPEC-010 | dependency-blocked; preflight complete |
+| SPEC-011 | dependency-blocked; preflight complete |
+| SPEC-012 | dependency-blocked; preflight complete |
+| SPEC-013 | dependency-blocked; preflight complete |
+| SPEC-014 | dependency-blocked; preflight complete |
+| SPEC-015 | dependency-blocked; release decision matrix preflight complete |
+| SPEC-016 | `BLOCKED_BY_SPEC_001_THROUGH_SPEC_015`; release-cut checklist staged |
+| SPEC-017 | blocked by released implementation contract + implementation attempt |
+| SPEC-018 | blocked by release/conformance + operational evidence |
+| SPEC-019 | future post-launch revision |
 
-`SUAS-specs` is canonical. `SUAS` must conform to released specs. Draft/preflight/accepted artifacts are not implementation authority until the release stage says otherwise.
+Worksheets: [SPEC-001.md](SPEC-001.md) through [SPEC-016.md](SPEC-016.md) where present.
 
----
-
-## 3. Current production-hardening conclusions
-
-Draft governing principles now include:
-
-- referenced MVP visual/interaction preservation with explicit production overrides;
-- provider-neutral transportation/shelter/food/peer-support capability ports;
-- manual coordination as first-class fulfillment path;
-- stateless horizontal application tier;
-- durable production-critical asynchronous work;
-- command/job/provider idempotency separated from immutable event identity;
-- atomic one-winner semantics for contested Case/Request commands;
-- minimum-necessary provider disclosure with use-time consent/basis;
-- Resource catalog freshness separated from live provider availability;
-- Follow-Up business retries separated from notification/job retries;
-- repeated Case resolution requires durable multi-cycle Settlement history;
-- provider callbacks are evidence, not canonical state authority.
-
-These principles remain draft until their roadmap stages are owner-accepted/released.
+**Preflight is not acceptance.** No owner checkbox has been completed by an agent and no stage lifecycle has advanced.
 
 ---
 
-## 4. Readiness gates
+## 2. Canonical current conclusions — still draft
+
+The preflight stack now specifies:
+
+- referenced MVP visual/interaction fidelity with truthful production divergences;
+- provider-neutral transportation/shelter/food/peer-support ports and Manual Adapter paths;
+- stateless horizontal application semantics;
+- durable async work and explicit backpressure;
+- persistent command idempotency distinct from event identity;
+- replay-safe Domain Event publication/outbox-equivalent semantics;
+- single-use/shared auth challenge/session revocation semantics;
+- atomic one-winner Case/assignment/Settlement operations;
+- deterministic Support Signal/current Settlement/current assignment projections;
+- first-class multi-cycle Settlement history;
+- Follow-Up schedule identity and stale-job suppression;
+- Notification logical-send dedupe distinct from transport/business retries;
+- provider webhook/idempotency/reconciliation/privacy boundaries;
+- bounded/paginated production API/query rules;
+- scale/load targets owned by release-specific decisions rather than invented forecasts;
+- resilience covering internal replay/staleness as well as external dependency failure;
+- controlled pilot scope separated from traction/waitlist and technical capacity;
+- operational analytics separated from clinical/causal claims;
+- aggregate reporting privacy policy explicitly open as D-025.
+
+These remain draft until sequential owner acceptance and SPEC-016 release.
+
+---
+
+## 3. Readiness gates
 
 All remain `NOT_READY`:
 
-| Gate | Meaning | Status |
-|---|---|---|
-| **AUTH** | Veteran passwordless auth; responder/admin MFA; session invalidation/rate limits | `NOT_READY` |
-| **CONSENT** | first-class use-time Consent Grants / documented basis | `NOT_READY` |
-| **CHECK-IN** | versioned questionnaire + deterministic replay-safe Support Signal separation | `NOT_READY` |
-| **COORDINATION** | Case/Request state machines, atomic claims/assignments, responder actions | `NOT_READY` |
-| **EXTERNAL_FULFILLMENT** | provider-neutral adapters/manual fallback/idempotency/reconciliation | `NOT_READY` |
-| **UI_CONFORMANCE** | referenced MVP visual/interaction + accessibility conformance | `NOT_READY` |
-| **SAFETY** | red-state behavior; no automated dispatch/diagnosis | `NOT_READY` |
-| **PRIVACY** | minimization/access logging/provider projection/no prod data in non-prod | `NOT_READY` |
-| **SCALE** | stateless app tier/durable jobs/bounded APIs/load/backpressure/tenant fairness | `NOT_READY` |
-| **RESILIENCE** | dependency failure/retry/reconciliation/dead-letter/restore drills | `NOT_READY` |
-| **OPERATIONS** | coverage/resource/provider/follow-up/incident/recovery operations | `NOT_READY` |
-| **REPORTING** | allowed operational metrics; forbidden clinical metrics absent | `NOT_READY` |
+`AUTH`, `CONSENT`, `CHECK-IN`, `COORDINATION`, `EXTERNAL_FULFILLMENT`, `UI_CONFORMANCE`, `SAFETY`, `PRIVACY`, `SCALE`, `RESILIENCE`, `OPERATIONS`, `REPORTING`.
 
-Overall MVP gate: `NOT_READY`.  
-Overall production gate: `NOT_READY`.
+A gate changes only with reproducible evidence under [TESTING.md](TESTING.md), not because preflight or implementation exists.
 
 ---
 
-## 5. Key unresolved decisions
+## 4. Open decisions
 
-See [DECISIONS.md](DECISIONS.md). Important unresolved production decisions include:
+D-001 through D-025 remain governed by [DECISIONS.md](DECISIONS.md).
 
-- D-001–D-005 hosting/auth/SMS/email/database providers;
-- D-006 legal/HIPAA classification;
-- D-007 retention;
-- D-008/D-009 pilot partners/staffing;
-- D-011 Support Signal scoring;
-- D-012 approved safety copy;
-- D-013 counsel review;
-- D-014 geocoding/maps necessity;
-- D-015/D-016 case-note visibility / identity proofing beyond MVP defaults;
-- D-017–D-020 service-provider adapter enablement;
-- D-021 first-release capacity band;
-- D-022 durable job/queue implementation;
-- D-023 performance SLOs/alerts;
-- D-024 RTO/RPO.
+Key production decision groups:
 
-No value/vendor is guessed.
+- **Platform:** D-001–D-005;
+- **Legal/privacy/operations:** D-006–D-009, D-013, D-025;
+- **Product/safety:** D-010–D-016;
+- **External fulfillment:** D-017–D-020;
+- **Production workload/durability/SLO/recovery:** D-021–D-024.
+
+No value/vendor/threshold is guessed.
+
+SPEC-015 defines whether each release-relevant decision must close or may be safely deferred with the affected feature unavailable/manual-only/defaulted according to an accepted contract.
 
 ---
 
-## 6. Required SPEC-006 reconciliation queue
+## 5. SPEC-006 reconciliation status
 
-Preflight of SPEC-003–005 has produced explicit schema/model obligations for SPEC-006:
+The earlier SPEC-006 handoff queue is now represented in the draft logical model:
 
-1. deterministic Support Signal computation identity and effective-signal projection;
-2. event identity/idempotency/correlation/causation fields and replay-safe event publication;
-3. one-active-case/active-assignment concurrency representation;
-4. Service Request current assignment/provider history representation;
-5. first-class `Settlement` entity/table or equivalent durable multi-cycle resolution history;
-6. deterministic current/latest Settlement projection;
-7. blocking vs carried-forward Follow-Up representation;
-8. Follow-Up schedule/version identity for stale-job invalidation;
-9. FulfillmentAttempt/current ServiceFulfillment/history constraints;
-10. command idempotency persistence/lookup where API-only representation is insufficient.
+- Support Signal computation identity/effective projection;
+- event identity/idempotency/correlation/causation + replay-safe publication;
+- one-active Case/assignment concurrency;
+- provider/FulfillmentAttempt history;
+- first-class Settlement cycles/current projection;
+- Follow-Up blocking/carry-forward + schedule identity;
+- persistent command idempotency;
+- auth challenge/session state;
+- Notification logical-send dedupe.
 
-These are not implementation choices to be made silently.
+This representation is still unaccepted until SPEC-006 owner review.
+
+---
+
+## 6. Release boundary
+
+SPEC-016 is the first possible implementation-authoritative cut.
+
+It requires:
+- owner-accepted prerequisite stages;
+- D-001–D-025 release decision ledger from SPEC-015;
+- pinned release/runtime artifacts;
+- explicit enabled/manual-only/information-only/unavailable/future feature manifest;
+- cross-artifact consistency review;
+- owner lifecycle updates in STATUS/VERSIONING/CHANGELOG/release manifest.
+
+Until that happens:
+
+`IMPLEMENTATION_AUTHORITY = NOT_YET_RELEASED`
+
+Release itself does **not** make the product production-ready; SPEC-017 implementation conformance and SPEC-018 launch readiness still follow.
 
 ---
 
 ## 7. Artifact status
 
-| Artifact | Current version | Lifecycle |
-|---|---|---|
-| Specification stack | `0.1.0` | `draft` |
-| MVP visual reference contract | `0.1.0` | `draft` |
-| Provider integration contract | `0.1.0` | `draft` |
-| Scale contract | `0.1.0` | `draft` |
-| Resilience contract | `0.1.0` | `draft` |
-| API | `0.1.0` specified, not released | `draft` |
-| Event schema | `0.1.0` draft, under SPEC-003/006 reconciliation | `draft` |
-| Questionnaire content | `NOT_COMPUTABLE` | — |
-| Support Signal production rules | D-011 `DECISION_PENDING` | — |
-| Consent template | `NOT_COMPUTABLE` | — |
+All specification artifacts in this branch remain `draft`. Questionnaire content, production signal rules, consent templates, approved safety copy, provider choices, release workload targets, SLOs, recovery targets, and reporting privacy threshold remain unfinalized until their owning decisions/artifacts close.
 
 ---
 
-## 8. Implementation handoff
+## 8. Non-goals of current state
 
-Implementation authority remains `NOT_YET_RELEASED` until the required roadmap stages are owner-accepted and SPEC-016 creates a first released specification cut.
-
-The existence of an implementation repository, prototype, MVP, provider integration, queue worker, or production deployment does not redefine this authority.
+- no implementation authorization;
+- no readiness claim;
+- no owner acceptance performed by agents;
+- no provider/cloud/queue/cache selection;
+- no compliance/clinical claim;
+- no capacity/recovery/reporting-threshold invention.
