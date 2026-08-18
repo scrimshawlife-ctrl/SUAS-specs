@@ -1,14 +1,15 @@
 # FOLLOWUP.md — First-class Follow-Up (SUAS v0.1)
 
-**Related:** [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [SETTLEMENT.md](SETTLEMENT.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md)
+**Status:** `draft` / `0.1.0` / SPEC-005 preflight; not implementation authority.  
+**Related:** [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [SETTLEMENT.md](SETTLEMENT.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [EVENT_MODEL.md](EVENT_MODEL.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
-**Actors:** Responder (usually responsible), Veteran (when addressed), Org-admin, System (due/overdue jobs).
+**Actors:** Responder, Veteran when addressed, Org-admin, System due/overdue jobs.
 
 ---
 
 ## 1. Purpose
 
-A Follow-Up is a first-class work item. It is **not** a Case Note and **not** a Settlement.
+A Follow-Up is a first-class coordination work item. It is **not** a Case Note, Notification, Contact Attempt, or Settlement.
 
 ---
 
@@ -19,53 +20,145 @@ A Follow-Up is a first-class work item. It is **not** a Case Note and **not** a 
 | State | Meaning |
 |---|---|
 | `SCHEDULED` | Future `due_at` |
-| `DUE` | `due_at` reached; not completed |
-| `COMPLETED` | Done; `completed_at` set |
-| `RESCHEDULED` | New `due_at`; prior times remain in events |
-| `OVERDUE` | Past due without completion |
-| `ESCALATED` | Overdue (or manual) escalation performed |
-| `CANCELLED` | Will not be done; reason required |
+| `DUE` | Due time reached and work remains open |
+| `COMPLETED` | Follow-Up action completed |
+| `RESCHEDULED` | Due time changed with reason/history |
+| `OVERDUE` | Past due and incomplete |
+| `ESCALATED` | Follow-Up escalation performed |
+| `CANCELLED` | Work intentionally ended; reason required |
 
 ---
 
-## 3. Rules
+## 3. Core fields and responsibility
 
-- **Due date** required.
-- **Responsibility** required (`responsible_type` + `responsible_id`).
-- Veteran can see Follow-Up prompts addressed to them (`INFERRED` MVP default; [CASES.md](CASES.md) section 8).
-- **Retries:** `retry_count` increments on each unsuccessful contact attempt tied to this follow-up, or on each resend of a due notification. Retry bound `DECISION_PENDING` (document a constant; recommended operational default 3 — `INFERRED`).
-- **Completion:** actor + timestamp. Emit `FOLLOWUP_COMPLETED`.
-- **Reschedule:** reason + new `due_at`. History via events, not silent overwrite of the original due time in the event log.
-- **Overdue:** job marks `OVERDUE` and notifies responsible party if consented/basis exists.
-- **Escalation:** from `OVERDUE` or manual; notify org-admin or queue per [OPERATIONS.md](OPERATIONS.md); may emit `CASE_ESCALATED` if the parent case is escalated.
+Required:
 
-Parent: `support_case_id` required. Optional `service_request_id` or `referral_id` (via referral.follow_up_id).
+- `support_case_id`
+- `due_at`
+- `responsible_type`
+- `responsible_id`
+- `status`
 
----
+Optional:
 
-## 4. Events
+- `service_request_id`
+- related `referral_id` linkage through the accepted data model
+- completion/cancellation/reschedule reason metadata
 
-`FOLLOWUP_CREATED`, `FOLLOWUP_DUE`, `FOLLOWUP_COMPLETED`.
-
----
-
-## 5. Case interaction
-
-When the only remaining work is follow-up, the Support Case may move to `FOLLOWUP` ([CASES.md](CASES.md)). Completing blocking follow-ups is a prerequisite for `RESOLVED`.
+Veteran may see prompts addressed to them under the MVP visibility rules.
 
 ---
 
-## 6. Non-goals
+## 4. Retry semantics
 
-- Storing follow-ups only as note text
-- Auto-complete on case close without completing or cancelling each follow-up
-- Clinical outcome measurement
+`FollowUp.retry_count` means **coordination-attempt retry count**, not infrastructure/message-delivery attempts.
+
+Examples that may increment Follow-Up coordination retry count:
+
+- responder attempted the required check-back and did not reach the veteran/provider;
+- a scheduled coordination action was attempted but could not be completed and will be retried.
+
+The following do **not** increment `FollowUp.retry_count`:
+
+- SMS/email provider send retries;
+- webhook retries;
+- queue redelivery;
+- worker restart/replay.
+
+Notification delivery attempts belong to [NOTIFICATIONS.md](NOTIFICATIONS.md) / Audit Events. Job delivery attempts are operational telemetry. Do not mix those counters into Follow-Up business meaning.
+
+Retry bound remains `DECISION_PENDING`; any temporary recommendation is not a released product rule.
 
 ---
 
-## 7. Testability
+## 5. Due/overdue durable jobs
 
-- Create without `due_at` fails.
-- Due job emits `FOLLOWUP_DUE`.
-- Case cannot `RESOLVE` with blocking `SCHEDULED`/`DUE`/`OVERDUE` follow-ups.
-- Notes cannot substitute for a Follow-Up in reporting ([ANALYTICS.md](ANALYTICS.md)).
+Production due/overdue evaluation is durable asynchronous work.
+
+Rules:
+
+1. Duplicate job delivery is idempotent.
+2. A stale due job must not move a `COMPLETED`, `CANCELLED`, or rescheduled Follow-Up to `DUE`/`OVERDUE`.
+3. State/current `due_at` is re-checked atomically at mutation time.
+4. Only the first logical transition emits the corresponding Domain Event.
+5. Notification failure does not roll back the Follow-Up state transition.
+6. Delayed/failed scan execution is observable through operations/queue-age telemetry.
+7. A reschedule invalidates old due-work identities so an old job cannot mark the new schedule overdue.
+
+---
+
+## 6. Completion, reschedule, cancellation
+
+### Completion
+
+- actor + `completed_at` required;
+- duplicate completion command is idempotent;
+- emit one logical `FOLLOWUP_COMPLETED`.
+
+### Reschedule
+
+- reason + new `due_at` required;
+- prior due-time history remains inspectable through Audit/Domain history as accepted;
+- new schedule gets a new durable due-work identity/version so old queued work becomes stale.
+
+### Cancellation
+
+- reason + actor required;
+- cancellation is explicit, not inferred from Case close;
+- duplicate cancellation is idempotent.
+
+---
+
+## 7. Escalation
+
+Escalation may occur from `OVERDUE` or through an explicit authorized manual action defined by the owning workflow.
+
+- Follow-Up escalation does not automatically rewrite parent Case state unless the documented Case escalation command also succeeds.
+- If the parent Case is escalated, `CASE_ESCALATED` semantics apply separately.
+- Org-admin/queue notification follows consent/system basis and notification policy.
+
+---
+
+## 8. Case interaction
+
+When only Follow-Up remains, a Support Case may move to `FOLLOWUP`.
+
+A Case cannot `RESOLVE` while a blocking Follow-Up remains `SCHEDULED`, `DUE`, `OVERDUE`, or otherwise open unless [SETTLEMENT.md](SETTLEMENT.md) explicitly permits it to remain as a documented post-settlement responsibility. The exact blocking flag/representation is handed to SPEC-006; implementation must not infer blocking from free text.
+
+Case close never auto-completes a Follow-Up. Open work must be completed, cancelled, or explicitly carried forward under the Settlement rules.
+
+---
+
+## 9. Events
+
+Existing canonical events:
+
+- `FOLLOWUP_CREATED`
+- `FOLLOWUP_DUE`
+- `FOLLOWUP_COMPLETED`
+
+`OVERDUE`, `RESCHEDULED`, `ESCALATED`, and `CANCELLED` are audited. Additional Domain Event names require explicit event-catalog reconciliation; implementation must not invent them silently.
+
+---
+
+## 10. Non-goals
+
+- storing Follow-Up only as note text;
+- using notification delivery retries as Follow-Up retry count;
+- using queue redelivery as business retry meaning;
+- auto-complete on Case close;
+- clinical outcome measurement;
+- deriving blocking/non-blocking state from note text.
+
+---
+
+## 11. Testability
+
+- create without `due_at`/responsible party fails;
+- duplicate due job emits one logical `FOLLOWUP_DUE`;
+- stale old-schedule job cannot mark rescheduled Follow-Up due/overdue;
+- completed/cancelled Follow-Up ignores stale due jobs;
+- notification retry does not increment Follow-Up coordination retry count;
+- duplicate completion/cancellation is idempotent;
+- Case cannot resolve with blocking open Follow-Ups unless Settlement contract explicitly carries them forward;
+- Case Note cannot substitute for Follow-Up in reporting.
