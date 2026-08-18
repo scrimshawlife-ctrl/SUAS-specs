@@ -4,55 +4,49 @@ Format: version, date, lifecycle, summary. Dates are recorded in America/Los_Ang
 
 ---
 
-## 0.1.0 — 2026-08-18 (PT) — `draft`
+## 0.1.0 — 2026-08-14 to 2026-08-18 (PT) — `draft`
 
-**Production-hardening specification pass (still draft; no implementation authority).**
+**Bootstrap and production-readiness hardening of the SUAS v0.1 specification stack.**
 
-- Added [MVP_REFERENCE.md](MVP_REFERENCE.md): referenced MVP is now the explicit visual/interaction source of truth, with `MUST_MATCH`, `MUST_PRESERVE_BEHAVIOR`, `MAY_EVOLVE`, and `MUST_CHANGE_FOR_PRODUCTION` conformance classes.
-- Added [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md): provider-neutral transportation, temporary shelter/room, food, and peer-support capability ports; Manual Adapter remains first-class; provider-specific SDK/status/payloads remain adapter-local.
-- Added [SCALING.md](SCALING.md): capacity bands, stateless horizontal application invariant, durable async work, atomic contention rules, bounded/paginated APIs, PostgreSQL scaling doctrine, tenant fairness, load profiles, observability.
-- Added [RESILIENCE.md](RESILIENCE.md): finite timeouts, bounded retries, circuit breaking, dead-letter/quarantine, ambiguous provider outcome reconciliation, backpressure, failure drills, backup/restore expectations.
-- Updated [ARCHITECTURE.md](ARCHITECTURE.md) from pilot-shaped modular monolith to scalable modular monolith while retaining the no-premature-microservices rule.
-- Updated [APIS.md](APIS.md) so external service fulfillment is capability-port based and provider-agnostic, including `DURABLE_JOB_EXECUTION` and the four MVP service-fulfillment capabilities.
-- Updated [FULFILLMENT.md](FULFILLMENT.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), and [DATA_MODEL.md](DATA_MODEL.md) with `FulfillmentAttempt`, provider adapter configuration, idempotency, manual fallback, normalized provider status, and `PROVIDER_UNKNOWN` reconciliation semantics.
-- Updated [TESTING.md](TESTING.md) with provider adapter conformance, visual regression/accessibility, load/performance, resilience/failure-drill, and bounded-query suites.
-- Expanded readiness gates in [STATUS.md](STATUS.md): `EXTERNAL_FULFILLMENT`, `UI_CONFORMANCE`, `SCALE`, and `RESILIENCE` are now explicit and remain `NOT_READY`.
-- Expanded [ROADMAP.md](ROADMAP.md) to SPEC-001 through SPEC-019 so MVP visual conformance, provider neutrality, scaling, resilience, and release-specific decision closure occur before the first released specification cut.
-- Added D-017 through D-024 in [DECISIONS.md](DECISIONS.md) for actual provider adapters, target production capacity band, durable job/queue implementation, performance SLOs, and RTO/RPO. No vendor or numeric value was guessed.
-- Updated [README.md](README.md) to index the new production contracts and state the governing rule: pilot scope may be small, but architectural ceilings should not be.
-
-No provider is selected. No cloud/queue/cache product is selected. No specification artifact is accepted or released by this pass.
-
----
-
-## 0.1.0 — 2026-08-14 (PT) — `draft`
-
-**Bootstrap of the SUAS v0.1 specification stack.**
-
-- Created the complete markdown specification set under this repository.
 - Established product identity, mission, roles, canonical loop, and non-goals.
 - Established Support Case and Service Request state machines.
 - Established consent as first-class grants; safety non-goals; AI policy; Medi-Cal/billing boundary as `FUTURE`.
 - Established cross-repo authority: `SUAS-specs` canonical; `SUAS` implementation.
-- Phase set to `SPECIFICATION_BOOTSTRAP`. Implementation authority `NOT_YET_RELEASED`. Pilot readiness `NOT_READY`.
+- Phase remains `SPECIFICATION_BOOTSTRAP`. Implementation authority `NOT_YET_RELEASED`. Pilot and production readiness `NOT_READY`.
 - Open decisions recorded in [DECISIONS.md](DECISIONS.md); none guessed.
 
-**Same-day addition (still `0.1.0` / `draft`; not a bump to 0.2.0):**
+### Bootstrap additions
 
-- Added [COMPLIANCE.md](COMPLIANCE.md) — compliance register (not a claim of being compliant). D-013 opened for counsel review before pilot.
-- Added [APIS.md](APIS.md) — necessary-API inventory (Plane A minimum endpoints; Plane B capability ports). D-014 opened for geocoding/maps.
+- Added [COMPLIANCE.md](COMPLIANCE.md) — compliance register, not a compliance claim. D-013 opened for counsel review before pilot.
+- Added [APIS.md](APIS.md) — necessary API/capability inventory.
 - Added [ONBOARDING.md](ONBOARDING.md) — admin first-run bootstrap and first-time user experience.
+- Added [SPEC-001.md](SPEC-001.md) — owner review worksheet. SPEC-001 remains `READY_FOR_REVIEW`; agents must not self-accept.
+- Opened D-015 (Case Note veteran visibility) and D-016 (enrollment identity-proofing beyond self-attest). MVP defaults remain `INFERRED` operational rules only.
+- Specified contact-log commands and notification-attempt shape.
+- Added [FRICTION.md](FRICTION.md) — analysis/proposed paths only; no decision closure.
 
-**Same-day SPEC-001 pass:**
+### Production-readiness hardening — 2026-08-18
 
-- Added [SPEC-001.md](SPEC-001.md) — owner review worksheet. SPEC-001 status `READY_FOR_REVIEW`. Agents must not self-accept.
-- Opened D-015 and D-016. Both remain open; MVP defaults are `INFERRED` operational rules only.
-- Specified responder contact-log commands and notification-attempt shape.
-- Recorded MVP enrollment and veteran visibility defaults without inventing VA identity integration.
+- Added [MVP_REFERENCE.md](MVP_REFERENCE.md) — referenced MVP is the visual/interaction source of truth subject to production auth/safety/consent/privacy/accessibility/domain overrides.
+- Added [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md) — provider-neutral transportation, temporary shelter/room, food-support, and peer-support capability ports; Manual Adapter is first-class.
+- Added [SCALING.md](SCALING.md) — stateless horizontal application tier, durable work, concurrency, bounded APIs, PostgreSQL scaling doctrine, tenant fairness, load/observability requirements.
+- Added [RESILIENCE.md](RESILIENCE.md) — timeout/retry/circuit/dead-letter/reconciliation/backpressure/restore/failure-drill requirements.
+- Expanded readiness to 12 gates: `AUTH`, `CONSENT`, `CHECK-IN`, `COORDINATION`, `EXTERNAL_FULFILLMENT`, `UI_CONFORMANCE`, `SAFETY`, `PRIVACY`, `SCALE`, `RESILIENCE`, `OPERATIONS`, `REPORTING`.
+- Expanded roadmap to SPEC-001 through SPEC-019. First implementation-authoritative released cut is SPEC-016.
+- Added D-017 through D-024 for provider adapters, first-release capacity target, durable job/queue implementation, performance SLOs, and RTO/RPO. No provider or numeric target selected.
+- Added `FulfillmentAttempt` domain/data semantics for idempotent external/manual fulfillment and unknown-outcome reconciliation.
+- Reconciled architecture, API inventory, fulfillment, domain/data, testing, deployment, operations, pilot, authority, versioning, agent, and contributing rules to the scalable/provider-neutral model.
+- Repaired stale governance references in `SPEC-001.md`, `SPEC_AUDIT.md`, `PILOT.md`, `VERSIONING.md`, `AGENTS.md`, and `CONTRIBUTING.md`.
+- Clarified that SPEC-001 may accept high-level governing principles while detailed MVP/provider/scale/resilience contracts remain later independent roadmap stages.
+- Added canonical glossary definitions for `Fulfillment Attempt` and `Provider Adapter`, and expanded `Capability Port` terminology to provider fulfillment ports.
+- Updated [PRODUCT.md](PRODUCT.md) to state that Service Providers do not require APIs and that pilot size is not a production architecture ceiling.
 
-**Same-day friction analysis:**
+### SPEC-002 preflight — 2026-08-18
 
-- Added [FRICTION.md](FRICTION.md) — user and infrastructure friction; proposed engineering paths only.
-- Proposed, but did not accept, narrow closes for D-014 and D-012.
+- Extended [CONSENT.md](CONSENT.md) so provider fulfillment calls are explicit third-party disclosure surfaces requiring use-time consent/system-basis evaluation and minimum-necessary field projection.
+- Extended [PRIVACY.md](PRIVACY.md) with provider payload minimization, no whole-case disclosure by default, and provider retention/deletion unknowns.
+- Extended [SECURITY.md](SECURITY.md) with provider credential, webhook authentication/replay, idempotency, SSRF-style endpoint-control, response normalization, and duplicate external mutation controls.
+- Added [SPEC-002.md](SPEC-002.md) as an owner-review worksheet with status `BLOCKED_BY_SPEC_001`. It does not bypass the SPEC-001 dependency and is not accepted/released.
+- [SAFETY.md](SAFETY.md) and [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md) were preflighted and remained consistent; no lifecycle change was made.
 
 No implementation code is included. No specification artifact is `accepted` or `released`.
