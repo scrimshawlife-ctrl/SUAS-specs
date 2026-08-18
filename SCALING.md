@@ -1,313 +1,246 @@
 # SCALING.md — Capacity and horizontal scaling contract (SUAS v0.1)
 
-**Status:** `draft` / `0.1.0` / not implementation authority until accepted and released.  
-**Related:** [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md), [APIS.md](APIS.md), [TESTING.md](TESTING.md), [OPERATIONS.md](OPERATIONS.md), [RESILIENCE.md](RESILIENCE.md), [STATUS.md](STATUS.md)
+**Status:** `draft` / `0.1.0`; SPEC-010 dependency-blocked.  
+**Related:** [ARCHITECTURE.md](ARCHITECTURE.md), [DATA_MODEL.md](DATA_MODEL.md), [APIS.md](APIS.md), [TESTING.md](TESTING.md), [OPERATIONS.md](OPERATIONS.md), [RESILIENCE.md](RESILIENCE.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md)
 
 ---
 
 ## 1. Purpose
 
-SUAS may begin with a small controlled pilot, but production architecture must not encode avoidable pilot-scale ceilings. This specification defines scale as a design and verification concern without requiring premature microservices, sharding, or multi-region active-active operation.
-
-The governing rule is:
+SUAS begins with a controlled pilot but must avoid architecture choices that create unnecessary migration barriers if adoption grows quickly.
 
 > Pilot scope may be small. Architectural ceilings should not be.
 
-The modular monolith remains the default architecture. Scale is achieved first through stateless horizontal application capacity, durable asynchronous work, efficient PostgreSQL access, bounded queries, backpressure, and measured optimization.
+The modular monolith remains the default. Scale first through stateless app capacity, durable async work, efficient PostgreSQL access, bounded queries, backpressure, tenant fairness, and measured optimization.
 
 ---
 
-## 2. Scale bands
+## 2. Capacity envelopes
 
-The following bands are **capacity test envelopes, not adoption forecasts or promises**.
+The only currently specified operating population is the controlled pilot in [PILOT.md](PILOT.md).
 
-| Band | Purpose | Registered-user envelope |
-|---|---|---:|
-| `PILOT` | Controlled initial operation | 25–50 veterans plus operators |
-| `REGIONAL` | Multiple organizations / county-regional adoption | 1,000–25,000 registered users |
-| `MULTI_REGION` | Broad multi-organization adoption | 25,000–250,000+ registered users |
+No numeric regional/multi-region production capacity is canonical yet.
 
-A release does not need to prove the maximum band unless its release target says so. It must, however, avoid known architecture choices that make the next band require a domain rewrite.
+**D-021 = release-specific target capacity envelope** and remains `DECISION_PENDING`.
+
+A release performance plan must define its target using workload dimensions in §3, not a vague registered-user count alone.
+
+Architecture may use qualitative planning stages such as:
+
+| Planning stage | Meaning |
+|---|---|
+| `PILOT` | current controlled launch scope specified in PILOT.md |
+| `MULTI_ORG_GROWTH` | multiple organizations/greater concurrent operational load; numeric envelope must be set by D-021 |
+| `BROADER_EXPANSION` | later geography/organization growth; numeric envelope remains release-specific |
+
+These labels are not adoption forecasts, contractual capacity promises, or permission to invent numeric targets.
 
 ---
 
 ## 3. Workload dimensions
 
-Capacity planning and load testing must report workload dimensions rather than a single “users” number.
+Every capacity plan/load test reports, as applicable:
 
-At minimum:
-
-- registered veterans;
-- active veterans/day;
-- registered responders;
-- concurrent responder sessions;
+- registered/active veterans;
+- registered/active responders;
 - organizations/tenants;
-- concurrent authenticated sessions;
-- Check-Ins submitted/minute;
-- Support Signals computed/minute;
-- Support Cases opened/minute;
-- Service Requests created/minute;
-- responder case-claim attempts/minute;
-- notification jobs/minute;
-- SMS/email sends/minute;
-- provider calls/minute by capability;
-- provider webhooks/minute;
-- Follow-Up jobs/minute;
-- audit/domain events/day;
-- queue depth and oldest-job age;
-- database growth/day.
+- concurrent authenticated/responder sessions;
+- Check-Ins submitted per time unit;
+- Support Signals computed per time unit;
+- Cases/Service Requests created per time unit;
+- contested Case claim attempts;
+- Notification logical sends and provider attempts per time unit;
+- SMS/email sends per time unit;
+- provider calls/webhooks by capability;
+- Follow-Up due/overdue jobs;
+- Domain/Audit Events generated;
+- queue depth, throughput, oldest-job age;
+- DB connections/query rate/slow-query distribution;
+- storage/database growth;
+- tenant concentration/noisy-neighbor distribution.
 
-Specific numeric SLOs and load targets remain `DECISION_PENDING` until production hosting and operating expectations are accepted.
+Exact values belong to D-021/D-023 release planning and test evidence.
 
 ---
 
 ## 4. Stateless application invariant
 
-The production application tier MUST be horizontally scalable.
+No correctness-critical state may live only in one app process, including session/revocation truth, workflow state, locks/leases, durable jobs, provider attempts/reconciliation, command idempotency, consent, or correctness-critical rate-limit state.
 
-No correctness-critical state may exist only in application process memory, including:
-
-- authenticated session truth;
-- workflow state;
-- locks/leases required for correctness;
-- durable job state;
-- provider fulfillment attempt state;
-- idempotency records;
-- consent grants;
-- rate-limit/accounting state when correctness depends on it.
-
-A request may be served by any healthy application instance.
-
-Adding or removing an application instance must not require data migration or change domain semantics.
+Any healthy app instance may serve any authorized request. Adding/removing an instance cannot change domain semantics or require data migration.
 
 ---
 
 ## 5. Durable asynchronous work
 
-Production-critical async work MUST use a durable queue/job mechanism or an equivalently durable database-backed job contract.
+Production-critical async work uses durable queue/job semantics or equivalently durable DB-backed work.
 
 Required properties:
-
-- persistence across worker restart;
-- explicit acknowledgment/completion;
-- bounded retry policy;
+- persistence across restart;
+- explicit ack/completion;
+- bounded retry/backoff;
 - idempotent handlers;
-- visibility into attempts and last error;
-- dead-letter/quarantine handling;
-- replay/retry by authorized operator;
-- queue depth and oldest-job telemetry;
-- priority classes where urgent human-support operations must not be starved by low-priority maintenance work.
+- failed-work/dead-letter visibility;
+- authorized replay;
+- queue depth/oldest-age telemetry;
+- priority/admission controls so low-priority maintenance cannot starve urgent support work.
 
-An in-process-only queue that loses jobs on restart is not production-ready.
-
-No vendor is selected by this requirement.
+Volatile in-process-only work is not production-ready. Exact product is D-022.
 
 ---
 
-## 6. Concurrency and atomic commands
+## 6. Concurrency / atomic commands
 
-All commands that allocate exclusive work or mutate state under contention must have an explicit atomicity contract.
-
-Examples include:
-
-- `CLAIM_CASE`;
+Contested/exclusive operations have explicit one-winner semantics, including:
+- one-active Case creation where policy requires it;
+- `CLAIM_CASE` / assignment / reassignment;
 - Service Request assignment;
-- provider fulfillment-attempt creation;
-- one-time token verification;
-- idempotency-key creation;
-- resource capacity decrement where used.
+- FulfillmentAttempt creation;
+- one-time auth challenge consumption;
+- command idempotency reservation;
+- Settlement resolution-cycle creation/current projection update;
+- Follow-Up reschedule vs stale due job;
+- future resource-capacity mutation if introduced.
 
-Two concurrent claim attempts for one claimable Case must produce one successful owner and a deterministic conflict for the other. Read-then-write races without compare-and-set/transactional protection are not acceptable.
-
----
-
-## 7. API scalability rules
-
-Unbounded collections MUST NOT expose unbounded reads.
-
-Production APIs must provide, as applicable:
-
-- cursor-based pagination for growing collections;
-- deterministic sort order;
-- bounded page size;
-- server-enforced maximums;
-- filters scoped to tenant and authorization before pagination;
-- no client contract requiring complete history download to render a normal screen;
-- idempotency on externally consequential POST/command operations;
-- request/body size limits;
-- rate limiting appropriate to actor and endpoint.
-
-Offset pagination may be used only where datasets are bounded or consistency/latency tradeoffs are accepted.
+Read-then-write without transactional/CAS/constraint protection is insufficient.
 
 ---
 
-## 8. PostgreSQL scaling rules
+## 7. API scaling rules
 
-PostgreSQL remains the logical system of record until measured evidence justifies a released architecture change.
+Growing collections require stable cursor/keyset-style pagination, deterministic ordering, bounded page sizes/server maximums, tenant/auth filtering before pagination, body limits, and endpoint/actor rate controls.
 
-Required production design practices:
+Normal screens must not require complete-history downloads. Unsafe commands use persistent idempotency.
 
+---
+
+## 8. PostgreSQL scaling doctrine
+
+PostgreSQL remains logical system of record until measured evidence justifies a released change.
+
+Required practices:
 - connection pooling;
-- indexed tenant-scoped access paths;
-- indexes for queue/status/due-time queries used operationally;
-- query plans reviewed for high-volume paths;
-- no N+1 access patterns on responder queues/resource lists;
+- indexed tenant/current-status/current-projection paths;
+- efficient queue/due/reconciliation/idempotency lookup;
+- query-plan review for high-volume paths;
+- no N+1 responder/resource screens;
 - bounded transactions;
-- migrations designed for growing tables;
-- aggregate/report work kept off latency-sensitive request paths where possible;
-- append-efficient event/audit storage;
-- retention/archive strategy once D-007 is decided;
-- read replicas considered only from measured read pressure;
-- partitioning considered only from measured table/index/maintenance pressure.
-
-Sharding is not an MVP requirement and must not be introduced speculatively.
+- migration planning for growing tables;
+- aggregate/report work away from latency-sensitive paths when possible;
+- append-efficient events/audit;
+- retention/archive strategy after D-007;
+- read replicas/partitioning/sharding only from measured evidence.
 
 ---
 
 ## 9. Tenant fairness
 
-At scale, one Organization must not trivially exhaust shared resources for every other Organization.
+One Organization must not trivially exhaust shared capacity for all others.
 
-The implementation must support controls for:
+System must support tenant-aware rate/admission controls where appropriate, bounded exports/reports, per-tenant provider configuration, noisy-neighbor detection, and queue visibility by tenant while preserving tenant isolation.
 
-- tenant-aware rate limiting where appropriate;
-- queue visibility by tenant;
-- per-tenant provider configuration;
-- bounded export/report jobs;
-- abuse/automation limits;
-- noisy-neighbor detection.
-
-Hard resource reservations or separate tenant databases are not required unless later justified.
-
-Tenant isolation remains a security invariant, not merely a performance feature.
+Separate tenant databases/hard reservations are not required absent evidence.
 
 ---
 
-## 10. Notification and event bursts
+## 10. Burst / backpressure behavior
 
-Notification and event-driven workloads must tolerate bursts without synchronous cascade failure.
+Notification, QRF/support-request, event, and provider bursts become durable work rather than synchronous provider loops.
 
-Rules:
-
-- notification sends are asynchronous;
-- bulk/burst generation creates durable work, not one synchronous provider loop;
-- provider rate limits produce backoff and queueing, not request-thread blocking;
-- consent is rechecked at send time as specified;
-- deduplication/idempotency prevents retry storms;
-- queue admission/backpressure protects database and external providers;
-- operational alerts trigger on queue age/depth thresholds.
+Required:
+- queue admission/backpressure protects DB/providers;
+- provider rate limits create backoff, not request-thread blocking;
+- consent is rechecked at send/disclosure time;
+- idempotency/dedupe prevents retry storms;
+- urgent support work has higher operational priority than maintenance/freshness jobs;
+- overload may degrade non-critical features before corrupting/losing support work.
 
 ---
 
 ## 11. Caching
 
-Caching is an optimization, not a correctness dependency unless explicitly specified.
-
-A cache may be added for measured needs such as resource catalogs or read-heavy configuration, but:
-
-- source of truth remains explicit;
-- stale behavior is bounded;
-- authorization/tenant boundaries are part of cache keys;
-- invalidation behavior is documented;
-- absence of cache must degrade performance, not correctness.
-
-No cache product is selected in this spec.
+Cache is optional optimization, not correctness authority. Source of truth, tenant/auth cache keys, staleness bounds, and invalidation must be explicit. Cache absence may reduce performance but not correctness.
 
 ---
 
-## 12. Observability for scale
+## 12. Observability
 
-Production must expose at least:
+At minimum measure:
+- request rate/latency/errors by route class;
+- app instance health;
+- DB pool/query health;
+- queue depth/age/throughput/retries/dead letters;
+- worker saturation;
+- case-claim/idempotency conflict rates;
+- notification throughput/outcomes/dedupe;
+- provider latency/errors/rate limits/circuit/reconciliation backlog;
+- webhook lag;
+- signal dedupe/event-outbox lag;
+- Settlement resolution-cycle conflicts;
+- tenant load/noisy-neighbor indicators.
 
-- request rate, latency, and error rate by route class;
-- application instance health;
-- DB connection utilization;
-- slow-query/query-latency metrics;
-- queue depth, throughput, retry count, and oldest-job age;
-- worker concurrency and saturation;
-- case-claim conflict rate;
-- notification throughput/delivery outcome;
-- provider latency/error/rate-limit status by adapter;
-- webhook processing lag;
-- audit/domain event throughput;
-- tenant-level load indicators suitable for noisy-neighbor investigation.
-
-Correlation identifiers should include, where applicable and safe:
-
-- `request_id`;
-- `organization_id`;
-- `case_id`;
-- `service_request_id`;
-- `fulfillment_attempt_id`;
-- `provider_adapter_id`.
-
-Do not put unnecessary veteran PII in metrics or logs.
+Correlation ids avoid unnecessary veteran PII.
 
 ---
 
-## 13. Load-test profiles
+## 13. Release-specific load profiles
 
-Tests must use synthetic data only.
+Synthetic data only.
 
-At least three profiles are required before a production readiness claim:
+Every target release performance plan includes at least:
 
-### 13.1 Steady state
+### Steady state
+Representative mixed traffic for D-021 workload dimensions.
 
-Representative mixed traffic for the release target band.
+### Burst
+Short support-request/QRF/notification/claim/provider spike. System applies backpressure and preserves correctness.
 
-### 13.2 Burst
+### Degraded dependency
+Representative load while an external provider/communications dependency is slow, rate-limited, or unavailable.
 
-A short spike in support requests, notifications, responder claims, and provider activity. The system must apply backpressure rather than cascade.
+### Concurrency correctness
+Focused contested Case claims, idempotent command retries, duplicate jobs/webhooks, Settlement resolve retries, and stale Follow-Up jobs under multi-instance execution.
 
-### 13.3 Degraded dependency
-
-Representative traffic while one external provider is slow/rate-limited/unavailable. SUAS core state must remain correct and operator-visible.
-
-Exact concurrency/rate values are set in a release-specific performance plan and must be recorded with test results.
+Exact rates/concurrency/latency targets are D-021/D-023 and must be recorded with results rather than invented in this spec.
 
 ---
 
 ## 14. Extraction rule
 
-A module may be extracted from the modular monolith only when evidence shows one or more of:
-
-- independent scaling demand;
-- strong fault-isolation need;
-- deployment cadence conflict;
-- data/security isolation requirement;
-- runtime/resource profile materially incompatible with the monolith.
-
-Extraction requires a released spec change, contract preservation, migration plan, observability plan, and rollback path.
+Module extraction requires evidence of independent scaling, fault-isolation, deployment, data/security, or runtime-resource need plus released spec, migration/rollback, observability, and contract preservation.
 
 Microservices are not the default scalability strategy.
 
 ---
 
-## 15. Acceptance gate: SCALE
+## 15. SCALE gate
 
-`SCALE = READY` for a target release band only when:
+`SCALE = READY` for a target release only when:
 
-- application instances are stateless for correctness;
-- at least two application instances can serve the same workload without semantic change;
-- production-critical async jobs survive worker restart;
-- duplicate job delivery does not duplicate external effects;
-- contested case claims/assignments are atomic;
-- unbounded lists are paginated and bounded;
-- DB connection pooling and high-volume indexes are verified;
-- burst testing demonstrates backpressure rather than cascading failure;
-- queue and provider saturation are observable;
-- one tenant's load does not trivially starve all others;
-- the release-specific load profile and results are recorded.
+- D-021 target workload envelope is recorded;
+- D-023 relevant performance SLO/alerts are recorded;
+- at least two app instances serve the same workload without semantic change;
+- sessions/revocation/idempotency work across instances;
+- production-critical jobs survive worker restart;
+- duplicate jobs/requests do not duplicate business/external effects;
+- contested Case/assignment/Settlement operations are atomic;
+- growing lists are bounded;
+- DB pooling/access paths are verified;
+- burst testing demonstrates backpressure instead of cascading failure;
+- provider/queue saturation is observable;
+- tenant fairness/noisy-neighbor controls are demonstrated for the release envelope;
+- test artifacts record workload dimensions, environment, results, and caveats.
 
-Current status: `NOT_READY`.
+Current: `NOT_READY`.
 
 ---
 
 ## 16. Non-goals
 
-- Kubernetes as a requirement
-- Microservices as a requirement
-- Kafka or any named broker as a requirement
-- Database sharding before measured need
-- Multi-region active-active before measured/accepted need
-- Capacity promises based only on registered-user count
+- unsupported numeric adoption/capacity forecasts;
+- Kubernetes requirement;
+- microservices requirement;
+- named broker/cache requirement;
+- speculative sharding;
+- multi-region active-active before measured/accepted need;
+- capacity claims based only on registered-user count.
