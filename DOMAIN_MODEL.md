@@ -1,322 +1,272 @@
-# DOMAIN_MODEL.md — Entities (SUAS v0.1)
+# DOMAIN_MODEL.md — Entities and ownership (SUAS v0.1)
 
-**Related:** [DATA_MODEL.md](DATA_MODEL.md), [GLOSSARY.md](GLOSSARY.md), [EVENT_MODEL.md](EVENT_MODEL.md), [PRIVACY.md](PRIVACY.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md)
+**Related:** [DATA_MODEL.md](DATA_MODEL.md), [GLOSSARY.md](GLOSSARY.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [PRIVACY.md](PRIVACY.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [FULFILLMENT.md](FULFILLMENT.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md)
 
-**Status:** `draft` / `0.1.0`. Retention durations are `DECISION_PENDING` (D-007) unless a row says otherwise.
+**Status:** `draft` / `0.1.0`. Retention durations remain D-007 `DECISION_PENDING` unless explicitly stated.
 
-Field sensitivity: `required` / `optional` / `sensitive`. `sensitive` means highly restricted, logged on access, never placed in ordinary logs.
-
-Deletion: operational entities may be soft-deleted. Domain Events and Audit Events are immutable and are not deleted by ordinary operations.
+Field sensitivity: `required` / `optional` / `sensitive`. Operational entities may be soft-deleted where specified. Domain Events and Audit Events are immutable.
 
 ---
 
-## Conventions
+## 1. Conventions
 
-- **Owner:** module that may write the entity (see [ARCHITECTURE.md](ARCHITECTURE.md)).
-- **Authz:** who may read/write beyond the owner module.
-- **Lifecycle:** states or created→active→terminal.
-- **Retention:** `DECISION_PENDING` unless specified. Soft-delete does not satisfy a legal deletion request by itself; see [PRIVACY.md](PRIVACY.md).
+- **Owner:** module that may write the entity.
+- **Authz:** actor visibility beyond the owner module.
+- **Lifecycle:** canonical states or created → active → terminal.
+- **Retention:** D-007 unless specified.
+- Every tenant-owned entity carries `tenant_id`.
+- Vendor-specific provider types/statuses are adapter-local and are not domain entities/enums unless normalized below.
 
 ---
 
-## User
+## 2. Identity and organization
 
-- **Purpose:** Login identity shared by Veteran, Responder, Organization Administrator, Trusted Contact (if enrolled), SUAS System Administrator, and Service Provider users.
-- **Owner:** Administration / Auth.
-- **Lifecycle:** `INVITED` → `ACTIVE` → `SUSPENDED` → `REVOKED`. Revoked users cannot authenticate or act. Historical actor_id on events remains.
-- **Required:** `user_id`, `tenant_id` (may be system-tenant for SUAS-admin), `status`, `created_at`.
-- **Optional:** `email`, `phone` (at least one required for veterans; responders require email).
-- **Sensitive:** `email`, `phone`.
-- **Authz:** self (limited); org-admin for org members; SUAS-admin audited.
-- **Deletion:** soft-delete / revoke. Sessions invalidated. See [AUTH.md](AUTH.md).
+### User
+- **Purpose:** Login identity shared across Veteran, Responder, Admin, Trusted Contact, and Service Provider users.
+- **Owner:** Auth / Administration.
+- **Lifecycle:** `INVITED` → `ACTIVE` → `SUSPENDED` → `REVOKED`.
+- **Required:** `user_id`, `tenant_id`, `status`, `created_at`.
+- **Optional/sensitive:** email, phone.
+- **Rule:** revoked users cannot authenticate/act; historical event actor ids remain.
 
-## VeteranProfile
-
-- **Purpose:** Veteran-specific profile bound to one User.
+### VeteranProfile
 - **Owner:** Veteran Profiles.
-- **Lifecycle:** created at enrollment; active while enrolled; deactivated on pilot exit without deleting history.
-- **Required:** `veteran_profile_id`, `user_id`, `tenant_id`, `display_name`, `created_at`.
-- **Optional:** preferred language, preferred contact channel, county of residence (pilot default Santa Clara), notes the veteran chose to share.
-- **Sensitive:** all free-text; contact preferences; any location field.
-- **Authz:** veteran; assigned responder (need-to-know); SUAS-admin audited. Trusted Contacts: only fields covered by Consent Grants.
-- **Non-goals:** SSN, DD-214, medical history, diagnoses — do not collect. See [PRIVACY.md](PRIVACY.md).
-- **Deletion:** deactivate; retain per D-007.
+- **Required:** `veteran_profile_id`, `user_id`, `tenant_id`, `display_name`.
+- **Optional/sensitive:** preferred language/channel, county, veteran-entered shareable notes.
+- **Non-goals:** SSN, DD-214, medical history, diagnosis collection.
 
-## Organization
-
-- **Purpose:** Participating entity. Placeholder ids `PARTNER_ORG_001` … until D-008.
+### Organization
 - **Owner:** Administration.
 - **Lifecycle:** `PENDING` → `ACTIVE` → `SUSPENDED` → `ARCHIVED`.
-- **Required:** `organization_id`, `tenant_id` (often equals organization_id for org tenants), `name`, `status`.
-- **Optional:** contact email, website, county list.
-- **Sensitive:** none beyond ordinary org contact.
-- **Authz:** org-admin of that org; SUAS-admin; responders of that org (read).
+- **Required:** `organization_id`, `tenant_id`, `name`, `status`.
+- **Optional:** contact/website/counties.
 
-## OrganizationMembership
-
-- **Purpose:** Binds a User to an Organization with a role (`RESPONDER`, `ORG_ADMIN`, `SERVICE_PROVIDER_USER`).
+### OrganizationMembership
 - **Owner:** Administration.
 - **Lifecycle:** `INVITED` → `ACTIVE` → `SUSPENDED` → `REVOKED`.
-- **Required:** `membership_id`, `organization_id`, `user_id`, `role`, `status`.
-- **Authz:** org-admin of that org; SUAS-admin.
-- **Revoked-user behavior:** membership revocation immediately removes authorization even if the User is still `ACTIVE` globally.
+- **Role:** `RESPONDER` | `ORG_ADMIN` | `SERVICE_PROVIDER_USER`.
 
-## ResponderProfile
-
-- **Purpose:** Responder-specific fields (capacity flag, queue eligibility).
+### ResponderProfile
 - **Owner:** Administration.
-- **Lifecycle:** mirrors membership.
 - **Required:** `responder_profile_id`, `user_id`, `organization_id`.
-- **Optional:** display name, active-for-queue boolean, coverage notes (`DECISION_PENDING` actual hours — D-009).
-- **Authz:** self, org-admin, SUAS-admin.
-- **Non-goal:** clinical credential store.
-
-## QuestionnaireVersion
-
-- **Purpose:** Immutable published Check-In questionnaire.
-- **Owner:** Check-ins / Administration (publish).
-- **Lifecycle:** `DRAFT` → `PUBLISHED` → `SUPERSEDED`. Published rows are immutable.
-- **Required:** `questionnaire_version`, `status`, `published_at` (when published).
-- **Authz:** SUAS-admin writes; veterans receive the current published version; historical check-ins keep their version.
-- **Spec:** [CHECKINS.md](CHECKINS.md).
-
-## CheckIn
-
-- **Purpose:** One questionnaire attempt by a Veteran.
-- **Owner:** Check-ins.
-- **Lifecycle:** `STARTED` → `IN_PROGRESS` → `COMPLETED` | `ABANDONED` | `INCOMPLETE`.
-- **Required:** `check_in_id`, `veteran_profile_id`, `questionnaire_version`, `status`, `started_at`.
-- **Optional:** `completed_at`, `abandoned_at`.
-- **Sensitive:** yes (answers live on CheckInResponse).
-- **Authz:** veteran; others only via Consent Grant or documented case-assignment policy.
-- **Edits:** completed check-ins are not silently rewritten. A correction creates a new Check-In or a documented amendment event. See [CHECKINS.md](CHECKINS.md).
-
-## CheckInResponse
-
-- **Purpose:** One answer to one question on a Check-In.
-- **Owner:** Check-ins.
-- **Required:** `check_in_response_id`, `check_in_id`, `question_id`, `answered_at`.
-- **Optional:** `answer_option_id`, free-text (`sensitive`).
-- **Authz:** same as CheckIn.
-
-## SupportSignal
-
-- **Purpose:** Deterministic coordination label for a Check-In (or explicit need).
-- **Owner:** Support Signals.
-- **Lifecycle:** created immutable. Override writes a **new** row linked to the prior, never mutates the original.
-- **Required:** `support_signal_id`, `veteran_profile_id`, `level` (`GREEN`|`YELLOW`|`ORANGE`|`RED`), `signal_version`, `input_questionnaire_version`, `computed_at`, `basis`.
-- **Optional:** `check_in_id`, `override_of_signal_id`, `override_actor_id`, `override_reason`.
-- **Sensitive:** level + basis.
-- **Authz:** veteran; others via Consent Grant (`can_view` / `support_signal`) or assigned responder per [CONSENT.md](CONSENT.md).
-- **Spec:** [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md).
-
-## TrustedContact
-
-- **Purpose:** One person in a Veteran's Trusted Circle.
-- **Owner:** Trusted Circle.
-- **Lifecycle:** `INVITED` → `ACCEPTED` → `SUSPENDED` | `REMOVED` | `REVOKED`.
-- **Required:** `trusted_contact_id`, `veteran_profile_id`, `status`, `relationship_label`.
-- **Optional:** `user_id` (if the contact has a User), email/phone for invite.
-- **Sensitive:** contact identifiers, relationship.
-- **Authz:** veteran; the contact (own row); responders do not list the circle without a grant.
-- **Spec:** [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md).
-
-## ConsentGrant
-
-- **Purpose:** First-class permission. Not a boolean.
-- **Owner:** Consent.
-- **Lifecycle:** `ACTIVE` → `REVOKED` | `EXPIRED`. Revocation stops future use.
-- **Required:** `consent_grant_id`, `veteran_profile_id`, `grantee_type`, `grantee_id`, `permission`, `scope`, `purpose`, `consent_template_version`, `granted_at`, `status`.
-- **Optional:** `expires_at`.
-- **Sensitive:** yes.
-- **Authz:** veteran; system evaluate; SUAS-admin audit read.
-- **Spec:** [CONSENT.md](CONSENT.md).
-
-## ConsentEvent
-
-- **Purpose:** Immutable history of grant, revoke, expire, deny.
-- **Owner:** Consent.
-- **Lifecycle:** append-only.
-- **Required:** `consent_event_id`, `consent_grant_id` (nullable for deny-without-grant), `event_type`, `occurred_at`, `actor_id`.
-- **Authz:** veteran (own), SUAS-admin.
-- **Deletion:** not deleted in ordinary operations.
-
-## SupportCase
-
-- **Purpose:** Coordination around a Veteran.
-- **Owner:** Cases.
-- **Lifecycle:** `OPEN` → `TRIAGED` → `ASSIGNED` → `ACTIVE` → `FOLLOWUP` → `RESOLVED` → `CLOSED`. Documented skips/returns in [CASES.md](CASES.md). Closure does not delete history.
-- **Required:** `support_case_id`, `veteran_profile_id`, `tenant_id`, `status`, `opened_at`.
-- **Optional:** `priority_signal_level`, `closed_at`, `settlement_id`.
-- **Sensitive:** yes.
-- **Authz:** assigned responder; org queue per CASES; veteran (limited — [CASES.md](CASES.md) section 8); SUAS-admin audited.
-
-## CaseAssignment
-
-- **Purpose:** Binding of a Responder to a Support Case. Assignment ≠ Fulfillment.
-- **Owner:** Cases.
-- **Lifecycle:** `ACTIVE` → `RELEASED` | `REASSIGNED`.
-- **Required:** `case_assignment_id`, `support_case_id`, `responder_profile_id`, `assigned_at`, `status`.
-- **Authz:** same as SupportCase.
-
-## CaseNote
-
-- **Purpose:** Timestamped note. Not a Follow-Up, not a Settlement, not a transition.
-- **Owner:** Cases.
-- **Lifecycle:** created; may be amended via a new note (preferred) or an amendment record. Do not silently rewrite.
-- **Required:** `case_note_id`, `support_case_id`, `author_user_id`, `body`, `created_at`.
-- **Sensitive:** body (malicious-content risk; see [SECURITY.md](SECURITY.md)).
-- **Authz:** assigned responder; org-admin of owning org (read); SUAS-admin audited. Veteran visibility of full Case Notes is denied in MVP (`INFERRED` operational default; D-015 remains open if the owner later wants veterans to see notes). Do not invent a clinical chart. See [CASES.md](CASES.md) section 8.
-
-## ContactAttempt
-
-- **Purpose:** First-class log of a Responder contact with a Veteran on a Support Case. Not a Case Note.
-- **Owner:** Cases.
-- **Lifecycle:** created by `log-contact-attempt`; may be completed by `complete-contact` (outcome + `completed_at`). History via `RESPONDER_CONTACT_LOGGED`.
-- **Required:** `contact_attempt_id`, `support_case_id`, `actor_id`, `at`, `channel`, `outcome`, `created_at`.
-- **Optional:** `completed_at`.
-- **Authz:** assigned responder; org-admin of owning org (read); SUAS-admin audited. Veteran cannot read (D-015).
-- **Spec:** [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [API.md](API.md) section 11.1.
-
-## FollowUp
-
-- **Purpose:** First-class follow-up work item.
-- **Owner:** Follow-up.
-- **Lifecycle:** `SCHEDULED` → `DUE` → `COMPLETED` | `RESCHEDULED` | `OVERDUE` → `ESCALATED` | `CANCELLED`.
-- **Required:** `follow_up_id`, `support_case_id`, `due_at`, `responsible_type`, `responsible_id`, `status`.
-- **Optional:** `service_request_id`, `retry_count`.
-- **Authz:** responsible party; assigned responder; veteran when addressed to them.
-- **Spec:** [FOLLOWUP.md](FOLLOWUP.md).
-
-## ServiceRequest
-
-- **Purpose:** A specific requested need. One Support Case may contain many.
-- **Owner:** Requests / Dispatch.
-- **Lifecycle:** `CREATED` → `SUBMITTED` → `TRIAGED` → `MATCHING` → `ASSIGNED` → `ACCEPTED` → `IN_PROGRESS` → `FULFILLED` → `CONFIRMED` → `CLOSED`. Exceptions: `CANCELLED`, `DECLINED`, `EXPIRED`, `UNFULFILLABLE`, `ESCALATED`.
-- **Required:** `service_request_id`, `support_case_id`, `category` (`FOOD`|`TRANSPORTATION`|`SHELTER`|`PEER_SUPPORT` in MVP), `status`, `created_at`.
-- **Optional:** details text, destination (transport), quantity.
-- **Sensitive:** details, destination.
-- **Authz:** case authz; assigned provider (limited).
-- **Spec:** [DISPATCH.md](DISPATCH.md).
-
-## ServiceProvider
-
-- **Purpose:** Party that can fulfill a Service Request.
-- **Owner:** Administration / Resources.
-- **Lifecycle:** `ACTIVE` → `SUSPENDED` → `ARCHIVED`.
-- **Required:** `service_provider_id`, `organization_id` (or individual user link), `name`, `status`.
-- **Authz:** org-admin, responders (read), SUAS-admin.
-
-## ServiceOffer
-
-- **Purpose:** A provider's offering of a category (capacity, hours).
-- **Owner:** Resources.
-- **Required:** `service_offer_id`, `service_provider_id`, `category`, `active`.
-- **Optional:** capacity, hours.
-- **Authz:** same as Resource.
-
-## ServiceFulfillment
-
-- **Purpose:** Record of acceptance, start, completion, confirmation, failure, partial, cancellation.
-- **Owner:** Fulfillment.
-- **Lifecycle:** `ACCEPTED` → `STARTED` → `COMPLETED` → `CONFIRMED` | `DISPUTED`, or `FAILED` | `PARTIAL` | `CANCELLED`.
-- **Required:** `service_fulfillment_id`, `service_request_id`, `status`, `accepted_at`.
-- **Optional:** `started_at`, `completed_at`, `veteran_confirmed_at`, `responder_confirmed_at`, `failure_reason`.
-- **Authz:** assigned responder, assigned provider, veteran (confirm/dispute).
-- **Spec:** [FULFILLMENT.md](FULFILLMENT.md).
-- **Note:** funding fields are `FUTURE`.
-
-## Resource
-
-- **Purpose:** Catalog entry for an available support offering.
-- **Owner:** Resources.
-- **Lifecycle:** `ACTIVE` ↔ `INACTIVE`; never silently deleted if referenced.
-- **Required:** `resource_id`, `organization_id`, `service_name`, `category`, `active`, `last_verified_at`, `verification_source`.
-- **Optional:** `eligibility`, `counties`, `coverage_geometry`, `hours`, `contact_method`, `referral_method`, `cost`, `capacity`.
-- **Authz:** responders (read); org-admin of owning org (write); SUAS-admin; veteran sees only non-sensitive public fields listed in [RESOURCES.md](RESOURCES.md).
-- **Freshness:** <30 / 30–90 / >90 days as operational recommendations.
-
-## ResourceCategory
-
-- **Purpose:** Category enumeration and display metadata.
-- **Owner:** Resources.
-- **Required:** `category_code` (MVP: `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`).
-- **Future codes reserved:** `BENEFITS`, `HOUSING`, `HEALTHCARE_NAVIGATION`, `COMMUNITY`, `OTHER`.
-
-## Referral
-
-- **Purpose:** Directed handoff. Distinct from Service Request. Sending ≠ service received.
-- **Owner:** Referrals.
-- **Lifecycle:** `DRAFTED` → `SENT` → `ACKNOWLEDGED` → `ACCEPTED` | `DECLINED` → `COMPLETED` | `UNABLE_TO_SERVE` | `CANCELLED`.
-- **Required:** `referral_id`, `support_case_id`, `destination_type`, `destination_id`, `reason`, `method`, `status`, `consent_grant_id`.
-- **Optional:** `service_request_id`, `result_text`, `follow_up_id`.
-- **Authz:** assigned responder; destination org (referral fields only); veteran (that a referral was sent, destination name).
-- **Spec:** [REFERRALS.md](REFERRALS.md).
-
-## Notification
-
-- **Purpose:** One logical send. Not one row per retry.
-- **Owner:** Notifications.
-- **Lifecycle:** `delivery_status` on the single row: `QUEUED` → `SENT` | `FAILED` → `DELIVERED` | `BOUNCED` | `UNDELIVERABLE`.
-- **Required:** `notification_id`, `recipient_user_id` (or address id), `reason`, `channel` (`EMAIL`|`SMS`|`IN_APP`), `consent_basis`, `template_version`, `created_at`.
-- **Optional:** `sent_at`, `delivery_status`, `attempt_count`, `last_attempt_at`.
-- **Sensitive:** address, body.
-- **Authz:** system write; recipient read own; SUAS-admin audit.
-- **Attempts:** each send attempt appends an immutable Audit Event. No child attempt table. See [NOTIFICATIONS.md](NOTIFICATIONS.md) section 5.
-- **Spec:** [NOTIFICATIONS.md](NOTIFICATIONS.md).
-
-## NotificationPreference
-
-- **Purpose:** Channel preferences. Preferences cannot grant consent; they only select channel when a grant exists.
-- **Owner:** Notifications.
-- **Required:** `notification_preference_id`, `user_id`, `channel`, `enabled`.
-- **Authz:** self; system read.
-
-## AuditEvent
-
-- **Purpose:** Immutable who/what/when/which record.
-- **Owner:** Audit / Event Layer.
-- **Lifecycle:** append-only. No update, no ordinary delete.
-- **Required:** envelope fields in [EVENT_MODEL.md](EVENT_MODEL.md).
-- **Authz:** SUAS-admin; incident process. Not visible to trusted contacts.
-
-## DomainEvent
-
-- **Purpose:** Immutable business fact. Envelope in [EVENT_MODEL.md](EVENT_MODEL.md).
-- **Owner:** Audit / Event Layer.
-- **Lifecycle:** append-only.
-- **Authz:** internal consumers; SUAS-admin.
-
-## Pilot
-
-- **Purpose:** Bounded operational trial configuration.
-- **Owner:** Administration.
-- **Required:** `pilot_id`, `name`, `geography` (Santa Clara County, California), `target_enrollment_min` (25), `target_enrollment_max` (50), `status`.
-- **Authz:** SUAS-admin write; org-admin read if participating.
-
-## PilotEnrollment
-
-- **Purpose:** Veteran enrollment in a Pilot.
-- **Owner:** Veteran Profiles / Administration.
-- **Lifecycle:** `APPLIED` → `ENROLLED` → `WITHDRAWN` | `COMPLETED` | `REMOVED`.
-- **Required:** `pilot_enrollment_id`, `pilot_id`, `veteran_profile_id`, `status`, `enrolled_at` (when enrolled).
-- **Authz:** veteran (own), SUAS-admin, assigned responder (read).
-
-## Feedback
-
-- **Purpose:** Veteran or responder satisfaction / operational feedback. Not a clinical instrument.
-- **Owner:** Administration.
-- **Required:** `feedback_id`, `author_user_id`, `created_at`, `body` or structured scores listed in [ANALYTICS.md](ANALYTICS.md).
-- **Optional:** `support_case_id`.
-- **Sensitive:** free-text.
-- **Authz:** author; SUAS-admin (aggregate and audit).
+- **Optional:** display name, queue availability/capacity fields.
+- **Non-goal:** clinical credential record.
 
 ---
 
-## Cross-cutting rules
+## 3. Check-In and signal
 
-1. Every tenant-owned entity has `tenant_id`.
-2. Every mutable entity has `created_at`, `updated_at`.
-3. Soft-delete uses `deleted_at` where specified; events never have `deleted_at`.
-4. Actor on mutations is recorded via Domain Event / Audit Event, not by overwriting history.
-5. Consent Grants are evaluated at use time, not cached as "once visible, always visible."
+### QuestionnaireVersion
+- **Owner:** Check-ins / Administration publish path.
+- **Lifecycle:** `DRAFT` → `PUBLISHED` → `SUPERSEDED`.
+- Published versions are immutable.
+
+### CheckIn
+- **Owner:** Check-ins.
+- **Lifecycle:** `STARTED` → `IN_PROGRESS` → `COMPLETED` | `ABANDONED` | `INCOMPLETE`.
+- **Sensitive:** yes.
+
+### CheckInResponse
+- **Owner:** Check-ins.
+- **Purpose:** one answer to one question for a Check-In.
+- Completed history is not silently rewritten.
+
+### SupportSignal
+- **Owner:** Support Signals.
+- **Lifecycle:** immutable row; override creates a new linked row.
+- **Level:** `GREEN` | `YELLOW` | `ORANGE` | `RED`.
+- **Rule:** deterministic/versioned; not a diagnosis.
+
+---
+
+## 4. Consent and trusted circle
+
+### TrustedContact
+- **Owner:** Trusted Circle.
+- **Lifecycle:** `INVITED` → `ACCEPTED` → `SUSPENDED` | `REMOVED` | `REVOKED`.
+- Membership alone grants no data visibility.
+
+### ConsentGrant
+- **Owner:** Consent.
+- **Lifecycle:** `ACTIVE` → `REVOKED` | `EXPIRED`.
+- **Purpose:** first-class, purpose-scoped permission; not a boolean.
+- Evaluated at use time for share/notify/provider disclosure.
+
+### ConsentEvent
+- **Owner:** Consent.
+- Immutable history: grant/revoke/expire/deny/template acceptance.
+
+---
+
+## 5. Cases and responder work
+
+### SupportCase
+- **Owner:** Cases.
+- **Lifecycle:** `OPEN` → `TRIAGED` → `ASSIGNED` → `ACTIVE` → `FOLLOWUP` → `RESOLVED` → `CLOSED`, subject to documented transitions.
+- **Rule:** claim/assignment under contention must have one deterministic winner where exclusive ownership applies.
+
+### CaseAssignment
+- **Owner:** Cases.
+- **Lifecycle:** `ACTIVE` → `RELEASED` | `REASSIGNED`.
+- Assignment is not Fulfillment.
+
+### CaseNote
+- **Owner:** Cases.
+- Timestamped responder note; not a Follow-Up, Settlement, or Contact Attempt.
+- Veteran full-note visibility denied for MVP default while D-015 remains open.
+
+### ContactAttempt
+- **Owner:** Cases.
+- First-class responder contact log; not a Case Note.
+- Required channel/outcome/timestamp/actor semantics in responder/API specs.
+
+### FollowUp
+- **Owner:** Follow-up.
+- **Lifecycle:** `SCHEDULED` → `DUE` → `COMPLETED` | `RESCHEDULED` | `OVERDUE` → `ESCALATED` | `CANCELLED`.
+
+---
+
+## 6. Requests, providers, resources
+
+### ServiceRequest
+- **Owner:** Requests / Dispatch.
+- **Purpose:** one specific requested need inside a Support Case.
+- **Category:** MVP `FOOD` | `TRANSPORTATION` | `SHELTER` | `PEER_SUPPORT`.
+- **Lifecycle:** `CREATED` → `SUBMITTED` → `TRIAGED` → `MATCHING` → `ASSIGNED` → `ACCEPTED` → `IN_PROGRESS` → `FULFILLED` → `CONFIRMED` → `CLOSED` plus documented exceptions.
+- Provider integration status is not this lifecycle.
+
+### ServiceProvider
+- **Owner:** Administration / Resources.
+- **Purpose:** person/organization capable of fulfilling a Service Request.
+- **Lifecycle:** `ACTIVE` → `SUSPENDED` → `ARCHIVED`.
+- A valid provider may have no API.
+
+### ServiceOffer
+- **Owner:** Resources.
+- **Purpose:** provider offering for a category/capability.
+- **Required:** provider, category, active state.
+- **Optional:** capacity, hours, supported integration modes.
+
+### Resource
+- **Owner:** Resources.
+- **Purpose:** catalog entry for support availability.
+- **Required:** resource/provider/org linkage as applicable, category, service name, active state, freshness verification.
+- **Optional:** eligibility, counties/coverage, hours, contact/referral method, cost/capacity, integration modes.
+
+### ResourceCategory
+- **Owner:** Resources.
+- MVP codes: `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`.
+- Future codes remain reserved as specified in [PRODUCT.md](PRODUCT.md).
+
+---
+
+## 7. Provider integration entities
+
+### ProviderAdapterConfiguration
+- **Owner:** Provider Router / Administration.
+- **Purpose:** binds an environment/tenant/provider/capability to an enabled adapter without making the vendor part of the domain model.
+- **Required:** configuration id, tenant scope, adapter id, capability, integration mode, enabled state.
+- **Optional:** service provider, coverage scope, priority/routing metadata.
+- **Sensitive:** secrets are **not** stored on this entity; credentials remain deployment secrets.
+- **Authz:** SUAS-admin; scoped org-admin only where provider configuration authority is explicitly granted.
+
+### FulfillmentAttempt
+- **Owner:** Fulfillment / Provider Router.
+- **Purpose:** one deliberate attempt to obtain support from one provider adapter or manual path.
+- **Required:** `fulfillment_attempt_id`, `service_request_id`, `tenant_id`, capability, provider adapter id, integration mode, stable idempotency key, attempt status, created time.
+- **Optional:** service provider, external reference, last normalized provider status, last checked time, failure reason.
+- **Attempt status:** `PROVIDER_PENDING` | `PROVIDER_ACCEPTED` | `PROVIDER_IN_PROGRESS` | `PROVIDER_COMPLETED` | `PROVIDER_DECLINED` | `PROVIDER_CANCELLED` | `PROVIDER_FAILED` | `PROVIDER_UNKNOWN` | `MANUAL_PENDING` | `MANUAL_COMPLETED` | `MANUAL_FAILED`.
+- **Rules:**
+  - retry of the same logical attempt reuses idempotency identity;
+  - deliberate reroute/provider switch creates a new FulfillmentAttempt;
+  - ambiguous external outcome becomes `PROVIDER_UNKNOWN` and reconciles before a risky retry;
+  - provider-specific raw statuses remain adapter-local.
+- **Spec:** [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [FULFILLMENT.md](FULFILLMENT.md), [RESILIENCE.md](RESILIENCE.md).
+
+### ProviderOffer
+- **Purpose:** normalized, ephemeral-or-persisted offer shape returned through provider ports.
+- **Owner:** Provider Router / Fulfillment.
+- **Required logical fields:** provider/adapter ref, capability, Service Request, availability status, fulfillment mode.
+- **Optional:** estimated start/end/cost, expiry, external reference, cancellation support, freshness metadata.
+- **Rule:** provider offer cost is informational only absent an accepted funding/billing spec.
+
+---
+
+## 8. Fulfillment and referral
+
+### ServiceFulfillment
+- **Owner:** Fulfillment.
+- **Purpose:** SUAS record of acceptance/start/completion/confirmation/failure/partial/cancel.
+- **Lifecycle:** `ACCEPTED` → `STARTED` → `COMPLETED` → `CONFIRMED` | `DISPUTED`, or `FAILED` | `PARTIAL` | `CANCELLED`.
+- **Optional link:** FulfillmentAttempt that supplied fulfillment evidence.
+- **Rule:** provider completion cannot bypass SUAS confirmation/authorization semantics.
+- Funding fields remain `FUTURE`.
+
+### Referral
+- **Owner:** Referrals.
+- **Purpose:** directed handoff distinct from Service Request/Fulfillment.
+- **Lifecycle:** `DRAFTED` → `SENT` → `ACKNOWLEDGED` → `ACCEPTED` | `DECLINED` → `COMPLETED` | `UNABLE_TO_SERVE` | `CANCELLED`.
+- Requires applicable Consent Grant at send time.
+
+---
+
+## 9. Notifications
+
+### Notification
+- **Owner:** Notifications.
+- **Purpose:** one logical send, not one row per retry.
+- **Delivery state:** `QUEUED` → `SENT` | `FAILED` → `DELIVERED` | `BOUNCED` | `UNDELIVERABLE`.
+- Each send attempt appends immutable Audit Event.
+- Channel provider status does not change domain workflow state.
+
+### NotificationPreference
+- **Owner:** Notifications.
+- Channel preference only; cannot grant consent.
+
+---
+
+## 10. Audit and events
+
+### AuditEvent
+- **Owner:** Audit/Event Layer.
+- Immutable who/what/when/target record.
+
+### DomainEvent
+- **Owner:** Audit/Event Layer.
+- Immutable canonical business fact using [EVENT_MODEL.md](EVENT_MODEL.md).
+
+Provider attempt telemetry may remain Audit Events until specific new domain event names are accepted. Implementation must not invent canonical event names silently.
+
+---
+
+## 11. Pilot and feedback
+
+### Pilot
+- **Owner:** Administration.
+- Current controlled pilot: Santa Clara County, approximately 25–50 veterans.
+- Pilot size is an operating scope, not a production architecture ceiling.
+
+### PilotEnrollment
+- **Owner:** Veteran Profiles / Administration.
+- **Lifecycle:** `APPLIED` → `ENROLLED` → `WITHDRAWN` | `COMPLETED` | `REMOVED`.
+
+### Feedback
+- **Owner:** Administration.
+- Operational/satisfaction feedback, not clinical instrument.
+
+---
+
+## 12. Cross-cutting invariants
+
+1. Every tenant-owned entity carries tenant scope.
+2. Consent is evaluated at use time; provider disclosure is also minimum-necessary projected.
+3. Domain/authorization correctness cannot depend on one app process.
+4. Provider SDK types/statuses/payloads do not become domain types.
+5. ServiceProvider does not imply API capability.
+6. Service Request state is independent of provider-attempt state.
+7. Assignment is not Fulfillment; ProviderOffer is not Fulfillment; Referral completion is not automatically Fulfillment.
+8. External mutation retries are idempotent per FulfillmentAttempt.
+9. Duplicate/out-of-order provider callbacks cannot silently corrupt canonical state.
+10. Contested exclusive commands are atomic.
+11. Audit/Domain Events remain immutable.
+12. Mutable list/history entities must support bounded/paginated production access as they grow.
