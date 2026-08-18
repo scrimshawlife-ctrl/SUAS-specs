@@ -1,8 +1,8 @@
 # DATA_MODEL.md — Logical schema (SUAS v0.1)
 
-**Related:** [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [CONSENT.md](CONSENT.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
+**Related:** [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
-**Status:** `draft` / `0.1.0`. This is a normalized logical schema, not a physical migration. PostgreSQL is the target logical engine.
+**Status:** `draft` / `0.1.0`. This is a normalized logical schema, not a physical migration. PostgreSQL is the target logical engine. Changes here remain subject to SPEC-006 owner acceptance; this pass only reconciles draft cross-artifact semantics.
 
 ---
 
@@ -70,6 +70,7 @@
 - `status` (`DRAFT`|`PUBLISHED`|`SUPERSEDED`)
 - `published_at` nullable, `created_at`
 - immutable after `PUBLISHED`
+- publication becomes visible atomically as one complete version
 
 ### questions
 - PK `question_id`
@@ -90,12 +91,14 @@
 - `status` (`STARTED`|`IN_PROGRESS`|`COMPLETED`|`ABANDONED`|`INCOMPLETE`)
 - `started_at`, `completed_at` nullable, `abandoned_at` nullable
 - `created_at`, `updated_at`, `deleted_at`
+- transition to `COMPLETED` is idempotent at the logical command/event level
 
 ### check_in_responses
 - PK `check_in_response_id`
 - FK `check_in_id`, FK `question_id`
 - `answer_option_id` nullable, `free_text` nullable
 - `answered_at`
+- completed Check-In response history is not silently rewritten
 
 ---
 
@@ -106,10 +109,19 @@
 - FK `veteran_profile_id`
 - FK `check_in_id` nullable
 - `tenant_id`
+- `computation_kind` (`PRIMARY`|`OVERRIDE`)
+- `computation_key` stable opaque identity for primary computation/replay semantics
+- `source_type` (`CHECK_IN`|`EXPLICIT_NEED`)
+- `source_id` stable source identifier; required for non-Check-In signal sources
 - `level` (`GREEN`|`YELLOW`|`ORANGE`|`RED`)
 - `signal_version`, `input_questionnaire_version`, `computed_at`, `basis`
 - `override_of_signal_id`, `override_actor_id`, `override_reason` nullable
 - immutable row
+- Check-In-derived primary uniqueness must enforce one logical authoritative primary row for (`check_in_id`,`signal_version`,`input_questionnaire_version`,`PRIMARY`) or an equivalent unique `computation_key`
+- explicit-need primary uniqueness must use stable `source_type`/`source_id` + version identity; `check_in_id = null` alone is never a sufficient uniqueness key
+- override rows have distinct identity and link to the prior signal; they are not primary-computation duplicates
+
+The exact effective-signal projection/current-pointer representation is still subject to SPEC-006 reconciliation, but it must be deterministic and must not depend on insertion order alone.
 
 ---
 
@@ -236,7 +248,7 @@
 - FK `service_request_id`
 - `tenant_id`
 - `capability`
-- `provider_adapter_id` (logical adapter reference; may be `MANUAL`)
+- `provider_adapter_id` logical adapter reference; may be `MANUAL`
 - FK `service_provider_id` nullable
 - `integration_mode`
 - `idempotency_key` unique within provider/capability scope as required
@@ -252,7 +264,7 @@
 - PK `service_fulfillment_id`
 - FK `service_request_id` (unique current fulfillment unless later spec explicitly changes history model)
 - `tenant_id`
-- FK `fulfillment_attempt_id` nullable (the attempt that produced current fulfillment evidence; manual/internal allowed)
+- FK `fulfillment_attempt_id` nullable
 - `status` (`ACCEPTED`|`STARTED`|`COMPLETED`|`CONFIRMED`|`DISPUTED`|`FAILED`|`PARTIAL`|`CANCELLED`)
 - `accepted_at`, `started_at` nullable, `completed_at` nullable
 - `veteran_confirmed_at` nullable, `responder_confirmed_at` nullable
@@ -347,12 +359,20 @@
 - PK `event_id`
 - `event_type`, `aggregate_type`, `aggregate_id`, `tenant_id`
 - `actor_type`, `actor_id`, `occurred_at`, `schema_version`, `payload`
+- `idempotency_key` nullable/conditional
+- `correlation_id` nullable
+- FK-like `causation_event_id` nullable self-reference by event id semantics
+- `request_id` nullable
 - immutable; unique `event_id`
+- where `idempotency_key` is present, uniqueness scope is defined by the producing command/domain so retries resolve to one logical effect
 
 ### audit_events
 - PK `audit_event_id`
-- event envelope plus `action`, `target_type`, `target_id`, `ip` nullable, `user_agent` nullable
+- common event envelope semantics plus `action`, `target_type`, `target_id`, `ip` nullable, `user_agent` nullable
+- `event_id`/audit identity must remain distinct from `idempotency_key`
 - immutable
+
+An outbox/equivalent physical table may be used to couple domain state and event publication, but it is an implementation mechanism rather than a canonical business entity. Its semantics must satisfy [EVENT_MODEL.md](EVENT_MODEL.md).
 
 ---
 
@@ -364,6 +384,7 @@ At minimum:
 - `(tenant_id,status)` on support_cases, service_requests, follow_ups, fulfillment_attempts;
 - `(tenant_id,created_at desc)` on high-volume operational collections as query needs require;
 - `(veteran_profile_id,computed_at desc)` on support_signals;
+- unique/indexed Support Signal computation identity for primary calculations;
 - `(veteran_profile_id,status)` on consent_grants;
 - `(support_case_id)` on service_requests, case_notes, contact_attempts, follow_ups, referrals;
 - `(support_case_id,at)` on contact_attempts;
@@ -372,7 +393,7 @@ At minimum:
 - `(service_request_id,created_at)` on fulfillment_attempts;
 - `(provider_adapter_id,status,updated_at)` or equivalent on fulfillment_attempts where adapter reconciliation uses it;
 - `(tenant_id,delivery_status,created_at)` on notifications for worker/ops queries;
-- event/audit timestamp + tenant/aggregate access paths appropriate to retention/volume.
+- event/audit `idempotency_key`, correlation, tenant, aggregate, and timestamp access paths where representative queries require them.
 
 Exact physical indexes are validated by representative query plans/load tests; do not add speculative indexes that harm writes without evidence.
 
@@ -384,9 +405,10 @@ Exact physical indexes are validated by representative query plans/load tests; d
 2. Normal responder/veteran screens must not require full history table scans.
 3. Worker pickup queries for notifications/follow-ups/provider attempts need indexable status/due-time predicates.
 4. Idempotency lookup must be indexed/unique enough to avoid duplicate external side effects under concurrency.
-5. Connection pooling is required in production architecture.
-6. Audit/event growth must have an accepted retention/archive plan once D-007 closes.
-7. Partitioning/read replicas/sharding are evidence-driven later options, not MVP requirements.
+5. Signal computation identity must support concurrent/replayed worker deduplication without serializing the entire signal subsystem.
+6. Connection pooling is required in production architecture.
+7. Audit/event growth must have an accepted retention/archive plan once D-007 closes.
+8. Partitioning/read replicas/sharding are evidence-driven later options, not MVP requirements.
 
 ---
 
@@ -400,18 +422,23 @@ Exact physical indexes are validated by representative query plans/load tests; d
 6. Provider-specific status does not directly mutate canonical ServiceRequest state outside documented commands.
 7. A Referral requires an ACTIVE ConsentGrant at send time; historical row remains if later revoked.
 8. Provider disclosure requires applicable Consent/minimum-necessary projection at call time.
-9. Published questionnaire versions are immutable.
-10. Domain/Audit Events cannot be updated/deleted by application roles.
-11. Provider credentials/secrets are not stored in provider/resource tables.
-12. Case claim/assignment constraints must support one deterministic winner under concurrent exclusive claims.
+9. Published questionnaire versions are immutable and atomically visible when published.
+10. A Check-In-derived primary Support Signal is unique by its logical computation identity; duplicate worker delivery resolves to the already-settled result.
+11. Explicit-need signals require a stable source identity; nullable Check-In alone cannot identify them.
+12. Domain/Audit Events cannot be updated/deleted by application roles.
+13. Required Domain Event publication cannot be permanently lost after a committed domain transition.
+14. Provider credentials/secrets are not stored in provider/resource tables.
+15. Case claim/assignment constraints must support one deterministic winner under concurrent exclusive claims.
 
 ---
 
 ## 15. Non-goals
 
-- Physical migration syntax
-- Vendor-specific provider schemas
-- Payment/billing columns in MVP
-- Database sharding before evidence
-- Storing raw provider webhook payloads indefinitely
-- Storing provider API secrets in the application relational domain model
+- physical migration syntax;
+- vendor-specific provider schemas;
+- payment/billing columns in MVP;
+- database sharding before evidence;
+- storing raw provider webhook payloads indefinitely;
+- storing provider API secrets in the application relational domain model;
+- using event IDs as a substitute for command/job idempotency identity;
+- deriving the effective Support Signal from unspecified insertion order.
