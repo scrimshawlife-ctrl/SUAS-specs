@@ -2,7 +2,7 @@
 
 **Authority:** This file is the terminology authority. All other specs must use these terms exactly.  
 **SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
-**Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md)
+**Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md)
 
 Terms are not interchangeable. Do not alias them in implementation or documentation.
 
@@ -48,6 +48,18 @@ A specific person in a Veteran's Trusted Circle. Has an invite/accept lifecycle,
 ## Organization
 
 A participating entity that employs or vets Responders, owns Resources, and may act as a Service Provider. Organization Administrator scope is limited to that Organization. Pilot partner organizations are placeholders (`PARTNER_ORG_001`, …) until named. See [DECISIONS.md](DECISIONS.md).
+
+---
+
+## Organization Administrator
+
+An administrator scoped to one Organization. Manages organization membership, responder enablement/revocation, organization-owned Resources, and organization-scoped operational settings. An Organization Administrator is not a SUAS System Administrator.
+
+---
+
+## SUAS System Administrator
+
+A global SUAS operator with audited authority over system-level administration, configuration, questionnaire/signal/consent/template publication, cross-tenant incident response, and other explicitly documented privileged actions. Must not be conflated with Organization Administrator.
 
 ---
 
@@ -101,7 +113,7 @@ See [RESOURCES.md](RESOURCES.md).
 
 ## Service Provider
 
-An organization or person capable of fulfilling a Service Request. May own Resources and Service Offers. Distinct from Responder (coordinator) unless a specific membership makes the same human both, which must be explicit.
+An organization or person capable of fulfilling a Service Request. May own Resources and Service Offers. Distinct from Responder (coordinator) unless a specific membership makes the same human both, which must be explicit. A valid Service Provider does not require an API integration; manual coordination is first-class.
 
 ---
 
@@ -110,6 +122,14 @@ An organization or person capable of fulfilling a Service Request. May own Resou
 The record that a Service Request was accepted, started, completed, and confirmed (or failed, partial, or cancelled). A Service Request is not fulfilled merely because it is assigned. Funding is separate from fulfillment.
 
 See [FULFILLMENT.md](FULFILLMENT.md).
+
+---
+
+## Fulfillment Attempt
+
+One idempotent attempt to obtain or advance external or manual fulfillment for a Service Request through a selected capability route/provider adapter. A Fulfillment Attempt records SUAS-side attempt identity, capability/provider reference, idempotency key, status/unknown-outcome state, and reconciliation metadata as specified in [FULFILLMENT.md](FULFILLMENT.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), and [DATA_MODEL.md](DATA_MODEL.md).
+
+A Fulfillment Attempt is **not** the canonical Service Request and is **not** itself Fulfillment. Provider-specific status values may be recorded/normalized on the attempt but must not redefine canonical Service Request/Fulfillment states.
 
 ---
 
@@ -153,7 +173,7 @@ See [EVENT_MODEL.md](EVENT_MODEL.md) and [SECURITY.md](SECURITY.md).
 
 ## Pilot
 
-A bounded operational trial. v0.1 pilot: approximately 25–50 veterans, Santa Clara County, California. See [PILOT.md](PILOT.md).
+A bounded operational trial. v0.1 pilot: approximately 25–50 veterans, Santa Clara County, California. Pilot size is an operating scope, not a production architecture ceiling. See [PILOT.md](PILOT.md) and [SCALING.md](SCALING.md).
 
 ---
 
@@ -185,13 +205,27 @@ The inventory in [COMPLIANCE.md](COMPLIANCE.md) of legal and regulatory regimes 
 
 ## External API
 
-A third-party service capability required to operate the MVP loop (for example SMS delivery, email delivery, auth challenge, application host, relational database). Inventoried in [APIS.md](APIS.md) as **capability IDs**, not vendor names. Distinct from the SUAS product API contract in [API.md](API.md).
+A third-party service capability used by SUAS, including infrastructure/communications capabilities and provider-side fulfillment capabilities. Inventoried by capability rather than vendor name. Distinct from the SUAS product API contract in [API.md](API.md).
+
+See [APIS.md](APIS.md) and [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
 
 ---
 
 ## Capability Port
 
-The domain-facing interface (for example `SmsPort`, `EmailPort`, `AuthPort`) that a module calls instead of a vendor SDK. Vendor SDKs live only in adapters. Domain tests use fakes. Do not import a vendor name into domain specs. See [APIS.md](APIS.md). LOCAL sink adapters (stdout / mailbox file / no real send) are a proposed Path 3 in [FRICTION.md](FRICTION.md); they do not close D-001–D-005.
+A SUAS-owned interface that domain/application modules call instead of a provider SDK. Examples include `SmsPort`, `EmailPort`, `AuthPort`, `TransportationPort`, `TemporaryShelterPort`, `FoodSupportPort`, and `PeerSupportPort`.
+
+Vendor SDKs, payloads, webhook schemas, and provider-specific status values live inside adapters. Domain tests use fakes/conformance fixtures. Selecting a provider closes an adapter/configuration decision; it does not change the domain contract.
+
+See [APIS.md](APIS.md) and [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
+
+---
+
+## Provider Adapter
+
+A provider-specific implementation of one or more SUAS Capability Ports. It maps provider requests, responses, webhooks, errors, and statuses into SUAS-owned capability/result semantics. Provider Adapters are configuration/integration infrastructure, not canonical product-state authorities.
+
+See [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
 
 ---
 

@@ -1,105 +1,151 @@
 # ADMIN.md — Administration surfaces (SUAS v0.1)
 
-**Related:** [AUTH.md](AUTH.md), [SECURITY.md](SECURITY.md), [PILOT.md](PILOT.md), [RESOURCES.md](RESOURCES.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md)
+**Related:** [AUTH.md](AUTH.md), [SECURITY.md](SECURITY.md), [PILOT.md](PILOT.md), [RESOURCES.md](RESOURCES.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [OPERATIONS.md](OPERATIONS.md)
+
+**Status:** `draft` / `0.1.0`. SPEC-007 is dependency-blocked; this is preflight reconciliation.
 
 ---
 
 ## 1. Purpose
 
-Define what Organization Administrators and SUAS System Administrators can manage. **Org-admin ≠ global SUAS-admin.**
+Define Organization Administrator and SUAS System Administrator authority. **Org Admin ≠ SUAS Admin.**
 
-Empty-system first-run (bootstrap checklist, MFA-before-writes, environment-class banner) is specified in [ONBOARDING.md](ONBOARDING.md). This file remains the administration-surface contract.
+Administration configures accepted capabilities and operations; it must not invent new domain semantics, vendor-specific state machines, or bypass consent/security.
 
 ---
 
 ## 2. SUAS System Administrator
 
-May manage (all audited):
+May manage, all with MFA and audit:
 
-| Area | Notes |
+| Area | Boundary |
 |---|---|
-| Users | Status, revoke, recovery; not silent impersonation |
-| Organizations | Create/suspend/archive; placeholders until D-008 |
-| Membership | Across orgs |
-| Cases | Read/break-glass with reason; not routine ownership |
-| Service Requests | Same |
-| Resources | Any org; verification |
-| Questionnaire versions | Draft/publish/supersede |
-| Signal-rule versions | Publish; D-011 may still be open — do not publish invented weights |
-| Consent templates | Publish versions |
-| Notification templates | Publish versions; no safety-critical logic |
-| Pilot config | [PILOT.md](PILOT.md) |
-| Audit | Read Audit Events / Domain Events |
-| Reports | [ANALYTICS.md](ANALYTICS.md) operational metrics |
-| System config | Feature flags that do **not** redefine specs |
+| Users / sessions | status, revoke, recovery/force logout; no silent impersonation |
+| Organizations / memberships | create/suspend/archive, cross-org membership administration |
+| Cases / Requests | audited break-glass/read/repair paths only as specified; not routine responder ownership |
+| Resources / Service Offers | global admin/verification |
+| Questionnaire versions | draft/publish/supersede; immutable once published |
+| Signal-rule versions | publish only accepted rule artifacts; D-011 cannot be bypassed |
+| Consent templates | publish versioned templates |
+| Notification templates | publish versioned copy; no safety-critical logic |
+| Pilot config | accepted Pilot settings |
+| Provider adapter config | enable/disable accepted capability adapters by environment/tenant/coverage after the relevant provider decision is closed |
+| Provider health/operations | read normalized adapter health/circuit/reconciliation status without exposing raw secrets |
+| Audit / reports | scoped operational read surfaces |
+| System config | feature/config flags that do not redefine released contracts |
 
 ---
 
-## 3. Organization Administrator
+## 3. Provider adapter administration
 
-Scoped to **one** Organization:
+Provider selection remains D-017–D-020 and deployment configuration, not domain architecture.
 
-- Users who have membership in that org (invite, suspend, revoke membership)
-- Responders and `active_for_queue`
-- Org-owned Resources and Service Offers
-- Org queue visibility
-- Org notification defaults (cannot override veteran consent)
+Admin surfaces may expose:
+- opaque `adapter_id`;
+- capability;
+- integration mode;
+- tenant/org scope;
+- enabled/disabled state;
+- coverage/routing priority configuration;
+- normalized health/circuit/degraded status;
+- last successful reconciliation/health-check metadata;
+- secret-presence/credential-reference state such as `CONFIGURED|MISSING`, never the secret value.
+
+Admin surfaces must **not** expose:
+- API keys/tokens/passwords;
+- raw provider webhook secrets;
+- arbitrary provider payload dumps;
+- provider-specific status as canonical Service Request/Fulfillment state.
+
+Enabling an adapter that lacks a closed decision/accepted capability is rejected. Disabling an adapter must not delete or rewrite existing FulfillmentAttempt history.
+
+Manual Adapter paths remain first-class and visible as configuration, not as a failure mode.
+
+---
+
+## 4. Organization Administrator
+
+Scoped to one Organization:
+
+- invite/suspend/revoke org memberships;
+- manage responder `active_for_queue`;
+- manage org-owned Resources/Service Offers;
+- see org queue/operational health allowed by policy;
+- manage org notification defaults that cannot override veteran consent;
+- manage org-scoped provider routing/configuration **only if** that capability is explicitly delegated by an accepted admin policy and the underlying provider adapter was enabled globally/for that org.
 
 Cannot:
-
-- Change global signal rules, questionnaire versions, consent templates, system config
-- See other orgs' cases or veterans
-- Grant themselves `SUAS_ADMIN`
-
----
-
-## 4. Rules
-
-- MFA required ([AUTH.md](AUTH.md)).
-- Every privileged write emits an Audit Event.
-- Least privilege.
-- Production data is not exported to non-prod ([SECURITY.md](SECURITY.md)).
+- see another tenant's veterans/Cases/config;
+- publish global questionnaires/signal/consent templates;
+- grant self `SUAS_ADMIN`;
+- read provider secrets;
+- enable an unapproved provider/capability;
+- override consent or canonical provider/fulfillment state rules.
 
 ---
 
-## 5. Non-goals
+## 5. Bootstrap / environment configuration
 
-- Clinical admin
-- Billing admin (FUTURE)
-- Impersonation without a later break-glass spec
+First-run remains [ONBOARDING.md](ONBOARDING.md).
 
----
+Production bootstrap/status must identify whether required capabilities are actually configured without leaking credentials, including:
+- auth/email/SMS availability;
+- durable job execution availability;
+- database/app environment readiness;
+- enabled provider/manual capability paths required by the target launch;
+- published questionnaire/consent/safety artifacts required for operation.
 
-## 6. Testability
-
-- Org-admin API to another tenant returns 404/403 without leakage.
-- Org-admin cannot publish questionnaire versions.
-- SUAS-admin actions are audited.
-
+A missing optional provider may mark a capability/manual path unavailable/degraded; it must not be silently faked as configured.
 
 ---
 
-## 7. Events
+## 6. Operational administration
 
-Admin writes do not all have Domain Event types. They **must** have Audit Events. Domain Events that admin actions may cause indirectly: `VETERAN_ENROLLED` (enrollment), questionnaire publish (audit only in v0.1).
+Admin read surfaces may expose bounded operational state needed for [OPERATIONS.md](OPERATIONS.md):
+- queue depth/oldest job age;
+- dead-letter/failed-work counts;
+- provider circuit/health/reconciliation backlog;
+- notification delivery failure summaries;
+- audit/event append health;
+- restore/failure-drill status metadata;
+- tenant-scoped load/backpressure indicators.
 
----
-
-## 8. States
-
-Admin-managed lifecycles reuse entity states in [DOMAIN_MODEL.md](DOMAIN_MODEL.md): User, Organization, OrganizationMembership, Pilot, QuestionnaireVersion.
-
----
-
-## 9. Non-goals (expanded)
-
-- Clinical coding administration
-- Billing / Medi-Cal administration (`FUTURE`)
-- Editing published questionnaire or signal versions in place ([VERSIONING.md](VERSIONING.md))
-- Granting Trusted Circle visibility by admin fiat
+These are operational indicators, not clinical/veteran outcome scores.
 
 ---
 
-## 10. Links
+## 7. Rules
 
-[AUTH.md](AUTH.md), [SECURITY.md](SECURITY.md), [PILOT.md](PILOT.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [CONSENT.md](CONSENT.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [ANALYTICS.md](ANALYTICS.md)
+- MFA required for every privileged admin session.
+- All privileged writes emit Audit Events.
+- Sensitive admin reads are audited where specified.
+- Least privilege and tenant scope are enforced at mutation time.
+- Admin actions use API command idempotency where retry could duplicate a business/configuration effect.
+- Published/versioned artifacts are not edited in place.
+- Production data never moves to non-production through ordinary admin export paths.
+
+---
+
+## 8. Non-goals
+
+- clinical administration;
+- billing/Medi-Cal administration in MVP;
+- raw secret management UI unless a later security spec explicitly authorizes a secret-write flow;
+- provider-specific booking console as the canonical SUAS workflow;
+- silent impersonation;
+- feature flags that redefine domain semantics.
+
+---
+
+## 9. Testability
+
+Required tests include:
+- Org Admin cross-tenant action denied without leakage;
+- Org Admin cannot self-grant SUAS Admin;
+- privileged admin action without MFA denied;
+- provider adapter cannot be enabled without accepted/closed decision/config authority;
+- provider secret value never returned from admin API/UI;
+- disabling adapter preserves FulfillmentAttempt history;
+- admin provider status shows normalized health, not vendor-domain state leakage;
+- duplicate admin command with same idempotency key produces one logical configuration mutation;
+- every successful privileged write emits Audit Event.

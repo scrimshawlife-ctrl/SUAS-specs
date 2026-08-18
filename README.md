@@ -1,266 +1,218 @@
 # Shut Up and Serve (SUAS) — Specification v0.1
 
 **Product:** Shut Up and Serve  
-**System identifier:** SUAS  
-**Specification version:** 0.1.0  
-**Specification status:** `draft` (see [VERSIONING.md](VERSIONING.md))  
-**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
-**Phase:** `SPECIFICATION_BOOTSTRAP` (see [STATUS.md](STATUS.md))
+**System:** SUAS  
+**Version:** `0.1.0`  
+**Lifecycle:** `draft`  
+**Phase:** `SPECIFICATION_BOOTSTRAP`  
+**Implementation authority:** `NOT_YET_RELEASED`
 
-This repository (`SUAS-specs`) is the **canonical specification authority** for Shut Up and Serve. The implementation repository ([SUAS](https://github.com/scrimshawlife-ctrl/SUAS)) must conform to released specifications. Undocumented implementation is not canonical. Gaps discovered during implementation return to this repository as specification work, not as silent product redefinition.
-
----
-
-## 1. What SUAS is
-
-SUAS is a **consent-governed veteran support coordination platform**.
-
-It coordinates the shortest safe and consented path between a veteran's current need and an available human or material support resource.
-
-SUAS is an operational coordination system. It records needs, consent, assignments, fulfillments, follow-ups, and settlements. It does not diagnose, predict crisis, or dispatch emergency services.
-
-**Mission (canonical):** Coordinate the shortest safe and consented path between a veteran's current need and an available human or material support resource.
-
-See [PRODUCT.md](PRODUCT.md).
+`SUAS-specs` is the canonical specification authority. `scrimshawlife-ctrl/SUAS` implements only released contracts. Prototype, code, deployment state, provider behavior, or traction do not silently redefine canon.
 
 ---
 
-## 2. Who it serves
+## 1. Mission / boundaries
 
-| Role | Definition |
-|---|---|
-| **Veteran** | The person whose need is being coordinated. The primary data subject and consent granter. |
-| **Responder** | A human coordinator who claims or is assigned a Support Case and works the coordination loop. |
-| **Organization Administrator** | An administrator scoped to one Organization. Manages membership, responders, and org-owned resources. Not a global SUAS administrator. |
-| **Trusted Contact** | A person in the veteran's Trusted Circle, with explicit, purpose-scoped Consent Grants. Membership alone grants no visibility. |
-| **Service Provider** | An organization or person that can fulfill a Service Request (food, transportation, shelter, peer support). |
-| **SUAS System Administrator** | A global operator of the SUAS system. Distinct from Organization Administrator. |
+**Mission:** Coordinate the shortest safe and consented path between a veteran's current need and an available human or material support resource.
 
-Role definitions are authoritative in [PRODUCT.md](PRODUCT.md) and [GLOSSARY.md](GLOSSARY.md).
-
----
-
-## 3. Problem
-
-Veterans in a local pilot (Santa Clara County, California) need timely, consented coordination of basic support: food, transportation, temporary shelter, and peer/human support. Existing systems are fragmented. Informal coordination loses consent boundaries, auditability, and follow-through.
-
-SUAS exists to make that coordination **explicit, consented, inspectable, and completable**.
-
----
-
-## 4. Operational boundaries
-
-SUAS is **not**:
-
-- a crisis-prediction application
-- an electronic health record (EHR)
-- a medical diagnosis tool
-- an automated emergency-dispatch platform
-- a replacement for emergency services
-- a clinical efficacy measurement system
-- a Medi-Cal billing system (billing adapter is `FUTURE`; see [SETTLEMENT.md](SETTLEMENT.md) and [PRODUCT.md](PRODUCT.md))
-
-SUAS **does**:
-
-- collect versioned Check-Ins
-- compute deterministic Support Signals (`GREEN` / `YELLOW` / `ORANGE` / `RED`)
-- require explicit Consent Grants before sharing or notifying
-- open Support Cases and Service Requests
-- coordinate Responders, Resources, and Referrals
-- record Fulfillment, Follow-Up, and Settlement
-- emit immutable Domain Events and Audit Events
-
----
-
-## 5. Pilot scope
-
-- **Population:** approximately 25–50 veterans
-- **Geography:** Santa Clara County, California
-- **MVP service categories:** `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`
-- **Operational focus:** food, transportation, temporary shelter, peer/human support, responder coordination, resource referrals, trusted-circle communication, follow-up
-
-Partner organizations are **not invented**. Use `PARTNER_ORG_001` placeholders until named. See [PILOT.md](PILOT.md) and [DECISIONS.md](DECISIONS.md).
-
-Pilot readiness: `NOT_READY`. Implementation authority: `NOT_YET_RELEASED`.
-
----
-
-## 6. Canonical loop
-
-Every coordinated need travels this loop. Stages are sequential in meaning. A Support Case may contain multiple Service Requests; each request travels the loop independently after NEED.
-
-```
+```text
 SIGNAL → NEED → CONSENT → COORDINATION → FULFILLMENT → FOLLOW-UP → SETTLEMENT
 ```
 
-| Stage | Meaning | Primary artifacts |
+MVP categories: `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`.
+
+SUAS is not an EHR, diagnosis system, suicide-prediction product, automated emergency dispatcher, or MVP billing platform.
+
+---
+
+## 2. Controlled pilot vs scale
+
+The controlled Santa Clara County pilot remains approximately 25–50 enrolled veterans unless explicitly changed. High demand/traction may justify waitlist or later launch planning, but does not silently expand PilotEnrollment.
+
+Pilot size is an operating boundary, not a technical capacity ceiling. D-021/D-023 define release-specific workload/performance evidence; unsupported regional/multi-region user-count forecasts are not canonical.
+
+---
+
+## 3. Production architecture doctrine
+
+```text
+Veteran / Responder / Admin clients
+              |
+              v
+     Stateless SUAS application
+              |
+       +------+------+
+       |             |
+       v             v
+  PostgreSQL     Durable Jobs
+                     |
+          +----------+----------+
+          |          |          |
+     Notifications Provider   Scheduled/
+                   Adapters   Reconcile
+```
+
+Core rules:
+
+- scalable modular monolith; no premature microservices;
+- correctness-critical state is shared/persistent, not process-local;
+- production-critical async work is durable;
+- persistent command idempotency is distinct from event identity;
+- required Domain Event publication is replay-safe;
+- contested Case/assignment/Settlement operations have deterministic one-winner semantics;
+- Support Signal/current Settlement/current assignment projections are deterministic;
+- Follow-Up stale jobs are version-guarded;
+- growing APIs/queries are bounded;
+- scale and resilience are proven by evidence, not diagrams.
+
+---
+
+## 4. MVP visual authority
+
+The existing MVP at `https://suasqrf.org/app/` is the visual/interaction reference. [MVP_REFERENCE.md](MVP_REFERENCE.md) preserves the recognizable `TAKE ACTION`, `I NEED SUPPORT`, `I WANT TO SERVE`, QRF deploy/search/contact flow, immediate resources, resource category browsing, responder on-duty dashboard, Quick Resource Share, Alerts/Chat/Home, and distinct admin surface.
+
+Production must be truthful where the prototype is not canonical:
+
+- replace contradictory `No email` enrollment copy;
+- do not guarantee responder proximity/immediate notification without evidence;
+- do not require continuous GPS to preserve “near you” wording;
+- exact crisis copy follows accepted SAFETY/D-012;
+- prototype statistics/clinical claims are not inherited;
+- future category cards may remain informational/`COMING_SOON`, not hidden released workflows.
+
+`UI_CONFORMANCE` is a readiness gate.
+
+---
+
+## 5. Provider-neutral fulfillment
+
+Canonical capability ports:
+
+- `TransportationPort`
+- `TemporaryShelterPort`
+- `FoodSupportPort`
+- `PeerSupportPort`
+
+Integration modes include `API`, `WEBHOOK`, `DEEP_LINK`, `PHONE`, `EMAIL`, `MANUAL_COORDINATION`, `NONE`.
+
+Manual coordination is first-class. A Service Provider does not need an API.
+
+Provider SDKs/payloads/statuses stay inside adapters. External mutations use stable `FulfillmentAttempt` idempotency. Ambiguous outcomes become `PROVIDER_UNKNOWN` and reconcile before duplicate-risk retry.
+
+See [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
+
+---
+
+## 6. Readiness gates
+
+All are `NOT_READY`:
+
+`AUTH`, `CONSENT`, `CHECK-IN`, `COORDINATION`, `EXTERNAL_FULFILLMENT`, `UI_CONFORMANCE`, `SAFETY`, `PRIVACY`, `SCALE`, `RESILIENCE`, `OPERATIONS`, `REPORTING`.
+
+See [STATUS.md](STATUS.md), [TESTING.md](TESTING.md).
+
+---
+
+## 7. Governance / owner review chain
+
+Preflight repairs draft contradictions and prepares review artifacts. **Preflight is not acceptance.** Only the owner changes lifecycle.
+
+| Stage | Purpose | State |
 |---|---|---|
-| **SIGNAL** | A deterministic Support Signal is computed from a Check-In (or an explicit veteran-initiated need). The signal is a coordination priority label, not a diagnosis. | [Check-In](CHECKINS.md), [Support Signal](SUPPORT_SIGNALS.md) |
-| **NEED** | A concrete need is identified and recorded as one or more Service Requests on a Support Case. | [Support Case](CASES.md), [Service Request](DISPATCH.md) |
-| **CONSENT** | Explicit, purpose-scoped Consent Grants are checked or obtained before any share, notify, assign-outside-org, or trusted-contact alert. | [Consent](CONSENT.md), [Trusted Circle](TRUSTED_CIRCLE.md) |
-| **COORDINATION** | A Responder claims or is assigned the case; matching, assignment, referral, and contact occur. | [Cases](CASES.md), [Dispatch](DISPATCH.md), [Responder Workflows](RESPONDER_WORKFLOWS.md), [Referrals](REFERRALS.md), [Resources](RESOURCES.md) |
-| **FULFILLMENT** | The requested support is accepted, started, completed, and confirmed. Assignment is not fulfillment. | [Fulfillment](FULFILLMENT.md) |
-| **FOLLOW-UP** | First-class Follow-Up records with due dates, owners, retries, and escalation. Not hidden in notes. | [Follow-Up](FOLLOWUP.md) |
-| **SETTLEMENT** | An explicit resolution record of what was requested, what occurred, what remains, and who confirmed. Not a clinical outcome. | [Settlement](SETTLEMENT.md) |
+| [SPEC-001](SPEC-001.md) | product/authority | `READY_FOR_REVIEW` |
+| [SPEC-002](SPEC-002.md) | consent/privacy/safety/security | blocked; preflight complete |
+| [SPEC-003](SPEC-003.md) | Check-In/signal/events | blocked; preflight complete |
+| [SPEC-004](SPEC-004.md) | Case/Request/responder workflow | blocked; preflight complete |
+| [SPEC-005](SPEC-005.md) | resources/referrals/fulfillment/follow-up/settlement | blocked; preflight complete |
+| [SPEC-006](SPEC-006.md) | domain/data/event/architecture reconciliation | blocked; preflight complete |
+| [SPEC-007](SPEC-007.md) | API/auth/notifications/admin | blocked; preflight complete |
+| [SPEC-008](SPEC-008.md) | MVP visual conformance | blocked; preflight complete |
+| [SPEC-009](SPEC-009.md) | provider-neutral fulfillment | blocked; preflight complete |
+| [SPEC-010](SPEC-010.md) | scaling | blocked; preflight complete |
+| [SPEC-011](SPEC-011.md) | resilience | blocked; preflight complete |
+| [SPEC-012](SPEC-012.md) | testing/readiness evidence | blocked; preflight complete |
+| [SPEC-013](SPEC-013.md) | deployment/operations/incidents/recovery | blocked; preflight complete |
+| [SPEC-014](SPEC-014.md) | controlled pilot/analytics | blocked; preflight complete |
+| [SPEC-015](SPEC-015.md) | release decisions/safe deferrals | blocked; preflight complete |
+| [SPEC-016](SPEC-016.md) | first release assembly | blocked by SPEC-001–015 |
+| SPEC-017 | implementation conformance | post-release |
+| SPEC-018 | launch readiness | post-conformance |
+| SPEC-019 | post-launch revision | future |
 
-These concepts are **not interchangeable**: Check-In, Support Signal, Support Case, Service Request, Referral, Assignment, Fulfillment, Follow-Up, Settlement. See [GLOSSARY.md](GLOSSARY.md).
-
-**Support Case** = coordination around a veteran.  
-**Service Request** = a specific requested need.  
-One case may contain multiple service requests.
-
----
-
-## 7. Specification / implementation relationship
-
-| Repository | Role |
-|---|---|
-| **SUAS-specs** (`scrimshawlife-ctrl/SUAS-specs`) | Canonical specification authority. Released specs define contracts. |
-| **SUAS** (`https://github.com/scrimshawlife-ctrl/SUAS`) | Implementation repository. Must conform to released specs. Must cite spec sections and versions in PRs. |
-
-Rules:
-
-1. Specifications are the authority.
-2. Implementation cites contracts; it does not redefine them.
-3. Gaps return to specifications.
-4. Deployment does not redefine specification.
-5. Undocumented implementation is not canonical.
-
-See [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [CONTRIBUTING.md](CONTRIBUTING.md).
+First implementation-authoritative release is SPEC-016. Release is not launch readiness.
 
 ---
 
-## 8. Document index
+## 8. Open decisions
 
-### Product and authority
+D-001 through D-025 are canonical in [DECISIONS.md](DECISIONS.md).
 
-| File | Purpose |
-|---|---|
-| [PRODUCT.md](PRODUCT.md) | Mission, roles, categories, loop, non-goals, Medi-Cal/billing boundary |
-| [GLOSSARY.md](GLOSSARY.md) | Canonical terms |
-| [STATUS.md](STATUS.md) | Phase, readiness, MVP acceptance gate |
-| [VERSIONING.md](VERSIONING.md) | Semver, artifact versions, lifecycle |
-| [ROADMAP.md](ROADMAP.md) | SPEC-001 through SPEC-015 |
-| [DECISIONS.md](DECISIONS.md) | Open decisions; do not guess |
-| [AGENTS.md](AGENTS.md) | Agent rules and cross-repo governance |
+Key hardening decisions:
 
-### Architecture and data
+- D-017–D-020 external service adapters;
+- D-021 release workload/capacity envelope;
+- D-022 durable job/queue implementation;
+- D-023 performance SLOs/alerts;
+- D-024 RTO/RPO;
+- D-025 aggregate reporting privacy/small-cell policy.
 
-| File | Purpose |
-|---|---|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Modular monolith, modules, jobs, AI policy |
-| [DOMAIN_MODEL.md](DOMAIN_MODEL.md) | Entities, ownership, lifecycle, authz |
-| [DATA_MODEL.md](DATA_MODEL.md) | Logical schema |
-| [EVENT_MODEL.md](EVENT_MODEL.md) | Domain and audit events |
-| [API.md](API.md) | Resource/domain contract |
-| [APIS.md](APIS.md) | Necessary-API inventory (Plane A minimum + Plane B capability ports). API.md is the contract; APIS.md is the inventory. |
+No provider, infrastructure product, capacity/SLO/recovery number, or reporting threshold may be guessed.
 
-### Domain specs
-
-| File | Purpose |
-|---|---|
-| [AUTH.md](AUTH.md) | Authentication, sessions, MFA, recovery |
-| [CONSENT.md](CONSENT.md) | Consent grants, revocation, purpose scope |
-| [CHECKINS.md](CHECKINS.md) | Versioned questionnaires |
-| [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md) | Deterministic GREEN/YELLOW/ORANGE/RED |
-| [SAFETY.md](SAFETY.md) | Red-state behavior, AI policy, crisis-resource surfacing |
-| [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md) | Invites, permissions, consent dependencies |
-| [CASES.md](CASES.md) | Support Case state machine |
-| [DISPATCH.md](DISPATCH.md) | Service Request state machine |
-| [RESOURCES.md](RESOURCES.md) | Resource catalog and freshness |
-| [REFERRALS.md](REFERRALS.md) | Referrals distinct from Service Requests |
-| [FULFILLMENT.md](FULFILLMENT.md) | Acceptance through confirmation |
-| [FOLLOWUP.md](FOLLOWUP.md) | First-class follow-up |
-| [SETTLEMENT.md](SETTLEMENT.md) | Resolution record and funding boundary |
-| [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md) | Responder actions and queue |
-| [NOTIFICATIONS.md](NOTIFICATIONS.md) | Channels, consent basis, templates |
-
-### Security, privacy, operations
-
-| File | Purpose |
-|---|---|
-| [SECURITY.md](SECURITY.md) | Controls, threats, HIPAA_APPLICABILITY = DECISION_PENDING |
-| [PRIVACY.md](PRIVACY.md) | Minimization, collection boundaries, retention |
-| [COMPLIANCE.md](COMPLIANCE.md) | Compliance register (not a claim of being compliant) |
-| [ONBOARDING.md](ONBOARDING.md) | Admin first-run bootstrap and first-time user experience |
-| [ADMIN.md](ADMIN.md) | Administration surfaces |
-| [PILOT.md](PILOT.md) | Pilot operations |
-| [ANALYTICS.md](ANALYTICS.md) | Operational metrics only |
-| [TESTING.md](TESTING.md) | Test suites and MVP acceptance gate |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Environments; cloud = DECISION_PENDING |
-| [OPERATIONS.md](OPERATIONS.md) | Day-2 ops |
-| [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md) | Technical and safety incidents |
-
-### Process
-
-| File | Purpose |
-|---|---|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How to change specs |
-| [SPEC-001.md](SPEC-001.md) | SPEC-001 owner-review worksheet (`READY_FOR_REVIEW`, not `accepted`) |
-| [FRICTION.md](FRICTION.md) | User and infra friction; proposed engineering paths (not a decision close; not implementation authority) |
-| [CHANGELOG.md](CHANGELOG.md) | 0.1.0 bootstrap |
-| [SPEC_AUDIT.md](SPEC_AUDIT.md) | Completeness audit of this stack |
-| [CODEOWNERS](CODEOWNERS) | `* @scrimshawlife-ctrl` |
+SPEC-015 classifies each release-relevant decision as `MUST CLOSE`, conditional, or safely deferrable only with an explicit feature boundary.
 
 ---
 
-## 9. Current status
+## 9. Core spec index
 
-| Field | Value |
-|---|---|
-| Product | Shut Up and Serve |
-| System | SUAS |
-| Specs repo | `scrimshawlife-ctrl/SUAS-specs` |
-| Implementation repo | `scrimshawlife-ctrl/SUAS` |
-| Phase | `SPECIFICATION_BOOTSTRAP` |
-| Implementation authority | `NOT_YET_RELEASED` |
-| Pilot readiness | `NOT_READY` |
-| Spec version | `0.1.0` (`draft`) |
-| SPEC-001 | `READY_FOR_REVIEW` (not `accepted`) |
+### Product / authority
+[PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [STATUS.md](STATUS.md), [VERSIONING.md](VERSIONING.md), [ROADMAP.md](ROADMAP.md), [DECISIONS.md](DECISIONS.md), [AGENTS.md](AGENTS.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SPEC_AUDIT.md](SPEC_AUDIT.md).
 
-See [STATUS.md](STATUS.md).
+### Architecture / API / scale
+[ARCHITECTURE.md](ARCHITECTURE.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [APIS.md](APIS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md).
+
+### Domain
+[AUTH.md](AUTH.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [FULFILLMENT.md](FULFILLMENT.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md).
+
+### Operations / verification
+[MVP_REFERENCE.md](MVP_REFERENCE.md), [ADMIN.md](ADMIN.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [ANALYTICS.md](ANALYTICS.md), [TESTING.md](TESTING.md), [DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
 
 ---
 
-## 10. How engineers use this repository
+## 10. Production correctness additions
 
-1. Read [PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), and this README before any implementation work.
-2. Treat released specifications as contracts. Draft specifications are not implementation authority.
-3. Cite spec file, section, and version in every implementation PR in SUAS. See [AGENTS.md](AGENTS.md).
-4. Do not invent partner capabilities, county agreements, VA integrations, Medi-Cal eligibility, responder coverage, clinical claims, reimbursement, or legal status. Label unknowns with `OBSERVED` / `INFERRED` / `SPECULATIVE` / `NOT_COMPUTABLE` or `DECISION_PENDING`.
-5. Do not implement generative AI for safety-critical decisions. See [SAFETY.md](SAFETY.md) and [ARCHITECTURE.md](ARCHITECTURE.md).
-6. If implementation discovers a gap, open specification work here. Do not paper over the gap in code.
-7. State-machine names in code must match [CASES.md](CASES.md) and [DISPATCH.md](DISPATCH.md) exactly.
-8. Run the critical test suites listed in [TESTING.md](TESTING.md) before claiming a domain is implemented.
-9. Do not claim HIPAA compliance. `HIPAA_APPLICABILITY = DECISION_PENDING`.
-10. Do not write production application code in this repository. This repository is specifications and hygiene files only.
+The preflight now includes first-class logical representations for:
 
----
+- auth challenges and revocable sessions;
+- Support Signal computation/effective projection;
+- command idempotency;
+- event correlation/causation/replay-safe publication;
+- `ProviderAdapterConfiguration`;
+- `FulfillmentAttempt`;
+- Follow-Up schedule identity/business retry count/blocking disposition;
+- multi-cycle `Settlement` history/current projection;
+- Notification logical-send dedupe.
 
-## 11. Epistemic labels
-
-Use these labels whenever a claim is not a released product rule:
-
-| Label | Meaning |
-|---|---|
-| `OBSERVED` | Directly evidenced in this specification set or an approved source. |
-| `INFERRED` | Derived from stated rules; not independently evidenced. |
-| `SPECULATIVE` | Possible; not decided; must not be implemented as fact. |
-| `NOT_COMPUTABLE` | Cannot be determined from available information. Do not invent a value. |
-| `DECISION_PENDING` | An open product/engineering/legal decision. See [DECISIONS.md](DECISIONS.md). |
-| `FUTURE` | Explicitly out of MVP scope. Specified only as a boundary. |
+These remain unaccepted draft contracts until their roadmap stages are owner-reviewed.
 
 ---
 
-## 12. Quality rules (this stack)
+## 11. Engineer rules
 
-- Explicit, non-redundant, internally cross-linked with relative markdown links.
-- Implementation-oriented and testable.
-- Clear assumptions, non-goals, and authority.
-- No marketing language ("AI-powered", "smart matching", "seamless", "intelligent", "automatically handles") unless exact behavior is defined.
-- No unsupported HIPAA/compliance claims.
-- No unsupported clinical claims.
-- No automated emergency dispatch.
-- State-machine names match across files.
-- Terminology matches [GLOSSARY.md](GLOSSARY.md).
-- SUAS-specs is consistently canonical; SUAS is consistently implementation.
+- Implement against **released** specs only.
+- Cite spec file/section/version/lifecycle/artifact pins.
+- Return gaps to specs; do not invent implementation defaults.
+- Never encode provider brands/SDK statuses into domain semantics.
+- Preserve MVP experience except for documented truthful/safe production divergences.
+- No safety-critical generative AI or automated emergency dispatch.
+- No unsupported HIPAA/clinical/causal claims.
+- No invented capacity/recovery/reporting thresholds.
+
+---
+
+## 12. Release boundary
+
+[SPEC-016.md](SPEC-016.md) requires prerequisite acceptance, a D-001–D-025 release decision ledger, pinned artifact versions, feature availability manifest, and cross-artifact consistency check before any named artifact becomes `released`.
+
+Until the owner executes that release:
+
+`IMPLEMENTATION_AUTHORITY = NOT_YET_RELEASED`.

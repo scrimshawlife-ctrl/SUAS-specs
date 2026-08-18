@@ -1,6 +1,6 @@
 # PRODUCT.md — Shut Up and Serve (SUAS) v0.1
 
-**Related:** [README.md](README.md), [GLOSSARY.md](GLOSSARY.md), [SAFETY.md](SAFETY.md), [PILOT.md](PILOT.md), [SETTLEMENT.md](SETTLEMENT.md), [DECISIONS.md](DECISIONS.md)
+**Related:** [README.md](README.md), [GLOSSARY.md](GLOSSARY.md), [SAFETY.md](SAFETY.md), [PILOT.md](PILOT.md), [SETTLEMENT.md](SETTLEMENT.md), [DECISIONS.md](DECISIONS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [MVP_REFERENCE.md](MVP_REFERENCE.md)
 
 **Status:** `draft` / `0.1.0` / not implementation authority.  
 **SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))
@@ -33,9 +33,11 @@ Coordinate the shortest safe and consented path between a veteran's current need
 
 ## 3. Who it serves
 
-Primary: Veterans enrolled in the Santa Clara County pilot.
+Primary v0.1 operating population: Veterans enrolled in the Santa Clara County pilot.
 
 Operational users: Responders, Organization Administrators, Service Providers, Trusted Contacts, SUAS System Administrators.
+
+The 25–50-veteran pilot is an operating scope, not a product-definition or production-architecture ceiling. Future adoption beyond the pilot requires the applicable readiness and release gates; it does not require redefining the core product mission. See [SCALING.md](SCALING.md).
 
 SUAS does not serve clinicians-as-clinicians. A Responder who happens to hold a clinical license is still a Responder in this product. Clinical practice is out of scope.
 
@@ -65,7 +67,9 @@ A person invited by a Veteran into the Trusted Circle. Sees and receives only wh
 
 ### 4.5 Service Provider
 
-An organization or person that can fulfill a Service Request. May receive Referrals and Assignments. Does not automatically receive case notes, check-in answers, or location.
+An organization or person that can fulfill a Service Request. May receive Referrals and Assignments. Does not automatically receive Case Notes, Check-In answers, or location.
+
+A Service Provider does **not** need an API integration to be valid. API, webhook, deep-link, phone, email, referral-only, and manual-coordination paths may all be valid according to the later provider-integration contract. Specific provider brands are adapter/configuration decisions, not product-domain semantics. See [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
 
 ### 4.6 SUAS System Administrator
 
@@ -77,7 +81,7 @@ Global operator: users across orgs (with audit), questionnaire versions, signal-
 
 Defined also in [README.md](README.md). Repeated here as the product contract.
 
-```
+```text
 SIGNAL → NEED → CONSENT → COORDINATION → FULFILLMENT → FOLLOW-UP → SETTLEMENT
 ```
 
@@ -124,9 +128,9 @@ See [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [RESPONDER_WORKFLOWS.md](R
 
 ### 5.5 FULFILLMENT
 
-Acceptance, start, completion, and confirmation (veteran and/or responder). Assignment is not fulfillment. Partial, failed, and cancelled outcomes are first-class. Funding is separate.
+Acceptance, start, completion, and confirmation (veteran and/or responder). Assignment is not Fulfillment. Partial, failed, and cancelled outcomes are first-class. Funding is separate.
 
-See [FULFILLMENT.md](FULFILLMENT.md).
+Provider-facing attempts are tracked separately as Fulfillment Attempts when an external/manual fulfillment route is used. A Fulfillment Attempt does not replace the canonical Service Request or Fulfillment record. See [FULFILLMENT.md](FULFILLMENT.md) and [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
 
 ### 5.6 FOLLOW-UP
 
@@ -151,10 +155,11 @@ Do not alias these in UI copy, API resources, or database table names that leak 
 | Check-In | Support Signal, Support Case, Service Request |
 | Support Signal | Diagnosis, Check-In, risk-of-suicide score |
 | Support Case | Service Request, Referral, ticket-without-history |
-| Service Request | Referral, Fulfillment, Support Case |
+| Service Request | Referral, Fulfillment, Fulfillment Attempt, Support Case |
 | Referral | Service Request, Fulfillment |
 | Assignment | Fulfillment |
-| Fulfillment | Assignment, Referral, Settlement |
+| Fulfillment Attempt | Service Request, Fulfillment, provider-specific product state |
+| Fulfillment | Assignment, Referral, Fulfillment Attempt, Settlement |
 | Follow-Up | Case Note, Settlement |
 | Settlement | Clinical outcome, Fulfillment |
 
@@ -206,7 +211,7 @@ MVP operational focus: food, transportation, temporary shelter, peer/human suppo
 - Responder staffing: `DECISION_PENDING` (D-009).
 - Pilot readiness: `NOT_READY`.
 
-See [PILOT.md](PILOT.md).
+Pilot enrollment capacity above 50 remains a controlled-pilot decision; production architecture must not assume 50 is a system capacity ceiling. See [PILOT.md](PILOT.md) and [SCALING.md](SCALING.md).
 
 ---
 
@@ -216,19 +221,32 @@ See [PILOT.md](PILOT.md).
 
 Product path (not implemented in MVP):
 
-```
+```text
 Fulfillment → Funding Eligibility → Funding Source → Optional Billing Adapter
 ```
 
 Possible future funding sources (names only; no eligibility claimed): sponsor, donation, nonprofit, county program, grant, reimbursable program.
 
-Funding is not Fulfillment. A Service Request may be `FULFILLED` / `CONFIRMED` with funding_source = none.
+Funding is not Fulfillment. A Service Request may be `FULFILLED` / `CONFIRMED` with `funding_source = none`.
 
 See [SETTLEMENT.md](SETTLEMENT.md) and [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## 11. Assumptions
+## 11. Governing production principles
+
+These are product/architecture principles, not acceptance of the later detailed contracts:
+
+- preserve the referenced MVP's recognizable interaction identity subject to safety, consent, privacy, authentication, accessibility, and canonical-domain overrides;
+- preserve provider-neutral service fulfillment and manual-provider viability;
+- do not encode avoidable pilot-only architecture ceilings;
+- preserve canonical Service Request/Fulfillment semantics regardless of provider integration.
+
+Detailed conformance semantics remain governed by later roadmap artifacts such as [MVP_REFERENCE.md](MVP_REFERENCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), and [RESILIENCE.md](RESILIENCE.md), which remain `draft` until their own stages are accepted/released.
+
+---
+
+## 12. Assumptions
 
 - A Veteran can be reached by at least one consented channel (email and/or phone) during the pilot. Device-push is `FUTURE`.
 - Responders are humans operating a coordination console, not an EHR.
@@ -238,9 +256,9 @@ See [SETTLEMENT.md](SETTLEMENT.md) and [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## 12. Authority
+## 13. Authority
 
-- This file is the product contract for mission, roles, loop, categories, and non-goals.
+- This file is the product contract for mission, roles, loop, categories, non-goals, and the governing production principles in §11.
 - [GLOSSARY.md](GLOSSARY.md) is the terminology authority.
 - Released specs in `SUAS-specs` bind `SUAS`.
 - Draft specs do not authorize implementation.

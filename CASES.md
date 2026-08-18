@@ -1,8 +1,9 @@
 # CASES.md — Support Case state machine (SUAS v0.1)
 
-**Related:** [DISPATCH.md](DISPATCH.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [DECISIONS.md](DECISIONS.md)
+**Status:** `draft` / `0.1.0` / SPEC-004 preflight; not implementation authority.  
+**Related:** [DISPATCH.md](DISPATCH.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [DECISIONS.md](DECISIONS.md)
 
-**Actors:** System, Responder, Organization Administrator (queue), Veteran (limited), SUAS System Administrator (audit / break-glass).
+**Actors:** System, Responder, Organization Administrator, Veteran (limited), SUAS System Administrator (audited break-glass where specified).
 
 ---
 
@@ -23,123 +24,176 @@ Exactly:
 | `OPEN` | Case exists; not yet triaged |
 | `TRIAGED` | Need/priority reviewed; not yet assigned |
 | `ASSIGNED` | An active CaseAssignment exists; work may not have started |
-| `ACTIVE` | Responder is working the case (contact, requests, referrals) |
-| `FOLLOWUP` | Primary coordination actions done or paused; Follow-Up records remain due |
-| `RESOLVED` | Settlement drafted/accepted; no open blocking work |
-| `CLOSED` | Terminal. History retained. Not a delete |
+| `ACTIVE` | Assigned responder is actively coordinating |
+| `FOLLOWUP` | Primary coordination work is done/paused; Follow-Up remains |
+| `RESOLVED` | Settlement exists; blocking work is settled |
+| `CLOSED` | Terminal for this case cycle; history retained |
 
-Returns and skips are allowed only as documented in §4. No hidden transitions.
+Returns/skips are allowed only where explicitly listed below.
 
 ---
 
-## 3. Creation
+## 3. Creation and deduplication
 
-A case is created when:
+A case may be requested when:
 
-1. An effective Support Signal is `YELLOW`, `ORANGE`, or `RED` and no non-closed case exists for that veteran that operations policy says should absorb the signal (MVP: one active case per veteran — `INFERRED` operational default; multiple concurrent cases are `FUTURE` unless later specified), or
-2. A Veteran or Responder explicitly opens a case for a stated need (including `GREEN` if a concrete Service Request is created).
+1. an effective Support Signal is `YELLOW`, `ORANGE`, or `RED`; or
+2. a Veteran/Responder explicitly records a concrete coordination need.
 
-Emit `CASE_CREATED`. Set `priority_signal_level` from the effective signal when applicable.
+MVP operating default remains one non-closed coordination Case per Veteran (`INFERRED`; later multi-case policy requires a spec change).
 
-Red-state creation/priority: [SAFETY.md](SAFETY.md).
+### 3.1 Atomic creation invariant
+
+Signal/event/job delivery may be duplicated or concurrent. Therefore case creation must be idempotent against a stable **case-open intent** and must not rely on `read no case → insert` without conflict protection.
+
+For the MVP one-active-case default:
+
+- concurrent create attempts for the same Veteran/tenant resolve to one winning non-closed Case;
+- losing/replayed attempts return/reference that existing Case when semantically compatible rather than creating duplicates;
+- only the winning logical creation emits `CASE_CREATED`;
+- a new signal may update case priority/history through a documented idempotent action, but is not itself permission to create a second active Case;
+- database constraint/transaction/lock strategy is implementation detail, but one-winner semantics are required.
+
+The exact future rule for multiple concurrent cases remains `FUTURE`.
 
 ---
 
 ## 4. Transitions
 
-Every transition records: source, target, actor, prerequisites, Domain Event, timestamps, notifications (if any).
+Every transition records source, target, actor, prerequisites, timestamps, audit, and Domain Event where defined.
 
-| Source | Target | Actor | Prerequisites | Event |
+| Source | Target | Actor | Prerequisites | Domain Event |
 |---|---|---|---|---|
-| (none) | `OPEN` | System or Responder or Veteran | Veteran enrolled | `CASE_CREATED` |
-| `OPEN` | `TRIAGED` | Responder | Actor authorized | (audit; optional domain note) |
-| `TRIAGED` | `ASSIGNED` | Responder or Org-admin | Target responder membership ACTIVE | `CASE_ASSIGNED` |
-| `OPEN` | `ASSIGNED` | Responder (`CLAIM_CASE`) or Org-admin | Same | `CASE_ASSIGNED` |
-| `ASSIGNED` | `ACTIVE` | Assigned Responder | First qualifying work action (contact attempt, request, referral, note-with-work flag) | (audit) |
-| `ACTIVE` | `FOLLOWUP` | Assigned Responder | At least one Follow-Up scheduled or explicit command | `FOLLOWUP_CREATED` if new |
-| `ACTIVE` | `RESOLVED` | Assigned Responder | No open Service Requests in non-terminal states except those marked unfulfillable/cancelled; Settlement present | `CASE_RESOLVED` |
-| `FOLLOWUP` | `RESOLVED` | Assigned Responder | Blocking follow-ups completed or cancelled; Settlement present | `CASE_RESOLVED` |
-| `FOLLOWUP` | `ACTIVE` | Assigned Responder | New work needed | (audit) |
-| `RESOLVED` | `CLOSED` | Assigned Responder or Org-admin | Settlement recorded | (audit) |
-| `ASSIGNED` or `ACTIVE` | `ASSIGNED` | Org-admin or assigned Responder | Reassignment: release old, create new CaseAssignment | `CASE_ASSIGNED` |
-| any non-terminal except `CLOSED` | `ACTIVE` (escalation path) | Assigned Responder | `ESCALATE` action | `CASE_ESCALATED` |
+| (none) | `OPEN` | System / Responder / Veteran | Veteran enrolled; creation invariant passes | `CASE_CREATED` |
+| `OPEN` | `TRIAGED` | Responder | authorized queue access | — |
+| `TRIAGED` | `ASSIGNED` | Responder claim / Org-admin assign | target membership ACTIVE; atomic assignment succeeds | `CASE_ASSIGNED` |
+| `OPEN` | `ASSIGNED` | Responder claim / Org-admin assign | target membership ACTIVE; atomic assignment succeeds | `CASE_ASSIGNED` |
+| `ASSIGNED` | `ACTIVE` | assigned Responder | first qualifying work action or explicit activate command | — |
+| `ACTIVE` | `FOLLOWUP` | assigned Responder | Follow-Up exists or explicit transition with documented reason | `FOLLOWUP_CREATED` only if created |
+| `FOLLOWUP` | `ACTIVE` | assigned Responder | new coordination work required | — |
+| `ACTIVE` | `RESOLVED` | assigned Responder | Settlement present; no blocking non-terminal Service Requests | `CASE_RESOLVED` |
+| `FOLLOWUP` | `RESOLVED` | assigned Responder | blocking Follow-Ups completed/cancelled; Settlement present | `CASE_RESOLVED` |
+| `RESOLVED` | `CLOSED` | assigned Responder / Org-admin | Settlement recorded; close command authorized | — |
+| `ASSIGNED` | `ASSIGNED` | assigned Responder / Org-admin | atomic reassignment: release prior + create successor assignment | `CASE_ASSIGNED` |
+| `ACTIVE` | `ASSIGNED` | assigned Responder / Org-admin | atomic reassignment; old assignment released | `CASE_ASSIGNED` |
+| `FOLLOWUP` | `ASSIGNED` | assigned Responder / Org-admin | atomic reassignment when follow-up ownership changes | `CASE_ASSIGNED` |
+| `ASSIGNED` | `ACTIVE` | assigned Responder | `ESCALATE` with reason; case remains assigned and active | `CASE_ESCALATED` |
+| `ACTIVE` | `ACTIVE` | assigned Responder | `ESCALATE` with reason | `CASE_ESCALATED` |
+| `FOLLOWUP` | `ACTIVE` | assigned Responder | `ESCALATE` with reason; new active work required | `CASE_ESCALATED` |
 
-`CLOSED` has no outbound transition except a documented reopen: `CLOSED` → `OPEN` by assigned-org responder or SUAS-admin with reason (audit). Reopen does not delete prior Settlement; a new Settlement will be required to resolve again.
+### 4.1 Escalation correction
+
+`ESCALATE` is **not** a universal state jump from any non-terminal state. An unassigned `OPEN`/`TRIAGED` case cannot be escalated by an "assigned Responder" because no such assignment exists.
+
+For unassigned high-priority cases, queue priority/Org-admin assignment is the mechanism. A future explicit unassigned escalation action requires its own accepted transition.
+
+### 4.2 Reopen
+
+`CLOSED` → `OPEN` is allowed only through a documented reopen command by an authorized owning-org actor or SUAS-admin break-glass path with reason and audit. Prior Settlement/history remain immutable; resolution of the reopened cycle requires a new Settlement record/linkage as later data-model semantics specify.
 
 ---
 
-## 5. Assignment, reassignment, ownership
+## 5. Atomic assignment and claim
 
-- **Assignment** = `CaseAssignment` with `status=ACTIVE`. Assignment is not Fulfillment.
-- Claim (`CLAIM_CASE`) and assign (`ASSIGN_CASE`) are defined in [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md).
-- Reassignment sets prior assignment `REASSIGNED` or `RELEASED`.
-- Queue: unassigned `OPEN`/`TRIAGED` cases visible to responders with `active_for_queue` in the same Organization tenant. Cross-org queue is `FUTURE` / not specified.
+`CLAIM_CASE` and exclusive `ASSIGN_CASE` are contested commands.
+
+Required semantics:
+
+1. The command carries/derives expected current state and assignment condition.
+2. The state/assignment check and winning assignment write occur atomically.
+3. Exactly one contender wins when exclusive ownership applies.
+4. A loser receives a conflict (`409` or equivalent contract error) with no partial assignment/event.
+5. Idempotent replay by the same logical command returns the original winning result rather than creating another CaseAssignment.
+6. `CASE_ASSIGNED` is emitted once per logical assignment/reassignment.
+7. Reassignment releases the prior active assignment and creates the successor in one transaction/equivalent atomic unit.
+
+Queue read freshness is advisory; authorization/claim validity is always re-checked at mutation time.
 
 ---
 
-## 6. Notes, linked requests, follow-ups
+## 6. Notes, requests, follow-up
 
-- Case Notes are not transitions, not Follow-Ups, and not Contact Attempts.
-- Contact Attempts use `log-contact-attempt` / `complete-contact` ([API.md](API.md) section 11.1). A Case Note is not a substitute.
-- Service Requests live on the case ([DISPATCH.md](DISPATCH.md)).
-- Follow-Ups are first-class ([FOLLOWUP.md](FOLLOWUP.md)).
-- Escalation is an explicit action, not a note keyword.
+- Case Note is not a transition, Follow-Up, or Contact Attempt.
+- Contact Attempts use documented contact commands.
+- Service Requests are distinct child work items.
+- Follow-Ups are first-class.
+- Escalation is an explicit command with reason; no note keyword changes state.
 
 ---
 
 ## 7. Resolution and closure
 
-- **Resolved** requires a Settlement ([SETTLEMENT.md](SETTLEMENT.md)).
-- **Closed** retains all history. Closure does not delete notes, requests, events, or signals.
-- Case closure is safety-critical in the sense that a generative model must not determine it ([SAFETY.md](SAFETY.md)).
+- `RESOLVED` requires a Settlement.
+- Blocking Service Requests/Follow-Ups must satisfy the documented terminal rules.
+- `CLOSED` retains all history.
+- Signal returning `GREEN` does not auto-close a Case.
+- Generative AI must not determine resolution/closure.
+- Resolve/close commands are idempotent and stale-state protected; duplicate delivery cannot create duplicate Settlement/closure effects.
 
 ---
 
-## 8. Authorization
+## 8. Authorization and visibility
 
-- Assigned responder: read/write per workflows.
-- Org queue responders: read limited fields of unassigned cases in tenant.
-- Trusted Contact: only with grants; membership insufficient.
+- Assigned Responder: documented read/write actions.
+- Org queue Responder: bounded limited fields for unassigned cases in same tenant.
+- Trusted Contact: explicit grants only.
+- SUAS-admin access is audited and does not imply routine workflow ownership.
 
-### 8.1 Veteran visibility (MVP default, `INFERRED`; D-015 remains open)
+### 8.1 Veteran visibility (MVP `INFERRED`; D-015 open)
 
-This is an operational default so implementation does not invent a clinical chart. D-015 stays open if the owner later wants veterans to see notes.
+Veteran can see own:
 
-**Veteran can see (own records only):**
+- Check-Ins;
+- Service Request status;
+- Settlement fields written for them;
+- addressed Follow-Up prompts;
+- Support Case existence/status.
 
-- own Check-Ins
-- own Service Request status
-- Settlement fields written for them
-- Follow-Up prompts addressed to them
-- Support Case existence and status on their own case
+Veteran cannot see:
 
-**Veteran cannot see:**
-
-- full Case Notes
-- Contact Attempts / the responder contact log
-- other veterans
-- responder internal queue fields (filters, unassigned queue, `active_for_queue` internals, other responders' assignments)
-- other Organizations / other tenants
-
-Do not invent a clinical chart. Case Notes remain responder/org-admin/SUAS-admin artifacts.
+- full Case Notes;
+- Contact Attempts;
+- other veterans;
+- responder queue internals;
+- other organizations/tenants.
 
 ---
 
-## 9. Non-goals
+## 9. Queue/scaling requirements
 
-- EHR charting
-- Hidden status values
-- Deleting a case to "clean up"
-- Auto-close on signal returning to `GREEN`
+Responder queues must be bounded/paginated. Priority sorting/filtering must not require loading every Case into application memory.
+
+Queue queries may be stale between read and action; mutation-time checks remain authoritative.
+
+At minimum, queue access paths support tenant + status + priority + assignment ownership, with exact physical indexes validated later under SPEC-006/SPEC-010.
 
 ---
 
-## 10. Testability
+## 10. Non-goals
 
-Critical suite: **case transitions**.
+- EHR charting;
+- hidden state values;
+- deleting Cases for cleanup;
+- auto-close on `GREEN`;
+- non-atomic claim/assignment;
+- treating queue visibility as a lock;
+- creating duplicate Cases from duplicate signal/event delivery;
+- impossible unassigned `OPEN → ACTIVE` escalation.
 
-- Only documented edges succeed.
-- Closure retains history.
-- Reassignment emits `CASE_ASSIGNED` and releases the prior assignment.
-- Resolve without Settlement fails.
-- Veteran cannot read Case Notes or Contact Attempts (D-015 MVP default).
+---
+
+## 11. Testability
+
+Critical suite: **case transitions/concurrency**.
+
+- only documented edges succeed;
+- concurrent Case creation under one-active-case policy yields one logical Case/`CASE_CREATED`;
+- concurrent `CLAIM_CASE` yields one winner and conflicts for losers;
+- replayed winning claim is idempotent;
+- reassignment atomically releases old and creates new assignment;
+- unassigned `OPEN`/`TRIAGED` cannot use assigned-responder escalation path;
+- resolve without Settlement fails;
+- duplicate resolve/close commands do not duplicate effects;
+- closure retains history;
+- veteran cannot read Case Notes/Contact Attempts;
+- queue never crosses tenant boundary.

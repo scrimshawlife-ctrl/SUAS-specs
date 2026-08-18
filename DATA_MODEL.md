@@ -1,383 +1,205 @@
 # DATA_MODEL.md — Logical schema (SUAS v0.1)
 
-**Related:** [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [CONSENT.md](CONSENT.md)
+**Related:** [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [AUTH.md](AUTH.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SETTLEMENT.md](SETTLEMENT.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
-**Status:** `draft` / `0.1.0`. This is a **normalized logical schema**, not a physical migration. Types are logical. PostgreSQL is the target engine ([ARCHITECTURE.md](ARCHITECTURE.md)).
+**Status:** `draft` / `0.1.0`. Normalized logical schema only; physical migrations remain implementation work after release. SPEC-006 remains dependency-blocked; this is cross-stage draft reconciliation, not acceptance.
 
 ---
 
 ## 1. Conventions
 
-| Convention | Rule |
-|---|---|
-| Primary key | `*_id` UUID unless a natural version key is specified |
-| Foreign keys | named `*_id` matching the referenced PK |
-| Tenant | `tenant_id` UUID on every tenant-owned table |
-| Timestamps | `created_at`, `updated_at` on mutable tables; `occurred_at` / `computed_at` / `sent_at` as specified |
-| Soft-delete | `deleted_at` nullable on mutable operational tables listed below |
-| Immutable | no `updated_at` overwrite of business meaning; no `deleted_at` |
-| Enums | stored as constrained text matching this stack's names exactly |
-
-**Mutable operational tables:** User, VeteranProfile, Organization, OrganizationMembership, ResponderProfile, CheckIn (status only), TrustedContact, ConsentGrant (status/revocation fields), SupportCase, CaseAssignment, CaseNote, ContactAttempt (outcome/`completed_at` only), FollowUp, ServiceRequest, ServiceProvider, ServiceOffer, ServiceFulfillment, Resource, ResourceCategory, Referral, Notification (`delivery_status` / `attempt_count` / `last_attempt_at` / `sent_at` only), NotificationPreference, Pilot, PilotEnrollment, Feedback.
-
-**Immutable tables:** QuestionnaireVersion (once `PUBLISHED`), Question and AnswerOption belonging to a published version, CheckInResponse (append; corrections are new rows or new Check-Ins), SupportSignal, ConsentEvent, AuditEvent, DomainEvent.
+- PKs use `*_id` UUID unless a version key is textual.
+- Tenant-owned rows carry `tenant_id`.
+- Server-authoritative timestamps record lifecycle facts.
+- Historical business meaning is never silently rewritten.
+- Current projections are deterministic over durable history; insertion order alone is not authority.
 
 ---
 
-## 2. Identity and tenancy
+## 2. Identity, authentication, organization
 
 ### users
-- PK `user_id`
-- `tenant_id` (system tenant allowed for SUAS-admin)
-- `email` nullable, `phone` nullable, `status` (`INVITED`|`ACTIVE`|`SUSPENDED`|`REVOKED`)
-- `created_at`, `updated_at`, `deleted_at`
-- Unique (email) where present; unique (phone) where present
+`user_id`, tenant scope, nullable email/phone, status `INVITED|ACTIVE|SUSPENDED|REVOKED`, timestamps/deleted_at.
 
-### veteran_profiles
-- PK `veteran_profile_id`
-- FK `user_id` → users (unique)
-- `tenant_id`, `display_name`
-- `preferred_language` nullable, `preferred_channel` nullable, `county` nullable
-- `created_at`, `updated_at`, `deleted_at`
+### auth_challenges
+- PK `auth_challenge_id`; `tenant_id` nullable where pre-tenant enrollment applies; normalized destination/account lookup reference; challenge method; hashed/opaque secret material; status `ISSUED|CONSUMED|EXPIRED|REVOKED`; attempt counters/limits; issued/expires/consumed timestamps.
+- Single-use consumption must be atomic. Secret/plain OTP/token value is never persisted in recoverable plaintext.
 
-### organizations
-- PK `organization_id`
-- `tenant_id`, `name`, `status` (`PENDING`|`ACTIVE`|`SUSPENDED`|`ARCHIVED`)
-- `contact_email` nullable, `website` nullable, `counties` (text array)
-- `created_at`, `updated_at`, `deleted_at`
+### sessions
+- PK `session_id`; FK user; tenant/org context; opaque credential hash/reference; MFA/elevation state; issued/last-seen/expires/revoked timestamps; optional revocation/version metadata.
+- Session validity/revocation is shared authoritative state across app instances; process-local cache is non-authoritative.
 
-### organization_memberships
-- PK `membership_id`
-- FK `organization_id`, FK `user_id`
-- `role` (`RESPONDER`|`ORG_ADMIN`|`SERVICE_PROVIDER_USER`)
-- `status` (`INVITED`|`ACTIVE`|`SUSPENDED`|`REVOKED`)
-- `created_at`, `updated_at`, `deleted_at`
-- Unique (`organization_id`, `user_id`) where not deleted
-
-### responder_profiles
-- PK `responder_profile_id`
-- FK `user_id`, FK `organization_id`
-- `active_for_queue` boolean
-- `created_at`, `updated_at`, `deleted_at`
+### organizations / organization_memberships / responder_profiles
+Canonical organization, role, membership status, queue-availability fields and timestamps. Active membership/role is authoritative at mutation time.
 
 ---
 
-## 3. Questionnaires and check-ins
+## 3. Questionnaire / Check-In
 
-### questionnaire_versions
-- PK `questionnaire_version` (text, e.g. `qv-0.1.0`)
-- `status` (`DRAFT`|`PUBLISHED`|`SUPERSEDED`)
-- `published_at` nullable
-- `created_at`
-- Immutable after `PUBLISHED`
-
-### questions
-- PK `question_id`
-- FK `questionnaire_version`
-- `dimension` (`sleep`|`connection`|`stress`|`basic_needs`|`coping`|`safety`| other published codes)
-- `prompt`, `sort_order`, `required` boolean
-- Immutable when parent version is `PUBLISHED`
-
-### answer_options
-- PK `answer_option_id`
-- FK `question_id`
-- `label`, `value`, `sort_order`
-- Immutable when parent version is `PUBLISHED`
+### questionnaire_versions / questions / answer_options
+Version-bound questionnaire content; published versions immutable and atomically visible.
 
 ### check_ins
-- PK `check_in_id`
-- FK `veteran_profile_id`, FK `questionnaire_version`
-- `tenant_id`
-- `status` (`STARTED`|`IN_PROGRESS`|`COMPLETED`|`ABANDONED`|`INCOMPLETE`)
-- `started_at`, `completed_at` nullable, `abandoned_at` nullable
-- `created_at`, `updated_at`, `deleted_at`
+PK, veteran/questionnaire links, tenant, status `STARTED|IN_PROGRESS|COMPLETED|ABANDONED|INCOMPLETE`, lifecycle timestamps. Logical completion idempotent.
 
 ### check_in_responses
-- PK `check_in_response_id`
-- FK `check_in_id`, FK `question_id`
-- `answer_option_id` nullable, `free_text` nullable
-- `answered_at`
-- Unique (`check_in_id`, `question_id`) for the current answer set; amendments add a new Check-In
+Check-In/question links, answer/free-text, timestamp; completed history preserved.
 
 ---
 
-## 4. Signals (immutable rows)
+## 4. Support Signals
 
 ### support_signals
-- PK `support_signal_id`
-- FK `veteran_profile_id`
-- FK `check_in_id` nullable
-- `tenant_id`
-- `level` (`GREEN`|`YELLOW`|`ORANGE`|`RED`)
-- `signal_version` text
-- `input_questionnaire_version` text
-- `computed_at`
-- `basis` (structured text/JSON of inputs used; inspectable)
-- `override_of_signal_id` nullable FK → support_signals
-- `override_actor_id` nullable FK → users
-- `override_reason` nullable
-- no `deleted_at`
+- PK; veteran; nullable Check-In; tenant.
+- `computation_kind = PRIMARY|OVERRIDE`; stable `computation_key`; `source_type = CHECK_IN|EXPLICIT_NEED`; stable source identity.
+- level `GREEN|YELLOW|ORANGE|RED`; signal/questionnaire versions; computed time; basis; override linkage/reason.
+- immutable.
+- Primary uniqueness by logical computation identity; explicit-need sources cannot use nullable Check-In as identity.
+
+### effective signal projection
+Deterministic and efficient projection/current pointer over durable signal history; never insertion-order-only.
 
 ---
 
-## 5. Trusted circle and consent
+## 5. Consent / Trusted Circle
 
-### trusted_contacts
-- PK `trusted_contact_id`
-- FK `veteran_profile_id`
-- FK `user_id` nullable
-- `tenant_id`
-- `relationship_label`
-- `invite_email` nullable, `invite_phone` nullable
-- `status` (`INVITED`|`ACCEPTED`|`SUSPENDED`|`REMOVED`|`REVOKED`)
-- `created_at`, `updated_at`, `deleted_at`
-
-### consent_grants
-- PK `consent_grant_id`
-- FK `veteran_profile_id`
-- `tenant_id`
-- `grantee_type` (`TRUSTED_CONTACT`|`RESPONDER`|`ORGANIZATION`|`SERVICE_PROVIDER`|`SYSTEM`)
-- `grantee_id`
-- `permission` (e.g. `can_receive`, `can_view`)
-- `scope` (e.g. `YELLOW`, `ORANGE`, `RED`, `support_signal`, `checkin_answers`, `current_requests`, `location`)
-- `purpose` text
-- `consent_template_version` text
-- `status` (`ACTIVE`|`REVOKED`|`EXPIRED`)
-- `granted_at`, `revoked_at` nullable, `expires_at` nullable
-- `created_at`, `updated_at`
-- Historical meaning preserved via consent_events; do not reuse a revoked row as a new grant — insert a new grant
-
-### consent_events
-- PK `consent_event_id`
-- FK `consent_grant_id` nullable
-- `event_type` (`GRANTED`|`REVOKED`|`EXPIRED`|`DENIED`|`TEMPLATE_ACCEPTED`)
-- `actor_id`, `occurred_at`, `payload` nullable
-- immutable
+`trusted_contacts`, `consent_grants`, and immutable `consent_events` represent first-class purpose-scoped use-time authorization with tenant/grantee/version/timestamp state.
 
 ---
 
-## 6. Cases, notes, assignments, follow-ups
+## 6. Cases / assignments / contact / Follow-Up
 
 ### support_cases
-- PK `support_case_id`
-- FK `veteran_profile_id`
-- `tenant_id`
-- `status` (`OPEN`|`TRIAGED`|`ASSIGNED`|`ACTIVE`|`FOLLOWUP`|`RESOLVED`|`CLOSED`)
-- `priority_signal_level` nullable
-- `opened_at`, `closed_at` nullable
-- FK `settlement_id` nullable
-- `created_at`, `updated_at`, `deleted_at` (soft-delete does not erase events)
+Case identity/veteran/tenant/status/priority/lifecycle timestamps plus nullable `current_settlement_id` convenience projection. MVP one-active-case exclusivity enforced transactionally/constraint-backed where required.
 
 ### case_assignments
-- PK `case_assignment_id`
-- FK `support_case_id`, FK `responder_profile_id`
-- `status` (`ACTIVE`|`RELEASED`|`REASSIGNED`)
-- `assigned_at`, `released_at` nullable
-- `created_at`, `updated_at`
+Case/responder/status history. At most one active exclusive owner where required.
 
-### case_notes
-- PK `case_note_id`
-- FK `support_case_id`, FK `author_user_id` → users
-- `body`
-- `created_at`, `updated_at`, `deleted_at`
-- Not a Contact Attempt. Veteran cannot read (D-015; [CASES.md](CASES.md) section 8).
-
-### contact_attempts
-- PK `contact_attempt_id`
-- FK `support_case_id`
-- FK `actor_id` → users
-- `tenant_id`
-- `at` (contact timestamp; required)
-- `channel` (`EMAIL`|`SMS`|`IN_APP`|`PHONE`)
-- `outcome` (`PENDING`|`REACHED`|`NO_ANSWER`|`LEFT_MESSAGE`|`DECLINED`|`UNABLE`)
-- `completed_at` nullable
-- `created_at`, `updated_at`
-- `log-contact-attempt` inserts a row (outcome may be `PENDING`)
-- `complete-contact` may set `outcome` + `completed_at` on an existing row, or insert a new row; both emit `RESPONDER_CONTACT_LOGGED`
-- A Case Note is not a substitute
-- Veteran cannot read (D-015)
+### case_notes / contact_attempts
+Separate first-class notes/contact-log history.
 
 ### follow_ups
-- PK `follow_up_id`
-- FK `support_case_id`
-- FK `service_request_id` nullable
-- `tenant_id`
-- `due_at`
-- `responsible_type` (`RESPONDER`|`VETERAN`|`ORG_ADMIN`|`SYSTEM`)
-- `responsible_id`
-- `status` (`SCHEDULED`|`DUE`|`COMPLETED`|`RESCHEDULED`|`OVERDUE`|`ESCALATED`|`CANCELLED`)
-- `retry_count` integer default 0
-- `completed_at` nullable
-- `created_at`, `updated_at`, `deleted_at`
+- PK; case; nullable request; tenant; `due_at`; stable/monotonic `schedule_version`; responsible type/id.
+- status `SCHEDULED|DUE|COMPLETED|RESCHEDULED|OVERDUE|ESCALATED|CANCELLED`.
+- `coordination_attempt_count` distinct from notification/job retries.
+- `resolution_disposition = BLOCKING|CARRIED_FORWARD` while unresolved.
+- due/overdue jobs compare expected schedule version before mutation.
 
 ---
 
-## 7. Requests, providers, fulfillment
+## 7. Requests / providers / Fulfillment
 
 ### service_requests
-- PK `service_request_id`
-- FK `support_case_id`
-- `tenant_id`
-- `category` (`FOOD`|`TRANSPORTATION`|`SHELTER`|`PEER_SUPPORT` in MVP)
-- `status` (`CREATED`|`SUBMITTED`|`TRIAGED`|`MATCHING`|`ASSIGNED`|`ACCEPTED`|`IN_PROGRESS`|`FULFILLED`|`CONFIRMED`|`CLOSED`|`CANCELLED`|`DECLINED`|`EXPIRED`|`UNFULFILLABLE`|`ESCALATED`)
-- `details` nullable
-- `created_at`, `updated_at`, `deleted_at`
+Case/tenant/category/canonical status/details/timestamps. Current provider/assignment presentation derives deterministically from durable assignment/attempt history.
 
-### service_providers
-- PK `service_provider_id`
-- FK `organization_id` nullable
-- `name`, `status` (`ACTIVE`|`SUSPENDED`|`ARCHIVED`)
-- `created_at`, `updated_at`, `deleted_at`
+### service_providers / service_offers / resources
+Provider/resource catalog entities with org/tenant/category/integration-mode/freshness metadata and no embedded provider credentials. Resource freshness is not live provider availability.
 
-### service_offers
-- PK `service_offer_id`
-- FK `service_provider_id`
-- `category`, `active` boolean
-- `capacity` nullable, `hours` nullable
-- `created_at`, `updated_at`, `deleted_at`
+### provider_adapter_configurations
+Tenant/provider/capability/opaque adapter id/integration mode/enabled/coverage/priority/timestamps. No secrets.
+
+### fulfillment_attempts
+Request/tenant/capability/adapter/provider/integration mode/stable external idempotency key/normalized attempt status/external ref/check/failure/timestamps. Retry same attempt reuses identity; reroute inserts new attempt.
 
 ### service_fulfillments
-- PK `service_fulfillment_id`
-- FK `service_request_id` (unique current fulfillment; history via events)
-- `status` (`ACCEPTED`|`STARTED`|`COMPLETED`|`CONFIRMED`|`DISPUTED`|`FAILED`|`PARTIAL`|`CANCELLED`)
-- `accepted_at`, `started_at` nullable, `completed_at` nullable
-- `veteran_confirmed_at` nullable, `responder_confirmed_at` nullable
-- `failure_reason` nullable
-- `created_at`, `updated_at`
-- Funding columns: **not present in MVP** (`FUTURE`)
+Request/tenant/optional FulfillmentAttempt, canonical fulfillment state/timestamps/confirmation/reason. History stays inspectable via durable row/event semantics.
 
 ---
 
-## 8. Resources and referrals
-
-### resource_categories
-- PK `category_code`
-- `label`, `mvp` boolean
-- `created_at`
-
-### resources
-- PK `resource_id`
-- FK `organization_id`
-- FK `category` → resource_categories
-- `tenant_id`
-- `service_name`
-- `eligibility` nullable
-- `counties` text array
-- `coverage_geometry` nullable (logical; type `DECISION_PENDING`)
-- `hours` nullable
-- `contact_method` nullable
-- `referral_method` nullable
-- `cost` nullable
-- `capacity` nullable
-- `active` boolean
-- `last_verified_at` **required**
-- `verification_source` **required**
-- `created_at`, `updated_at`, `deleted_at`
+## 8. Referrals / Settlement
 
 ### referrals
-- PK `referral_id`
-- FK `support_case_id`
-- FK `service_request_id` nullable
-- FK `consent_grant_id` **required**
-- FK `follow_up_id` nullable
-- `destination_type`, `destination_id`
-- `reason`, `method`
-- `status` (`DRAFTED`|`SENT`|`ACKNOWLEDGED`|`ACCEPTED`|`DECLINED`|`COMPLETED`|`UNABLE_TO_SERVE`|`CANCELLED`)
-- `result_text` nullable
-- `created_at`, `updated_at`, `deleted_at`
+Case/request/consent/follow-up/destination/method/status/result/timestamps. Logical send uses persistent command idempotency.
+
+### settlements
+- PK `settlement_id`; FK Case; tenant; case-local `resolution_cycle`; required requested/occurred/fulfilled/unresolved summaries; responder confirmation/time; optional veteran confirmation; remaining Follow-Up references; `settled_at`.
+- unique Case + resolution cycle.
+- once used for `RESOLVED`, historical meaning is immutable; reopen creates a later cycle on later resolution.
+- current/latest Settlement projection is deterministic; `support_cases.current_settlement_id` may cache it without replacing history.
 
 ---
 
 ## 9. Notifications
 
 ### notification_preferences
-- PK `notification_preference_id`
-- FK `user_id`
-- `channel` (`EMAIL`|`SMS`|`IN_APP`; `PUSH` reserved `FUTURE`)
-- `enabled` boolean
-- `created_at`, `updated_at`
+User/channel/enabled state.
 
 ### notifications
-- PK `notification_id`
-- `recipient_user_id` nullable, `recipient_address` nullable
-- `reason`, `channel`
-- `consent_basis` (grant id or documented system basis)
-- `template_version`
-- `delivery_status` (`QUEUED`|`SENT`|`FAILED`|`DELIVERED`|`BOUNCED`|`UNDELIVERABLE`)
-- `attempt_count` integer default 0
-- `last_attempt_at` nullable
-- `created_at`, `sent_at` nullable
-- **One row per logical send.** `delivery_status` transitions on this row.
-- Each send attempt (initial and retry) appends an **immutable Audit Event**. Do not mutate prior attempt events. No `notification_attempts` child table.
-- no silent delete of send records
+- PK `notification_id`; tenant; recipient; reason/policy key; channel; consent/system basis; template version.
+- `dedupe_key`/logical-send identity when generating policy can be delivered more than once.
+- canonical delivery status `QUEUED|SENT|FAILED|DELIVERED|BOUNCED|UNDELIVERABLE`; attempt count/last attempt/sent timestamps.
+- one row per logical send; transport attempt history lives in immutable Audit Events under current contract.
+- dedupe uniqueness is scoped by tenant + recipient/channel/reason/policy as defined by the generating policy; deliberate reminder/escalation gets a new logical identity.
 
 ---
 
-## 10. Pilot, feedback
+## 10. Command idempotency
 
-### pilots
-- PK `pilot_id`
-- `name`, `geography`, `target_enrollment_min`, `target_enrollment_max`
-- `status`
-- `created_at`, `updated_at`
-
-### pilot_enrollments
-- PK `pilot_enrollment_id`
-- FK `pilot_id`, FK `veteran_profile_id`
-- `status` (`APPLIED`|`ENROLLED`|`WITHDRAWN`|`COMPLETED`|`REMOVED`)
-- `enrolled_at` nullable
-- `created_at`, `updated_at`, `deleted_at`
-- Unique (`pilot_id`, `veteran_profile_id`) where not deleted
-
-### feedback
-- PK `feedback_id`
-- FK `author_user_id`
-- FK `support_case_id` nullable
-- `body` nullable, structured score fields nullable
-- `created_at`, `updated_at`, `deleted_at`
+### command_idempotency_records
+- PK; tenant; idempotency key; command scope; canonical request fingerprint; state `RESERVED|COMPLETED|FAILED_RETRYABLE|FAILED_FINAL`; bounded result/reference; linked aggregate/event ids; created/completed/expiry metadata.
+- unique logical key in scope; same key/same request replays result; same key/conflicting request fails.
+- supplements domain uniqueness and FulfillmentAttempt idempotency.
 
 ---
 
 ## 11. Immutable event stores
 
 ### domain_events
-- PK `event_id`
-- `event_type`, `aggregate_type`, `aggregate_id`
-- `tenant_id`
-- `actor_type`, `actor_id`
-- `occurred_at`
-- `schema_version`
-- `payload`
-- unique `event_id`
-- **no updates, no deletes**
+Immutable event identity/type/aggregate/tenant/actor/time/schema/payload plus distinct conditional idempotency, correlation, causation, and request identifiers.
 
 ### audit_events
-- PK `audit_event_id` (or reuse envelope `event_id`)
-- same envelope fields as domain_events plus `action`, `target_type`, `target_id`, `ip` nullable, `user_agent` nullable
-- **no updates, no deletes**
+Immutable audit identity and request/action/target metadata; event/audit identity remains distinct from command idempotency.
 
-Envelope details: [EVENT_MODEL.md](EVENT_MODEL.md).
-
----
-
-## 12. Indexes (logical)
-
-- All FKs indexed.
-- `(tenant_id, status)` on support_cases, service_requests, follow_ups.
-- `(veteran_profile_id, computed_at desc)` on support_signals.
-- `(veteran_profile_id, status)` on consent_grants.
-- `(support_case_id)` on service_requests, case_notes, contact_attempts, follow_ups, referrals.
-- `(support_case_id, at)` on contact_attempts.
-- `(last_verified_at)` on resources.
-- `(due_at, status)` on follow_ups.
+### outbox/equivalent
+Allowed physical mechanism for replay-safe required event publication; not a business entity.
 
 ---
 
-## 13. Integrity rules
+## 12. Pilot / feedback
 
-1. A ServiceRequest.support_case_id must reference a SupportCase for the same veteran/tenant.
-2. A ServiceFulfillment cannot exist without a ServiceRequest.
-3. A Referral requires a ConsentGrant that is `ACTIVE` at send time (historical row remains if later revoked).
-4. SupportSignal.level must be one of the four labels.
-5. Published questionnaire_versions cannot be updated in place.
-6. Domain/audit event rows cannot be updated or deleted by application roles.
+Canonical Pilot, PilotEnrollment, Feedback entities; pilot size is operating scope, not architecture ceiling.
+
+---
+
+## 13. Required access paths / constraints
+
+Implementation must efficiently/atomically support:
+- user/session/challenge lookup, single-use challenge consumption, session revocation across instances;
+- tenant + status Case/Request/Follow-Up/attempt queries;
+- Support Signal computation uniqueness/current projection;
+- one-active Case/assignment winner constraints;
+- Settlement Case+cycle/current projection;
+- Follow-Up due/status/schedule-version pickup;
+- provider reconciliation and FulfillmentAttempt idempotency;
+- Notification logical-send dedupe and delivery worker pickup;
+- command idempotency lookup;
+- event/audit tenant/aggregate/time/correlation/idempotency queries.
+
+Exact SQL index/constraint syntax is implementation-specific but must prove these invariants under concurrency and load.
+
+---
+
+## 14. Integrity rules
+
+1. Tenant consistency across related domain rows.
+2. Published questionnaire immutable/atomically visible.
+3. One auth challenge consumed at most once.
+4. Session revoke/membership revoke observed across horizontally scaled instances.
+5. Primary Support Signal unique by logical computation identity; effective projection deterministic.
+6. One-active Case/assignment winner where required.
+7. Provider state never silently becomes Request/Fulfillment state.
+8. `PROVIDER_UNKNOWN` reconciles before duplicate-risk retry.
+9. Provider/Referral disclosure requires use-time consent/minimum necessary projection.
+10. Follow-Up stale schedule jobs cannot mutate newer state.
+11. Notification retries do not increment Follow-Up coordination count.
+12. Duplicate generating event/job maps to one logical Notification when dedupe semantics match.
+13. Case reopen preserves prior Settlement and later resolution creates later cycle.
+14. Required Domain Event publication cannot be permanently lost after commit.
+15. Command idempotency survives restart/horizontal instances and detects conflicting reuse.
+16. Provider secrets never live in domain tables.
+
+---
+
+## 15. Non-goals
+
+Physical migration syntax, vendor schemas, provider secrets, payment/billing columns, premature sharding, raw webhook payload retention as business data, event IDs as command-idempotency substitutes, process-local-only session/idempotency truth, insertion-order current projections, or one mutable Settlement row that destroys resolution history.

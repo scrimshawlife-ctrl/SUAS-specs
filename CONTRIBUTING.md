@@ -1,55 +1,85 @@
 # CONTRIBUTING.md — How to change SUAS specifications
 
-**Related:** [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [CHANGELOG.md](CHANGELOG.md), [README.md](README.md)
+**Related:** [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [CHANGELOG.md](CHANGELOG.md), [README.md](README.md), [ROADMAP.md](ROADMAP.md)
 
-This repository is specifications and hygiene files only. Do not add application or production code.
-
----
-
-## 1. Who may change specs
-
-- Specification owner: `@scrimshawlife-ctrl` (see [CODEOWNERS](CODEOWNERS)).
-- Implementation contributors propose spec changes here when they find gaps. They do not redefine contracts in `SUAS`.
+This repository contains specifications and hygiene files only. Do not add application or production code.
 
 ---
 
-## 2. Allowed change types
+## 1. Authority
 
-| Type | Examples | Version impact |
+- Specification owner: `@scrimshawlife-ctrl`.
+- Contributors and implementation agents may propose changes but cannot self-accept or self-release them.
+- Implementation gaps return to this repository; code does not redefine the product.
+
+---
+
+## 2. Change types
+
+| Type | Examples | Typical version impact |
 |---|---|---|
-| Clarification | Cross-links, wording that does not change behavior | PATCH |
-| Additive contract | New optional field, new `FUTURE` section | MINOR |
-| Breaking contract | State rename, required field, consent semantic change | MAJOR (or explicit 0.y breaking MINOR if still unreleased) |
-| Decision close | Moving an item out of [DECISIONS.md](DECISIONS.md) | MINOR or MAJOR depending on impact |
+| Clarification | wording/cross-link with no behavior change | PATCH |
+| Additive contract | optional field, new readiness rule, new future capability | MINOR |
+| Breaking contract | state rename, required field, consent semantic change | MAJOR, or explicit breaking 0.y MINOR while unreleased |
+| Decision close | resolving a DECISION_PENDING item | MINOR or MAJOR depending on behavior impact |
 
 ---
 
-## 3. Process
+## 3. Required process
 
-1. Read [GLOSSARY.md](GLOSSARY.md) and [PRODUCT.md](PRODUCT.md). Use those terms.
-2. Edit the minimum set of files. Keep state-machine names identical across files.
-3. Update cross-links.
-4. Update [CHANGELOG.md](CHANGELOG.md) and [STATUS.md](STATUS.md) if phase or gate status changes.
-5. If you close or open a decision, update [DECISIONS.md](DECISIONS.md).
-6. Do not invent partners, county agreements, VA integrations, Medi-Cal eligibility, responder coverage, clinical claims, reimbursement, or legal status.
-7. Label unknowns with `OBSERVED` / `INFERRED` / `SPECULATIVE` / `NOT_COMPUTABLE` / `DECISION_PENDING` / `FUTURE`.
-8. Do not claim HIPAA compliance.
-9. Implementation PRs belong in `https://github.com/scrimshawlife-ctrl/SUAS` and must cite spec sections and versions.
+1. Read [PRODUCT.md](PRODUCT.md) and [GLOSSARY.md](GLOSSARY.md).
+2. Identify the governing [ROADMAP.md](ROADMAP.md) stage.
+3. Edit the minimum coherent set of files; do not patch one contract while leaving dependent artifacts contradictory.
+4. Reconcile cross-links and terminology.
+5. Update [DECISIONS.md](DECISIONS.md) when opening/closing a decision.
+6. Update [STATUS.md](STATUS.md) only when status/gates actually change.
+7. Update [CHANGELOG.md](CHANGELOG.md) for semantic spec changes.
+8. Add or update testability/acceptance criteria for new behavior.
+9. Do not invent partners, provider capabilities, contracts, county agreements, VA integrations, Medi-Cal eligibility, responder coverage, legal status, capacity forecasts, SLOs, RTO/RPO, or vendor SLAs.
+10. Do not claim HIPAA compliance.
+11. Keep application implementation in `scrimshawlife-ctrl/SUAS` and cite released specs there.
 
 ---
 
-## 4. What not to contribute here
+## 4. Cross-artifact conformance review
 
-- Application code, SDKs, infrastructure-as-code that selects a cloud vendor, seed data with real veteran information, marketing copy, clinical protocols presented as product claims.
+Before a spec change is ready for owner review, check all affected authority surfaces.
+
+At minimum, when relevant:
+
+- product/terminology: `PRODUCT.md`, `GLOSSARY.md`, `README.md`;
+- domain/state: `DOMAIN_MODEL.md`, `DATA_MODEL.md`, `API.md`, `EVENT_MODEL.md`;
+- visual/interaction: `MVP_REFERENCE.md`;
+- external fulfillment: `PROVIDER_INTEGRATIONS.md`, `APIS.md`, `FULFILLMENT.md`;
+- scale/resilience: `SCALING.md`, `RESILIENCE.md`, `ARCHITECTURE.md`, `DEPLOYMENT.md`, `OPERATIONS.md`;
+- verification: `TESTING.md`, `STATUS.md`;
+- governance: `ROADMAP.md`, `SPEC-001.md`, `VERSIONING.md`, `AGENTS.md`, `SPEC_AUDIT.md`.
+
+A change that leaves a stale gate name, roadmap number, lifecycle claim, provider assumption, or state alias is incomplete.
 
 ---
 
 ## 5. Review bar
 
-A spec change is acceptable when:
+A specification change is reviewable when:
 
-- Terminology matches [GLOSSARY.md](GLOSSARY.md).
-- State names match [CASES.md](CASES.md) and [DISPATCH.md](DISPATCH.md).
-- Authority remains: specs canonical; implementation cites.
-- Testability is stated for new rules.
-- Non-goals remain intact (no automated emergency dispatch, no diagnosis, no generative primary signal).
+- terminology matches canonical definitions;
+- state names and event semantics align across artifacts;
+- provider-specific details do not leak into domain contracts;
+- MVP-facing changes preserve or deliberately document visual/interaction divergence;
+- scale/resilience implications are addressed where behavior can create load, concurrency, or dependency-failure risk;
+- testability is explicit;
+- unknowns remain epistemically labeled;
+- lifecycle/roadmap references are current;
+- safety/non-goal boundaries remain intact.
+
+---
+
+## 6. Not allowed here
+
+- application code;
+- provider credentials;
+- real veteran data;
+- vendor-specific production deployment implementation;
+- clinical protocols presented as product claims;
+- silent acceptance/release changes.

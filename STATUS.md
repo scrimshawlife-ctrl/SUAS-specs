@@ -1,112 +1,150 @@
 # STATUS.md — SUAS specification status (v0.1.0)
 
-**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
-**Related:** [README.md](README.md), [ROADMAP.md](ROADMAP.md), [VERSIONING.md](VERSIONING.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md)
+**Specification lifecycle:** `draft`  
+**Phase:** `SPECIFICATION_BOOTSTRAP`  
+**Implementation authority:** `NOT_YET_RELEASED`  
+**Pilot readiness:** `NOT_READY`  
+**Production readiness:** `NOT_READY`
+
+**Related:** [README.md](README.md), [ROADMAP.md](ROADMAP.md), [VERSIONING.md](VERSIONING.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md), [MVP_REFERENCE.md](MVP_REFERENCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
 ---
 
-## 1. Identity
+## 1. Governance frontier
 
-| Field | Value |
+| Stage | Status |
 |---|---|
-| Product | Shut Up and Serve |
-| System | SUAS |
-| Specification repository | `scrimshawlife-ctrl/SUAS-specs` |
-| Implementation repository | `scrimshawlife-ctrl/SUAS` (`https://github.com/scrimshawlife-ctrl/SUAS`) |
-| Specification version | `0.1.0` |
-| Specification lifecycle | `draft` |
-| SPEC-001 | `READY_FOR_REVIEW` (worksheet [SPEC-001.md](SPEC-001.md); not `accepted`) |
-| Phase | `SPECIFICATION_BOOTSTRAP` |
-| Implementation authority | `NOT_YET_RELEASED` |
-| Pilot readiness | `NOT_READY` |
+| SPEC-001 | `READY_FOR_REVIEW` |
+| SPEC-002 | dependency-blocked; preflight complete |
+| SPEC-003 | dependency-blocked; preflight complete |
+| SPEC-004 | dependency-blocked; preflight complete |
+| SPEC-005 | dependency-blocked; preflight complete |
+| SPEC-006 | dependency-blocked; preflight complete |
+| SPEC-007 | dependency-blocked; preflight complete |
+| SPEC-008 | dependency-blocked; preflight complete |
+| SPEC-009 | dependency-blocked; preflight complete |
+| SPEC-010 | dependency-blocked; preflight complete |
+| SPEC-011 | dependency-blocked; preflight complete |
+| SPEC-012 | dependency-blocked; preflight complete |
+| SPEC-013 | dependency-blocked; preflight complete |
+| SPEC-014 | dependency-blocked; preflight complete |
+| SPEC-015 | dependency-blocked; release decision matrix preflight complete |
+| SPEC-016 | `BLOCKED_BY_SPEC_001_THROUGH_SPEC_015`; release-cut checklist staged |
+| SPEC-017 | blocked by released implementation contract + implementation attempt |
+| SPEC-018 | blocked by release/conformance + operational evidence |
+| SPEC-019 | future post-launch revision |
 
-`SUAS-specs` is the canonical specification authority. `SUAS` is the implementation repository and must conform to released specifications. Draft specifications are not implementation authority.
+Worksheets: [SPEC-001.md](SPEC-001.md) through [SPEC-016.md](SPEC-016.md) where present.
 
----
-
-## 2. Phase definition
-
-`SPECIFICATION_BOOTSTRAP` means:
-
-- The v0.1 specification stack exists as markdown.
-- No specification artifact has been `accepted` or `released` (see [VERSIONING.md](VERSIONING.md)).
-- The implementation repository has no released-spec contract to implement.
-- The pilot must not be operated on this stack until specs are `accepted` and an implementation is tested against the MVP acceptance gate.
-
-Next step: owner review of [SPEC-001.md](SPEC-001.md). SPEC-001 is `READY_FOR_REVIEW`. It is not `accepted`. That review is **not** implementation. Agents must not self-accept.
+**Preflight is not acceptance.** No owner checkbox has been completed by an agent and no stage lifecycle has advanced.
 
 ---
 
-## 3. MVP acceptance gate
+## 2. Canonical current conclusions — still draft
 
-The MVP is not accepted until **all** of the following gates pass. Gate definitions are testable in [TESTING.md](TESTING.md). This file records status only.
+The preflight stack now specifies:
 
-| Gate | Meaning | Status |
-|---|---|---|
-| **AUTH** | Veteran passwordless auth works; responder/admin MFA works; sessions invalidate; revoked users cannot act. | `NOT_READY` |
-| **CONSENT** | Consent Grants are first-class; revocation stops future use; no share/notify without a matching grant. | `NOT_READY` |
-| **CHECK-IN** | Versioned questionnaire; incomplete/abandoned handled; Check-In is not treated as a Support Signal. | `NOT_READY` |
-| **COORDINATION** | Support Case and Service Request state machines execute only documented transitions; assignment is not fulfillment. | `NOT_READY` |
-| **SAFETY** | Red-state surfaces approved crisis resources, prioritizes human review, follows consent; no automated emergency dispatch; no diagnosis claim. | `NOT_READY` |
-| **PRIVACY** | Minimization enforced; discouraged data not collected; access logged; no production data in non-prod. | `NOT_READY` |
-| **OPERATIONS** | Coverage, queue review, resource verification, overdue follow-up, incident path exist and are staffed for the pilot. | `NOT_READY` |
-| **REPORTING** | Operational metrics in [ANALYTICS.md](ANALYTICS.md) can be produced. Clinical-efficacy and suicides-prevented metrics are absent by design. | `NOT_READY` |
+- referenced MVP visual/interaction fidelity with truthful production divergences;
+- provider-neutral transportation/shelter/food/peer-support ports and Manual Adapter paths;
+- stateless horizontal application semantics;
+- durable async work and explicit backpressure;
+- persistent command idempotency distinct from event identity;
+- replay-safe Domain Event publication/outbox-equivalent semantics;
+- single-use/shared auth challenge/session revocation semantics;
+- atomic one-winner Case/assignment/Settlement operations;
+- deterministic Support Signal/current Settlement/current assignment projections;
+- first-class multi-cycle Settlement history;
+- Follow-Up schedule identity and stale-job suppression;
+- Notification logical-send dedupe distinct from transport/business retries;
+- provider webhook/idempotency/reconciliation/privacy boundaries;
+- bounded/paginated production API/query rules;
+- scale/load targets owned by release-specific decisions rather than invented forecasts;
+- resilience covering internal replay/staleness as well as external dependency failure;
+- controlled pilot scope separated from traction/waitlist and technical capacity;
+- operational analytics separated from clinical/causal claims;
+- aggregate reporting privacy policy explicitly open as D-025.
 
-Overall MVP gate: `NOT_READY`.
-
----
-
-## 4. Artifact version status
-
-| Artifact | Current version | Lifecycle |
-|---|---|---|
-| Specification stack | `0.1.0` | `draft` |
-| Questionnaire | `NOT_COMPUTABLE` (no published QuestionnaireVersion) | — |
-| Support-signal rules | `DECISION_PENDING` (see [DECISIONS.md](DECISIONS.md)) | — |
-| Event schema | `0.1.0` (specified, not released) | `draft` |
-| API | `0.1.0` (specified, not released) | `draft` |
-| Consent template | `NOT_COMPUTABLE` (no published template) | — |
+These remain draft until sequential owner acceptance and SPEC-016 release.
 
 ---
 
-## 5. What is established vs open
+## 3. Readiness gates
 
-**Established in this stack (canonical decisions):**
+All remain `NOT_READY`:
 
-- Product identity, mission, non-goals
-- Canonical loop and non-interchangeable concepts
-- Role set
-- MVP vs future service categories
-- Modular-monolith architecture for the pilot
-- Entity list and logical schema shape
-- Case and Service Request state names
-- Consent as first-class grants
-- Safety non-goals (no automated emergency dispatch, no diagnosis, no generative primary signal)
-- AI policy
-- Medi-Cal/billing boundary (`FUTURE`)
-- Pilot size and county
-- Epistemic labeling
-- Cross-repo authority (specs canonical; implementation cites)
-- Compliance is a **register**, not a claim ([COMPLIANCE.md](COMPLIANCE.md))
-- External APIs are capability ports; vendors D-001–D-005 remain open ([APIS.md](APIS.md))
-- First-run is a gated, auditable bootstrap ([ONBOARDING.md](ONBOARDING.md))
-- SPEC-001 worksheet exists and is `READY_FOR_REVIEW` ([SPEC-001.md](SPEC-001.md)); lifecycle remains `draft`
-- MVP enrollment identity (`INFERRED`; D-016 open): self-attest + working email and/or phone; no VA API, no DD-214, no in-person proofing for this pilot
-- MVP veteran visibility (`INFERRED`; D-015 open): own Check-Ins, own Service Request status, Settlement fields written for them, Follow-Up prompts; not full Case Notes, not other veterans, not responder queue fields, not other orgs
-- Notification attempt shape: one Notification row; retries append immutable Audit Events ([NOTIFICATIONS.md](NOTIFICATIONS.md))
-- Contact log commands specified: `log-contact-attempt`, `complete-contact` ([API.md](API.md))
-- Friction analysis exists ([FRICTION.md](FRICTION.md)); proposed D-012 / D-014 closes are **not** accepted
+`AUTH`, `CONSENT`, `CHECK-IN`, `COORDINATION`, `EXTERNAL_FULFILLMENT`, `UI_CONFORMANCE`, `SAFETY`, `PRIVACY`, `SCALE`, `RESILIENCE`, `OPERATIONS`, `REPORTING`.
 
-**Open:** see [DECISIONS.md](DECISIONS.md). Do not guess.
+A gate changes only with reproducible evidence under [TESTING.md](TESTING.md), not because preflight or implementation exists.
 
 ---
 
-## 6. Implementation handoff
+## 4. Open decisions
 
-Implementation authority remains `NOT_YET_RELEASED` until:
+D-001 through D-025 remain governed by [DECISIONS.md](DECISIONS.md).
 
-1. This stack is reviewed.
-2. Required artifacts reach `accepted` then `released` per [VERSIONING.md](VERSIONING.md).
-3. [SPEC-001](ROADMAP.md) exit criteria are met.
+Key production decision groups:
 
-Do not treat the existence of the [SUAS](https://github.com/scrimshawlife-ctrl/SUAS) repository as permission to ship against draft specs.
+- **Platform:** D-001–D-005;
+- **Legal/privacy/operations:** D-006–D-009, D-013, D-025;
+- **Product/safety:** D-010–D-016;
+- **External fulfillment:** D-017–D-020;
+- **Production workload/durability/SLO/recovery:** D-021–D-024.
+
+No value/vendor/threshold is guessed.
+
+SPEC-015 defines whether each release-relevant decision must close or may be safely deferred with the affected feature unavailable/manual-only/defaulted according to an accepted contract.
+
+---
+
+## 5. SPEC-006 reconciliation status
+
+The earlier SPEC-006 handoff queue is now represented in the draft logical model:
+
+- Support Signal computation identity/effective projection;
+- event identity/idempotency/correlation/causation + replay-safe publication;
+- one-active Case/assignment concurrency;
+- provider/FulfillmentAttempt history;
+- first-class Settlement cycles/current projection;
+- Follow-Up blocking/carry-forward + schedule identity;
+- persistent command idempotency;
+- auth challenge/session state;
+- Notification logical-send dedupe.
+
+This representation is still unaccepted until SPEC-006 owner review.
+
+---
+
+## 6. Release boundary
+
+SPEC-016 is the first possible implementation-authoritative cut.
+
+It requires:
+- owner-accepted prerequisite stages;
+- D-001–D-025 release decision ledger from SPEC-015;
+- pinned release/runtime artifacts;
+- explicit enabled/manual-only/information-only/unavailable/future feature manifest;
+- cross-artifact consistency review;
+- owner lifecycle updates in STATUS/VERSIONING/CHANGELOG/release manifest.
+
+Until that happens:
+
+`IMPLEMENTATION_AUTHORITY = NOT_YET_RELEASED`
+
+Release itself does **not** make the product production-ready; SPEC-017 implementation conformance and SPEC-018 launch readiness still follow.
+
+---
+
+## 7. Artifact status
+
+All specification artifacts in this branch remain `draft`. Questionnaire content, production signal rules, consent templates, approved safety copy, provider choices, release workload targets, SLOs, recovery targets, and reporting privacy threshold remain unfinalized until their owning decisions/artifacts close.
+
+---
+
+## 8. Non-goals of current state
+
+- no implementation authorization;
+- no readiness claim;
+- no owner acceptance performed by agents;
+- no provider/cloud/queue/cache selection;
+- no compliance/clinical claim;
+- no capacity/recovery/reporting-threshold invention.
