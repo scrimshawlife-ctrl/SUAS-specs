@@ -1,289 +1,226 @@
 # RESILIENCE.md — Production resilience and degradation contract (SUAS v0.1)
 
-**Status:** `draft` / `0.1.0` / not implementation authority until accepted and released.  
-**Related:** [ARCHITECTURE.md](ARCHITECTURE.md), [SCALING.md](SCALING.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md), [TESTING.md](TESTING.md)
+**Status:** `draft` / `0.1.0`; SPEC-011 dependency-blocked.  
+**Related:** [ARCHITECTURE.md](ARCHITECTURE.md), [SCALING.md](SCALING.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [AUTH.md](AUTH.md), [FOLLOWUP.md](FOLLOWUP.md), [EVENT_MODEL.md](EVENT_MODEL.md), [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md), [TESTING.md](TESTING.md)
 
 ---
 
 ## 1. Purpose
 
-Production SUAS must remain operationally correct when dependencies are slow, unavailable, duplicated, delayed, or ambiguous. Resilience means preserving veteran-support workflow state, consent boundaries, auditability, and operator visibility under failure.
+SUAS must preserve workflow correctness, consent boundaries, auditability, durable history, and operator visibility when dependencies or internal workers are slow, unavailable, duplicated, delayed, stale, restarted, or ambiguous.
 
-Resilience does not mean pretending a service succeeded when it did not.
+Resilience never means pretending an action succeeded.
 
 ---
 
-## 2. Core invariants under failure
+## 2. Failure invariants
 
-1. A dependency outage must not silently close or erase a Support Case or Service Request.
-2. A retry must not create duplicate external fulfillment.
-3. A duplicate webhook/event/job must be safe.
-4. An out-of-order webhook must not reverse canonical state incorrectly.
-5. A notification-provider outage must not bypass consent or corrupt case state.
-6. A provider timeout with an unknown outcome must be reconciled before blind retry when duplicate fulfillment is possible.
-7. Operator-visible status must distinguish `FAILED`, `DEGRADED`, `UNKNOWN`, and `PENDING` where those distinctions affect action.
-8. Manual coordination must remain available for service fulfillment when automated integration is unavailable and policy permits.
-9. Recovery/replay actions must be authorized and audited.
-10. Failure handling must not expose more veteran data than normal operation.
+1. Dependency failure never silently closes/erases a Case or Request.
+2. Retry/replay never creates duplicate logical Case, Settlement cycle, Notification, Referral send, or provider fulfillment effect.
+3. Duplicate/out-of-order job/webhook/event delivery is safe.
+4. Stale scheduled work cannot mutate newer Follow-Up/session/config state.
+5. Notification/provider outage cannot bypass consent or corrupt parent workflow.
+6. Ambiguous external mutation reconciles before duplicate-risk retry.
+7. Session/user/membership revocation remains effective across app instances/restarts.
+8. Required Domain Event publication can recover after crash without losing or duplicating the logical business fact.
+9. Failed/unknown/pending/degraded states remain distinguishable and operator-visible.
+10. Manual coordination remains available for service fulfillment when policy permits.
+11. Recovery/replay is authorized and audited.
+12. Failure handling never expands veteran-data disclosure.
 
 ---
 
 ## 3. Failure classes
 
-Production design and tests must cover at least:
-
-- application instance crash/restart;
+Tests cover at least:
+- app instance crash/restart;
 - worker crash/restart;
-- database transient connection failure;
-- durable queue delay/backlog;
-- duplicate job delivery;
-- notification provider timeout/outage;
-- provider API timeout/outage;
-- provider rate limiting;
-- malformed or unauthenticated webhook;
-- duplicate webhook;
-- delayed/out-of-order webhook;
-- partial network response where external outcome is unknown;
-- stale provider/resource availability;
-- one tenant generating abnormal load.
+- DB transient failure/connection loss after commit uncertainty;
+- queue delay/backlog/duplicate delivery;
+- event/outbox publisher crash between domain commit and external publication;
+- same API command retried after lost response;
+- concurrent Case claim/Settlement resolve;
+- Follow-Up reschedule with old due job still queued;
+- user/membership revoke while another app instance has cached session/auth data;
+- notification provider timeout/outage/duplicate callback;
+- fulfillment provider timeout/outage/rate limit/duplicate or out-of-order webhook;
+- malformed/unauthenticated callback;
+- stale resource/provider availability;
+- abnormal tenant load.
 
 ---
 
-## 4. Timeouts
+## 4. Timeouts / retries
 
-Every external network call must have finite timeout behavior.
+All external calls have finite timeouts. Values are configuration/release decisions, not canonical numbers in this spec.
 
-Timeout values are environment/configuration decisions and may differ by capability, but no request or worker may wait indefinitely for an external provider.
+Retries are bounded, observable, idempotent, backoff-based for transient failures, rate-limit aware, and disabled for known permanent failures until underlying state changes.
 
-A timeout does not prove the provider failed. Where an external side effect may have occurred, the result becomes an ambiguous state requiring reconciliation.
+After exhaustion, durable work remains operator-visible/quarantined; it does not disappear.
 
----
-
-## 5. Retry policy
-
-Retries must be:
-
-- bounded;
-- observable;
-- idempotent;
-- backoff-based for transient failures;
-- rate-limit aware when a provider returns retry guidance;
-- disabled for errors that are clearly permanent unless an operator changes the underlying condition.
-
-Automatic retries must not continue indefinitely.
-
-After retry exhaustion, durable work enters an operator-visible failed/quarantined state rather than disappearing.
+A timeout/connection loss does not prove failure where a side effect/commit may have occurred.
 
 ---
 
-## 6. Dead-letter / quarantine handling
+## 5. Dead-letter / quarantine
 
-Production-critical async work must have an inspectable failed-work path.
+Operators can inspect job/attempt identity, tenant, domain reference, failure category, attempt count, last attempt/error summary, replay-safety state, and whether manual intervention is required.
 
-Authorized operators must be able to determine:
-
-- job/attempt identity;
-- tenant/org;
-- domain object reference;
-- failure category;
-- attempt count;
-- last attempted time;
-- last safe error summary;
-- whether replay is safe;
-- whether manual intervention is required.
-
-Replay must create an Audit Event and preserve idempotency identity where replay represents the same logical attempt.
+Replay is audited. Replay of the same logical action preserves its idempotency/computation/attempt identity; deliberate new action receives new identity.
 
 ---
 
-## 7. Circuit breaking
+## 6. Internal command replay
 
-External provider adapters must prevent repeated calls to a dependency that is clearly failing or rate-limited.
+If client loses an HTTP response after a command may have committed:
 
-Circuit state is operational adapter state, not domain state. At minimum adapters/router must distinguish:
+- same `Idempotency-Key` + same canonical request returns/reuses the original authoritative outcome;
+- conflicting payload reuse fails;
+- retry cannot create another Case assignment, Referral send, Settlement cycle, or equivalent effect;
+- idempotency state survives process restart/horizontal instances.
 
-- healthy;
-- degraded;
-- rate-limited;
-- unavailable;
-- misconfigured.
-
-When a circuit is open, Provider Router may select another compatible adapter or manual coordination if policy permits.
+DB connection loss after commit uncertainty is handled through authoritative idempotency/domain lookup, not blind command recreation.
 
 ---
 
-## 8. Unknown external outcome
+## 7. Event/outbox recovery
 
-If SUAS sends an external mutation and loses the response, and duplicate fulfillment would be harmful, the Fulfillment Attempt must not be blindly recreated.
+Required domain transition + Domain Event publication must provide exactly-once **observable logical business effect**, not a claim of exactly-once broker delivery.
 
-Required path:
-
-```text
-mutation sent
-    |
-response ambiguous
-    v
-PROVIDER_UNKNOWN
-    |
-reconcile by idempotency key / external lookup / provider status
-    |----------------------|
-    v                      v
-known outcome         remains unknown
-    |                      |
-continue canonical    operator review / manual path
-workflow
-```
-
-Examples include a ride request, room reservation, or other scarce/costly support allocation.
+If publisher crashes after domain commit:
+- durable outbox/equivalent work remains discoverable;
+- replay emits/reuses the one logical event identity/effect;
+- consumers must tolerate duplicate transport delivery through idempotent processing;
+- audit/event lag is observable.
 
 ---
 
-## 9. Database resilience
+## 8. Stale scheduled work
 
-The application must distinguish retryable database failures from domain validation failures.
+Follow-Up due/overdue work carries expected `schedule_version`/equivalent identity.
 
-Rules:
+If Follow-Up is rescheduled/cancelled/completed before an old job executes, the old job detects mismatch and no-ops/audits. It must not restore old `DUE/OVERDUE` state or send stale coordination notifications.
 
-- domain commands do not report success before their transaction commits;
-- transaction retry is used only when safe and bounded;
-- idempotency prevents a client retry after connection loss from duplicating consequential work;
-- database outage does not cause external provider mutation to continue without a durable SUAS attempt record;
-- migrations have rollback/forward-fix plans appropriate to production table size.
+The same principle applies to scheduled work whose authoritative version/state changed after enqueue.
 
 ---
 
-## 10. Notification degradation
+## 9. Session / authorization resilience
 
-If an email or SMS channel is unavailable:
+Horizontal scaling/caching must not make revocation best-effort.
 
-- the channel is marked operationally unavailable/degraded;
-- notifications remain recorded with accurate delivery state;
-- retries obey the channel policy;
-- another channel may be used only if consent and notification policy independently authorize it;
-- `IN_APP` remains separate from external delivery status;
-- no workflow state is marked fulfilled because a message was sent or attempted.
+Tests must prove:
+- revoke membership/user/session on one instance;
+- requests routed to another healthy instance observe authoritative revoke within accepted security semantics;
+- app restart/cache loss does not revive revoked credentials;
+- challenge consume replay cannot succeed twice.
 
----
-
-## 11. Provider degradation
-
-If a transportation, temporary shelter, food, or peer-support provider is unavailable:
-
-- the Service Request remains canonical and inspectable;
-- active Fulfillment Attempts show their actual state;
-- router may try another configured compatible provider with a new attempt identity;
-- manual coordination may be selected;
-- the user/responder must not be shown a false successful booking;
-- failures are available to operations metrics without exposing unnecessary PII.
+Exact security timing SLO belongs to D-023/release security policy.
 
 ---
 
-## 12. Backpressure
+## 10. Circuit breaking / provider unknown outcomes
 
-When demand exceeds immediate downstream capacity, SUAS must slow/admit/queue work rather than amplify failure.
+Adapter operational states include healthy/degraded/rate-limited/unavailable/misconfigured.
 
-Backpressure mechanisms may include:
+A provider mutation with ambiguous response becomes `PROVIDER_UNKNOWN` and reconciles by idempotency/external reference/status where possible before duplicate-risk retry.
 
-- queueing;
-- per-adapter concurrency limits;
-- per-tenant limits;
-- bounded worker concurrency;
-- endpoint rate limits;
-- temporary rejection with explicit retry semantics for non-critical bulk/admin work;
-- priority classes for veteran-support work.
-
-Safety-critical copy and human-support prioritization rules remain governed by [SAFETY.md](SAFETY.md); resilience mechanisms must not silently suppress required human review.
+Router may choose another compatible adapter/manual path only through a deliberate new FulfillmentAttempt when policy permits.
 
 ---
 
-## 13. Recovery objectives
+## 11. Notification degradation
 
-Exact RTO/RPO targets remain `DECISION_PENDING` until production infrastructure and business operating requirements are chosen.
+Unavailable email/SMS remains accurately degraded. Another channel may be used only if independently authorized by policy/consent. Duplicate generating jobs map to one logical Notification when dedupe identity matches. Provider callback cannot enqueue a new message by itself.
 
-The architecture must nevertheless support:
-
-- backed-up PostgreSQL data;
-- restoration testing;
-- recovery of durable jobs or explicit reconciliation of their state;
-- restoration of provider configuration/secrets through the deployment secret mechanism;
-- documented incident ownership;
-- verification that restored state does not cause duplicate external side effects.
+Notification transport retries do not become Follow-Up coordination attempts.
 
 ---
 
-## 14. Graceful deploy/restart behavior
+## 12. Database resilience
 
-Workers must handle termination without silently losing acknowledged work.
-
-Application deploys/restarts must not invalidate valid sessions unless the release intentionally changes session/security policy.
-
-Long-running jobs should either complete within a graceful window or return to durable queue visibility for safe retry.
-
----
-
-## 15. Resilience observability
-
-At minimum monitor:
-
-- dependency health by adapter;
-- error/timeout/rate-limit rate;
-- circuit state;
-- retry counts;
-- dead-letter/quarantine count;
-- oldest failed work;
-- ambiguous provider outcomes;
-- reconciliation success/failure;
-- DB connectivity/error rate;
-- queue age/depth;
-- worker restart/failure rate;
-- fallback to manual coordination.
-
-Alerts should identify the affected capability and tenant scope when appropriate without embedding sensitive veteran content.
+- No command reports success before commit.
+- Transaction retry only when safe/idempotent.
+- No external provider mutation proceeds without a durable SUAS attempt record.
+- Migrations have production-appropriate forward-fix/rollback strategy.
+- Restore must preserve Settlement/event/idempotency history needed to prevent duplicate side effects.
 
 ---
 
-## 16. Game days / failure drills
+## 13. Backpressure / tenant fairness
 
-Before production readiness, staging must exercise representative dependency failures with synthetic data.
+Overload queues/slows/rejects lower-priority work instead of amplifying failure. Mechanisms may include per-adapter/tenant limits, bounded worker concurrency, endpoint limits, priority classes, and temporary retryable rejection for non-critical bulk/admin work.
 
-Minimum drills:
+Urgent support/human-review paths must not be silently starved by maintenance/reporting jobs.
+
+---
+
+## 14. Recovery objectives
+
+D-024 owns release-specific RTO/RPO and remains `DECISION_PENDING`.
+
+Architecture must support DB backup/restore, durable-job recovery/reconciliation, provider/config restoration through secret/config mechanisms, incident ownership, and post-restore duplicate-side-effect checks.
+
+No RTO/RPO number is invented in this spec.
+
+---
+
+## 15. Graceful deploy/restart
+
+Workers terminate without losing acknowledged work. Long-running work completes or returns to durable visibility. App deploy/restart does not invalidate valid sessions unless security policy intentionally does so and must not revive revoked sessions.
+
+---
+
+## 16. Resilience observability
+
+Monitor dependency health, timeout/rate-limit/circuit state, retry/dead-letter age, ambiguous/reconciled provider outcomes, DB/queue/worker failures, event/outbox lag, command-idempotency conflicts, stale-job suppression, session/revoke anomalies, duplicate notification dedupe, Settlement resolve conflicts, and manual fallback use.
+
+Alerts identify affected capability/tenant without sensitive veteran content.
+
+---
+
+## 17. Failure drills
+
+Staging with synthetic data exercises at least:
 
 1. notification provider unavailable;
-2. one fulfillment provider times out after accepting an idempotent request;
-3. duplicate webhook delivery;
+2. fulfillment provider timeout after possible acceptance;
+3. duplicate/out-of-order provider webhook;
 4. worker restart with queued work;
 5. queue backlog/burst;
-6. database transient failure during a domain command;
-7. provider rate limiting;
-8. manual fallback from an unavailable external provider.
+6. DB transient failure/lost response around domain commit;
+7. provider rate limiting/manual fallback;
+8. duplicate API command after lost response;
+9. concurrent Settlement resolve using same/different idempotency keys;
+10. Follow-Up reschedule followed by stale due job;
+11. session/membership revoke followed by request on another app instance;
+12. event/outbox publisher crash after domain commit before publication;
+13. restore rehearsal with pending/unknown provider attempts and idempotency history.
 
-Results and remediation items must be recorded.
+Results/remediation are recorded.
 
 ---
 
-## 17. Acceptance gate: RESILIENCE
+## 18. RESILIENCE gate
 
 `RESILIENCE = READY` only when:
+- production-critical work survives restart;
+- retries/replays are bounded/idempotent;
+- failed work is inspectable/replay audited;
+- duplicate jobs/webhooks/API retries are safe;
+- stale scheduled work is suppressed;
+- session revocation remains authoritative across instances;
+- event publication recovers without lost logical business facts;
+- ambiguous provider mutations reconcile;
+- provider/notification outages preserve parent workflow correctness;
+- backpressure/tenant fairness is verified;
+- failure drills pass or have accepted mitigations;
+- D-024 recovery objectives are set for the release and restore procedure is tested.
 
-- production-critical work is durable across worker restart;
-- retries are bounded/idempotent;
-- dead-letter/quarantine work is inspectable and replay is audited;
-- duplicate jobs/webhooks are safe;
-- ambiguous external mutations reconcile before risky retry;
-- provider outage preserves Service Request state and supports explicit fallback;
-- notification outage preserves workflow correctness;
-- backpressure behavior is verified under burst;
-- staging failure drills in §16 pass or have accepted mitigations;
-- recovery/restore procedure has been tested at least once for the release environment.
-
-Current status: `NOT_READY`.
+Current: `NOT_READY`.
 
 ---
 
-## 18. Non-goals
+## 19. Non-goals
 
-- Claiming zero downtime
-- Hiding dependency failure from operators
-- Infinite retries
-- Multi-region active-active as an MVP requirement
-- Treating manual coordination as a failure of the architecture
+Zero-downtime claim, infinite retries, hiding dependency failure, unsupported RTO/RPO promises, multi-region active-active requirement, or treating manual coordination as architecture failure.
