@@ -4,89 +4,71 @@ Dates are America/Los_Angeles (PT). Lifecycle changes are owner-controlled.
 
 ---
 
-## 0.1.0 — 2026-08-14 through 2026-08-18 — `draft`
+## 0.1.0 — 2026-08-18 — `released`
 
-**Bootstrap and production-readiness preflight of the SUAS v0.1 specification stack.**
+**First implementation-authoritative SUAS specification release.**
 
-### Product / authority bootstrap
+Owner `@scrimshawlife-ctrl` completed the staged acceptance chain and released v0.1.0 on 2026-08-18 PT.
 
-- Established product identity, mission, roles, canonical loop, service categories, state machines, non-goals, consent, safety, privacy, architecture, API, operations, and test scaffolding.
-- Established `SUAS-specs` as canonical and `SUAS` as implementation against released specs only.
-- Lifecycle remains `draft`; implementation authority `NOT_YET_RELEASED`; pilot/production readiness `NOT_READY`.
-- Added compliance register, API capability inventory, onboarding/bootstrap, owner-review workflow, friction analysis, contact-log commands, veteran-visibility/enrollment defaults, and Notification logical-send attempt history.
+### Governance
 
-### Production-readiness hardening — 2026-08-18
+- SPEC-001 through SPEC-015: `accepted`.
+- SPEC-016: `released`.
+- Implementation authority: `RELEASED_FOR_IMPLEMENTATION`.
+- Release manifest: [RELEASE_MANIFEST-0.1.0.md](RELEASE_MANIFEST-0.1.0.md).
+- Release decision ledger: [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md).
+- SPEC-017 is the current next stage: implementation conformance.
+- SPEC-018 remains the launch-readiness gate.
 
-Added:
+### Released design baseline
 
-- [MVP_REFERENCE.md](MVP_REFERENCE.md) — observed MVP visual/interaction authority and truthful production divergences;
-- [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md) — provider-neutral transportation, temporary shelter/room, food, peer-support ports and Manual Adapter;
-- [SCALING.md](SCALING.md) — stateless horizontal app, durable work, bounded APIs, PostgreSQL/tenant/backpressure/load doctrine;
-- [RESILIENCE.md](RESILIENCE.md) — crash/retry/replay/stale-work/session/provider/event/restore failure semantics.
+The released cut includes the product/domain/API/auth/consent/safety/privacy/data/event/architecture/provider/UI/scaling/resilience/testing/operations/pilot/analytics contracts named in the release manifest.
 
-Expanded governance:
+Key released properties include:
 
-- Roadmap now SPEC-001 through SPEC-019.
-- SPEC-001 remains `READY_FOR_REVIEW`.
-- SPEC-002 through SPEC-015 have dependency-blocked preflight owner worksheets.
-- SPEC-016 has a blocked first-release assembly checklist.
-- First implementation-authoritative release remains SPEC-016; release is not launch readiness.
-- Readiness model expanded to 12 gates: `AUTH`, `CONSENT`, `CHECK-IN`, `COORDINATION`, `EXTERNAL_FULFILLMENT`, `UI_CONFORMANCE`, `SAFETY`, `PRIVACY`, `SCALE`, `RESILIENCE`, `OPERATIONS`, `REPORTING`.
+- referenced MVP visual/interaction fidelity with truthful production divergences;
+- provider-neutral transportation, temporary shelter/room, food, and peer-support capability ports with Manual Adapter paths;
+- stateless horizontally scalable application semantics;
+- durable async-work contract;
+- persistent command idempotency distinct from event identity;
+- replay-safe Domain Event publication;
+- single-use/shared auth challenge/session revocation semantics;
+- atomic one-winner Case/assignment/Settlement operations;
+- deterministic current Support Signal/Settlement/assignment projections;
+- multi-cycle Settlement history;
+- Follow-Up schedule identity and stale-job protection;
+- Notification logical-send dedupe;
+- bounded/paginated API/query rules;
+- vendor-neutral scaling/resilience/operations evidence contracts;
+- controlled pilot scope separated from traction and technical capacity;
+- operational analytics separated from clinical/causal claims.
 
-### Cross-artifact correctness repairs
+### v0.1.0 safe deferrals
 
-- Provider booking/dispatch became explicit third-party disclosure with use-time consent/minimum-necessary projection.
-- `FulfillmentAttempt` and provider-adapter configuration became first-class logical concepts.
-- Support Signal compute gained stable replay identity/effective projection semantics.
-- Event identity separated from command/job idempotency, correlation, causation, and request identity.
-- Required Domain Event publication became replay-safe through transactional outbox/equivalent semantics.
-- Case creation/claim/assignment/reassignment gained atomic one-winner semantics.
-- Resource freshness separated from live provider availability.
-- Referral send made replay-safe/idempotent.
-- Follow-Up business retry count separated from Notification/job retry and gained schedule-version stale-job protection plus blocking/carry-forward semantics.
-- Settlement became first-class multi-cycle history across Case reopen with deterministic current projection.
-- Persistent command idempotency and canonical `/api/v0` version selection added.
-- Auth challenge/session revocation/rate-control semantics made horizontally authoritative.
-- Notification logical-send dedupe and durable callback-safe delivery semantics added.
-- Provider-neutral admin configuration/health added without exposing secrets.
-- Incident taxonomy expanded for queue/idempotency/event/provider/QRF truth/restore failures.
-- TESTING reconciled to prove the new concurrency/idempotency/session/event/Settlement/provider/UI/scale/resilience invariants.
+This is an implementation-authoritative release, **not** a production-operating release.
 
-### MVP visual reference reconciliation
+The following remain unavailable for production until their decisions/evidence close:
 
-Observed reference interaction spine now explicitly covered: `TAKE ACTION`, `I NEED SUPPORT`, `I WANT TO SERVE`, QRF deploy/search/contact/cancel, Immediate Resources, category browsing, responder On Duty/QRF Dashboard, Quick Resource Share, Alerts/Chat/Home, and distinct admin surface.
+- production hosting/auth/email/SMS/database/job infrastructure;
+- production legal/retention/partner/staffing/counsel posture;
+- production Support Signal rules;
+- official safety/crisis copy;
+- real external transportation/shelter/food/peer adapters;
+- production workload/SLO/RTO/RPO targets;
+- small/sensitive aggregate-reporting policy.
 
-Production divergences include:
+D-015 and D-016 defaults were accepted; all other release-relevant decisions are recorded as `DECIDED` or `DEFERRED_FOR_RELEASE` in the release ledger.
 
-- replace contradictory `No email` enrollment copy;
-- no guaranteed “near you”/immediate QRF response without evidence;
-- no continuous GPS requirement from prototype wording;
-- crisis copy comes from accepted SAFETY/D-012;
-- future category cards may remain informational but cannot create hidden released workflows;
-- prototype statistics/clinical claims are not production facts by default.
+### Readiness
 
-### Epistemic corrections
+- Pilot readiness: `NOT_READY`.
+- Production readiness: `NOT_READY`.
+- All 12 readiness gates remain `NOT_READY` pending implementation and evidence.
 
-- Removed unsupported numeric regional/multi-region capacity envelopes; D-021/D-023 own release-specific workload/performance evidence.
-- Separated Request `CONFIRMED` fulfillment metrics from mere Fulfillment/provider `COMPLETED` state.
-- Removed invented `<5` aggregate reporting suppression threshold.
-- Opened D-025 for aggregate reporting privacy/small-cell aggregation/suppression policy.
-- Clarified high traction does not silently expand the controlled pilot or count as outcome evidence.
+Release authorizes implementation only. It does not authorize real veteran data, a live pilot, or production deployment.
 
-### Decisions / release preparation
+---
 
-Open decisions now run D-001 through D-025.
+## 0.1.0 — 2026-08-14 through 2026-08-18 — pre-release history
 
-SPEC-015 classifies release decisions as must-close, conditional, or safely deferrable only with an explicit unavailable/manual/default boundary permitted by accepted specs.
-
-SPEC-016 requires a pinned release manifest, D-001–D-025 decision ledger, enabled/manual-only/information-only/unavailable/future feature manifest, runtime artifact pins, and cross-artifact consistency review before owner release.
-
-### Current state
-
-- Lifecycle: `draft`
-- Implementation authority: `NOT_YET_RELEASED`
-- Pilot readiness: `NOT_READY`
-- Production readiness: `NOT_READY`
-- All 12 readiness gates: `NOT_READY`
-- Owner acceptance/release actions performed by agents: none
-- Production application code/provider credentials/real veteran data added to this repository: none
+The v0.1.0 bootstrap/preflight established the canonical product loop, provider-neutral architecture, MVP visual reference, scaling/resilience contracts, staged governance through SPEC-019, and the cross-artifact hardening that preceded this release. See [SPEC_AUDIT.md](SPEC_AUDIT.md) for the detailed audit record.
