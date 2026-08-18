@@ -1,6 +1,7 @@
 # SUPPORT_SIGNALS.md — Deterministic coordination signals (SUAS v0.1)
 
-**Related:** [CHECKINS.md](CHECKINS.md), [SAFETY.md](SAFETY.md), [CASES.md](CASES.md), [CONSENT.md](CONSENT.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md)
+**Status:** `draft` / `0.1.0` / SPEC-003 preflight; not implementation authority.  
+**Related:** [CHECKINS.md](CHECKINS.md), [SAFETY.md](SAFETY.md), [CASES.md](CASES.md), [CONSENT.md](CONSENT.md), [EVENT_MODEL.md](EVENT_MODEL.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
 **Actors:** System (compute), Veteran (source of Check-In), Responder (may override with reason), SUAS System Administrator (publishes `signal_version`).
 
@@ -8,9 +9,9 @@
 
 ## 1. Purpose
 
-A Support Signal is a **coordination priority label**, not a diagnosis, not a clinical assessment, and not a suicidality determination.
+A Support Signal is a **coordination priority label**, not a diagnosis, clinical assessment, or suicidality determination.
 
-Values (exactly these four):
+Values are exactly:
 
 `GREEN` | `YELLOW` | `ORANGE` | `RED`
 
@@ -18,82 +19,144 @@ Values (exactly these four):
 
 ## 2. Computation contract
 
-The primary signal **must** be:
+The primary signal must be:
 
 | Property | Requirement |
 |---|---|
-| Deterministic | Same inputs + same `signal_version` + same `input_questionnaire_version` → same `level` and same `basis` |
-| Inspectable | `basis` records the inputs used |
-| Versioned | `signal_version` is a published identifier |
-| Unit tested | Golden vectors per version ([TESTING.md](TESTING.md)) |
-| Reproducible | Historical rows can be explained without re-mutating them |
+| Deterministic | Same canonical inputs + same `signal_version` + same questionnaire version → same `level` and semantically equivalent `basis` |
+| Inspectable | `basis` records the canonical inputs/rules used without unnecessary sensitive payload duplication |
+| Versioned | `signal_version` is a published immutable identifier |
+| Unit-tested | Golden vectors per published version |
+| Reproducible | Historical calculations remain explainable without mutation |
+| Idempotently settled | Duplicate job delivery does not create duplicate logical computation results |
 
 **No generative model may produce the primary signal.**
 
-Exact scoring rules and thresholds are **D-011 `DECISION_PENDING`**. Implementation may build a pure function interface and fixtures, but must not ship invented weights as if decided.
+Exact scoring rules and thresholds remain **D-011 `DECISION_PENDING`**. Implementation may build a pure function contract and unreleased fixtures, but must not ship invented weights or thresholds.
 
 ---
 
-## 3. Recorded fields (required)
+## 3. Computation identity
 
+For a Check-In-derived primary calculation, the logical computation identity is the tuple:
+
+```text
+check_in_id
+signal_version
+input_questionnaire_version
+computation_kind = PRIMARY
+```
+
+The persisted representation may use a derived `computation_key`, unique constraint, or equivalent mechanism, but it must preserve the following semantics:
+
+1. Re-delivering the same computation request settles to the same logical primary calculation.
+2. Concurrent workers cannot create two authoritative primary rows for the same computation identity.
+3. A deliberate recomputation under a **new** `signal_version` is a different computation identity and writes a new row.
+4. An override is not a primary recomputation; it is a distinct immutable Support Signal linked through `override_of_signal_id`.
+5. Recovery/replay must not silently mutate or duplicate the historical primary result.
+
+For an explicit need without a Check-In, the computation identity must include a stable source record/reference defined by the later accepted domain/data model; `check_in_id = null` alone is insufficient as an idempotency identity.
+
+---
+
+## 4. Recorded fields
+
+Primary/override rows record at least:
+
+- `support_signal_id`
 - `signal_version`
 - `input_questionnaire_version`
 - `computed_at`
 - `basis`
 - `level`
 - `veteran_profile_id`
-- `check_in_id` (nullable only for an explicit need that still records why no check-in exists)
+- `check_in_id` when Check-In-derived
+- stable source reference when not Check-In-derived
+- computation identity/key or equivalent uniqueness evidence for primary calculations
+- override linkage/actor/reason when applicable
+
+Exact physical columns are reconciled later in [DATA_MODEL.md](DATA_MODEL.md); the semantics above are authoritative for SPEC-003 review.
 
 ---
 
-## 4. Historical integrity
+## 5. Settlement and event semantics
 
-**No silent mutation of historical calculations.**
+A primary calculation is **settled** only after the immutable Support Signal row is durably persisted.
+
+Rules:
+
+1. The computation job may be delivered more than once.
+2. Persistence must resolve duplicates atomically by computation identity.
+3. Exactly one logical `SUPPORT_SIGNAL_CHANGED` fact is emitted when the newly persisted effective signal constitutes a domain change that the event contract requires.
+4. A duplicate worker replay that resolves to the already-settled row does not emit a second logical change event.
+5. Event publication must be transactionally coupled or use an outbox/equivalent replay-safe mechanism; a database commit followed by a lost process must not permanently lose the required event.
+6. Operations must be able to detect a completed Check-In whose expected signal settlement/event publication is missing or delayed.
+
+This is **exactly-once observable business meaning**, not a claim that infrastructure delivers messages exactly once.
+
+---
+
+## 6. Historical integrity
+
+No silent mutation of historical calculations.
 
 - A new `signal_version` does not rewrite old rows.
-- If a recomputation is ever performed, write a **new** `SupportSignal` row.
-- Overrides write a new row with `override_of_signal_id`, `override_actor_id`, `override_reason`. The original remains.
+- Recalculation writes a new row under a distinct valid computation identity.
+- Overrides write a new row with `override_of_signal_id`, `override_actor_id`, and `override_reason`.
+- The original computed signal remains immutable.
 
 ---
 
-## 5. Override policy
+## 7. Override policy
 
-- Who: assigned Responder or SUAS-admin.
-- When: documented disagreement with the computed label for coordination purposes (for example, veteran contacted the responder directly with a different need urgency).
-- Required: reason text, actor, timestamp, link to original.
-- Override is not a diagnosis. It does not delete the computed signal.
-- Red-state behavior in [SAFETY.md](SAFETY.md) still applies to the **effective** (latest non-superseded) signal used for coordination. If an override lowers a `RED`, the act is audited and requires a reason; it does not remove already-surfaced crisis-resource UI from the veteran's current session (`INFERRED` safety posture). Lowering `RED` via override is allowed only as a coordination label change, never as a claim that risk is gone.
+- **Who:** assigned Responder or SUAS-admin.
+- **When:** documented disagreement with the computed coordination label.
+- **Required:** reason, actor, timestamp, link to original/effective signal.
+- Override is not diagnosis and does not erase the computed signal.
+- Red-state behavior in [SAFETY.md](SAFETY.md) applies to the effective signal used for coordination.
+- Lowering a `RED` is audited and cannot retroactively remove already-surfaced safety UI or historical actions.
 
----
-
-## 6. Relationship to the loop
-
-SIGNAL is the first stage of the canonical loop ([PRODUCT.md](PRODUCT.md)). A `YELLOW`/`ORANGE`/`RED` effective signal is a reason to open or update a Support Case; it is not itself a Service Request.
-
-Case creation rules: see [CASES.md](CASES.md). Signal change emits `SUPPORT_SIGNAL_CHANGED`.
+The exact rule for selecting the current effective signal from a chain of primary calculations/overrides must be deterministic and reconciled in [DATA_MODEL.md](DATA_MODEL.md) / [CASES.md](CASES.md) before release; implementation must not infer it from row insertion order alone.
 
 ---
 
-## 7. Visibility
+## 8. Relationship to the canonical loop
+
+SIGNAL is the first canonical-loop stage. `YELLOW`, `ORANGE`, or `RED` may cause a Support Case to open/update according to [CASES.md](CASES.md). A Support Signal is not itself a Service Request.
+
+Signal-driven case effects must consume the settled Support Signal/event idempotently. Duplicate event/job delivery must not create duplicate Cases or repeated hidden transitions.
+
+---
+
+## 9. Visibility
 
 Per [CONSENT.md](CONSENT.md): `can_view` + `support_signal`. Trusted Circle membership is insufficient. Notifications at a level require `can_receive` + that level.
 
----
-
-## 8. Non-goals
-
-- Diagnosis
-- Suicide prediction or suicidality scoring
-- Generative "interpretation" of free text as the primary signal
-- Mutating yesterday's signal because today's rules changed
+Service Providers do not receive the full Support Signal or `basis` by default; external fulfillment disclosure follows the minimum-necessary provider projection rules.
 
 ---
 
-## 9. Testability
+## 10. Non-goals
 
-Critical suite: **support-signal determinism**.
+- diagnosis;
+- suicide prediction/suicidality scoring;
+- generative interpretation of free text as primary signal;
+- mutating prior signals when rules change;
+- treating queue delivery as a new calculation;
+- claiming exactly-once infrastructure delivery;
+- deriving effective signal by unspecified database ordering.
 
-- Golden vectors: fixed inputs → fixed level + basis
-- Version change does not alter old rows
-- Override creates a new row
-- No generative path in the primary compute function
+---
+
+## 11. Testability
+
+Critical suite: **support-signal determinism and settlement**.
+
+- golden vectors: fixed canonical inputs/version → fixed level + basis;
+- duplicate concurrent computation settles one logical primary result;
+- duplicate job replay emits no duplicate logical change event;
+- new signal version creates a distinct immutable calculation;
+- override creates a linked immutable row;
+- effective-signal selection is deterministic once its rule is accepted;
+- committed Check-In + interrupted worker can be recovered to the correct settlement;
+- no generative path exists in primary compute.
