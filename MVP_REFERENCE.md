@@ -1,175 +1,261 @@
 # MVP_REFERENCE.md — Visual and interaction reference contract (SUAS v0.1)
 
-**Status:** `draft` / `0.1.0` / not implementation authority until accepted and released.  
-**Reference MVP:** `https://suasqrf.org/app/`  
-**Related:** [PRODUCT.md](PRODUCT.md), [ONBOARDING.md](ONBOARDING.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [RESOURCES.md](RESOURCES.md), [TESTING.md](TESTING.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md)
+**Status:** `draft` / `0.1.0`; SPEC-008 dependency-blocked.  
+**Reference MVP:** `https://suasqrf.org/app/` (current public reference surface; public crawl also resolves the deployed MVP content through its current host).  
+**Reference observation date:** 2026-08-18 PT.  
+**Related:** [PRODUCT.md](PRODUCT.md), [ONBOARDING.md](ONBOARDING.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [RESOURCES.md](RESOURCES.md), [AUTH.md](AUTH.md), [SAFETY.md](SAFETY.md), [CONSENT.md](CONSENT.md), [PRIVACY.md](PRIVACY.md), [TESTING.md](TESTING.md), [STATUS.md](STATUS.md)
 
 ---
 
 ## 1. Purpose
 
-The existing SUAS MVP is the visual and interaction reference for production implementation. Production work must preserve its recognizable product identity, information hierarchy, principal actions, and low-friction operating model unless this specification explicitly requires a change.
+The existing SUAS MVP is the production **visual and interaction reference**. Production must preserve its recognizable product identity, action-first hierarchy, principal navigation, responder/QRF immediacy, and low-friction mobile feel unless a canonical production constraint requires a documented divergence.
 
-The reference is not source-code authority and does not override safety, consent, privacy, authentication, accessibility, or canonical domain terminology.
+The reference is not source-code authority and does not override authentication, consent, privacy, safety, accessibility, provider truth, or canonical domain semantics.
 
-When the reference MVP conflicts with an accepted SUAS specification, the specification wins. The implementation must preserve the closest safe interaction equivalent and record the deliberate divergence in the implementation PR.
+When prototype behavior conflicts with an accepted specification, the accepted specification wins and production implements the closest truthful/safe interaction equivalent.
 
 ---
 
 ## 2. Conformance classes
 
-Every referenced surface or element MUST be classified during implementation review as one of:
-
 | Class | Meaning |
 |---|---|
-| `MUST_MATCH` | Preserve visual identity, hierarchy, placement role, and recognizable interaction. Exact pixels are not required. |
-| `MUST_PRESERVE_BEHAVIOR` | The underlying user goal and interaction sequence must remain recognizable, although production copy/auth/safety behavior may differ. |
-| `MAY_EVOLVE` | Production may improve the element without changing product intent or creating cognitive overload. |
-| `MUST_CHANGE_FOR_PRODUCTION` | The reference behavior conflicts with canonical security, consent, privacy, accessibility, or domain rules and must be replaced with the closest safe equivalent. |
+| `MUST_MATCH` | Preserve recognizable hierarchy, role, placement importance, and visual/product identity; not pixel equality |
+| `MUST_PRESERVE_BEHAVIOR` | Preserve the user goal and recognizable interaction sequence while production semantics/copy may change |
+| `MAY_EVOLVE` | May improve without changing product intent or creating cognitive overload |
+| `MUST_CHANGE_FOR_PRODUCTION` | Prototype behavior/copy conflicts with canonical auth/safety/privacy/accessibility/domain/truthfulness rules |
 
-No implementation may silently delete a `MUST_MATCH` or `MUST_PRESERVE_BEHAVIOR` element.
-
----
-
-## 3. Visual principles derived from the MVP
-
-Production SUAS MUST preserve these characteristics:
-
-1. **Action-first hierarchy.** The primary user intent is visible immediately. Do not bury urgent support or service actions under dashboards or settings.
-2. **Low cognitive load.** Prefer direct labels, large action targets, short routes, and progressive disclosure over dense administrative UI.
-3. **Human-service orientation.** The interface should read as a coordination tool, not as an EHR, insurance portal, case-management bureaucracy, or generic SaaS dashboard.
-4. **Fast role recognition.** Veteran, Responder/QRF, and Admin surfaces must be visibly distinct while sharing a common product system.
-5. **Resource visibility.** Food, transportation, temporary shelter, and peer/human support must remain easy to discover.
-6. **Operational immediacy.** Responder availability, alerts, cases/needs, communication, and quick resource access must remain prominent.
-7. **Mobile-first use.** The primary veteran and responder paths must work comfortably on a phone without horizontal scrolling or precision interactions.
-8. **No unnecessary visual complexity.** Production hardening must not turn the MVP into a dense enterprise console.
+No required element may silently disappear.
 
 ---
 
-## 4. Canonical surface inventory
+## 3. Observed MVP interaction spine
 
-At minimum, production implementation must provide and visually validate the following surfaces.
+The observed reference includes these recognizable surfaces/actions, which production must account for explicitly:
 
-| Surface | Primary role | Conformance |
+1. **Brand/mission opening** followed by an immediate `TAKE ACTION` section.
+2. **Role selection / Join the Mission** with Veteran vs Responder/Peer Counselor identity.
+3. Two primary actions: **`I NEED SUPPORT`** and **`I WANT TO SERVE`**.
+4. Veteran support surface with **QRF deploy** as the dominant action.
+5. Immediate resource block placed above/before broader resource categories.
+6. Category cards visually including **Housing, Food, Counseling, Transportation, Activities, Job Training**.
+7. QRF searching/deploying state with visible progress, **Call**, **Message**, and **Cancel** affordances.
+8. **QRF Dashboard** with on-duty state, response metrics, Quick Resource Share, Alerts, Chat, and Home.
+9. Persistent/simple **Home** and **Chat** navigation on operational mobile surfaces.
+10. Distinct high-privilege admin overview surface.
+11. Long-form local Resource screens with clear category headers, direct phone/email/web actions, and back navigation.
+
+The production system need not preserve unsupported claims, prototype statistics, unverified individual contact data, or unsafe copy merely because they appear in the reference.
+
+---
+
+## 4. Visual/product principles
+
+Production SUAS MUST preserve:
+
+1. **Action first:** help/service choices remain visible immediately.
+2. **Low cognitive load:** direct language, large action targets, short navigation paths, progressive disclosure.
+3. **Human-service orientation:** not an EHR, insurance portal, or generic enterprise CRM.
+4. **Fast role recognition:** Veteran, Responder/QRF, and Admin surfaces are visibly distinct.
+5. **Resource immediacy:** critical help and MVP resource categories are easy to discover.
+6. **Responder immediacy:** on-duty state, active needs, alerts, communication, and Quick Resource Share stay prominent.
+7. **Mobile first:** no precision interactions/horizontal scrolling on critical paths.
+8. **Strong operational states:** searching, pending, accepted, unavailable, degraded, cancelled, and completed states are visible and truthful.
+9. **No enterprise-density drift:** production hardening must not bury the MVP under dashboards/settings.
+
+---
+
+## 5. Required surface inventory
+
+| Surface | Reference anchor | Conformance |
 |---|---|---|
-| Action / landing surface | Veteran / visitor | `MUST_MATCH` product hierarchy; primary support and service choices remain immediately visible |
-| Veteran enrollment / first-run | Veteran | `MUST_PRESERVE_BEHAVIOR`; production auth requirements may change exact fields/copy |
-| Request-support flow | Veteran | `MUST_PRESERVE_BEHAVIOR` |
-| Resource categories | Veteran / Responder | `MUST_MATCH` hierarchy; canonical category mapping applies |
-| Resource list/detail | Veteran / Responder | `MUST_PRESERVE_BEHAVIOR` |
-| Responder/QRF home | Responder | `MUST_MATCH` operating emphasis: availability, current needs/cases, fast actions |
-| Responder availability | Responder | `MUST_PRESERVE_BEHAVIOR` |
-| Alerts / active needs | Responder | `MUST_PRESERVE_BEHAVIOR`; canonical Support Case / Service Request semantics apply |
-| Chat / communication | Veteran / Responder where authorized | `MUST_PRESERVE_BEHAVIOR`; consent and visibility rules apply |
-| Admin overview | Organization Admin / SUAS Admin | `MAY_EVOLVE`; role scope must remain explicit |
-| Persistent mobile navigation | Authenticated mobile users | `MUST_MATCH` simplicity and low navigation depth |
-
-Exact screen names in implementation may differ only where necessary to preserve canonical terminology.
-
----
-
-## 5. Product copy and domain mapping
-
-The reference MVP may use user-facing labels that are broader than canonical domain categories. Production UI may use approachable display labels, but stored/API values MUST use canonical codes.
-
-| Canonical domain code | Allowed MVP-style display concept | Production boundary |
-|---|---|---|
-| `FOOD` | Food | Food access coordination |
-| `TRANSPORTATION` | Transportation / Ride | Ride or fare support to a stated destination/purpose |
-| `SHELTER` | Housing / Room / Shelter | MVP means temporary shelter/accommodation coordination, not permanent housing placement |
-| `PEER_SUPPORT` | Peer Support / QRF / Human Support | Human/peer support; not therapy or clinical counseling |
-| `HOUSING` | Housing services | `FUTURE`; do not implement permanent-housing workflow under `SHELTER` |
-| `HEALTHCARE_NAVIGATION` | Counseling / Health navigation | `FUTURE` unless explicitly promoted |
-| `COMMUNITY` | Activities / Community | `FUTURE` unless explicitly promoted |
-
-If a future category is shown for continuity with the reference MVP, it must be visibly non-operational (`COMING_SOON` or equivalent) and must not create hidden production workflow.
+| Landing / action surface | `TAKE ACTION`; `I NEED SUPPORT`; `I WANT TO SERVE` | `MUST_MATCH` hierarchy |
+| Enrollment / role selection | Join the Mission; Veteran vs Responder | `MUST_PRESERVE_BEHAVIOR`; auth copy may change |
+| Veteran support home | QRF dominant action + Immediate Resources + categories | `MUST_MATCH` hierarchy |
+| QRF deploy/request flow | tap/deploy → searching/pending → contact/cancel | `MUST_PRESERVE_BEHAVIOR`; semantics change as §7 |
+| Immediate resources | crisis/help resources above general catalog | `MUST_MATCH` placement role; copy governed by SAFETY/D-012 |
+| Resource categories | Housing/Food/Counseling/Transportation/Activities/Job Training visual grid/list | `MUST_MATCH` recognizable category surface; operational mapping in §6 |
+| Resource list/detail | category heading + direct contact actions + back nav | `MUST_PRESERVE_BEHAVIOR` |
+| Responder/QRF dashboard | on-duty state, active-work emphasis, Quick Resource Share | `MUST_MATCH` operating emphasis |
+| Responder availability | on-duty/readiness state | `MUST_PRESERVE_BEHAVIOR` |
+| Active needs / alerts | alerts/current work | `MUST_PRESERVE_BEHAVIOR`; canonical Case/Request state applies |
+| Chat / communication | persistent Chat entry | `MUST_PRESERVE_BEHAVIOR`; visibility/consent applies |
+| Persistent mobile nav | Home + Chat simplicity | `MUST_MATCH` navigation simplicity |
+| Admin overview | distinct privileged overview | `MAY_EVOLVE`; role/tenant scope must become clearer than prototype |
 
 ---
 
-## 6. Known production divergences
+## 6. Category/display mapping
 
-### 6.1 Enrollment and identity
+User-facing labels may preserve familiar MVP vocabulary while canonical product state stays exact.
 
-The reference MVP may imply enrollment without email or other identity channels. The production specification currently defines the MVP operational default as self-attestation plus a working email and/or phone through passwordless authentication while D-016 remains open.
+| Reference label | Canonical behavior |
+|---|---|
+| Food | operational `FOOD` Service Request/Resource capability |
+| Transportation | operational `TRANSPORTATION` |
+| Housing | operational MVP action only when it means temporary `SHELTER`; permanent `HOUSING` workflow remains `FUTURE` |
+| Peer/QRF / Human Support | operational `PEER_SUPPORT` |
+| Counseling | `HEALTHCARE_NAVIGATION`/clinical-adjacent workflow remains `FUTURE`; may be `COMING_SOON`/information-only, not hidden operational Service Request |
+| Activities / Community | `COMMUNITY` remains `FUTURE`; may preserve an informational/community-resource card without creating a canonical Service Request or pretending COMMUNITY is released |
+| Job Training | future/unreleased; may remain visibly `COMING_SOON`/information-only |
 
-Therefore:
-
-- preserve the MVP's short, low-friction enrollment feel;
-- do not preserve copy that contradicts the production auth contract;
-- do not add DD-214 upload, VA identity API, or in-person proofing unless later specified;
-- label the divergence `MUST_CHANGE_FOR_PRODUCTION`.
-
-### 6.2 Safety and crisis copy
-
-Reference safety wording is not automatically approved production safety copy. D-012 remains `DECISION_PENDING`. Visual placement and immediacy may be preserved, but production text must come from the accepted safety-copy artifact.
-
-### 6.3 Case terminology
-
-User-facing copy may say “need,” “request,” or “alert” where that improves comprehension, but API/database/state-machine concepts remain Support Case, Service Request, Support Signal, Referral, Assignment, Fulfillment, Follow-Up, and Settlement. UI copy must not collapse these into one technical object.
+A reference card may remain for visual continuity while being explicitly non-operational. Display continuity is not permission to create an unreleased domain category.
 
 ---
 
-## 7. Responsive and accessibility requirements
+## 7. Mandatory production divergences
 
-Production implementation MUST:
+### 7.1 Enrollment copy
 
-- meet WCAG 2.2 AA unless a later accepted accessibility spec strengthens the requirement;
-- preserve logical reading and focus order;
-- support keyboard operation for responder/admin desktop use;
-- provide visible focus states;
-- avoid color as the only carrier of Support Signal meaning;
-- maintain large touch targets on veteran/responder mobile actions;
-- preserve text zoom/reflow without loss of action controls;
-- provide accessible names for icons and navigation actions;
-- avoid motion that blocks urgent operation.
+Prototype language implying **“No email”** conflicts with the current passwordless identity contract.
 
-Accessibility fixes are not visual drift.
+Production must:
+- preserve short, low-friction role/enrollment flow;
+- require the configured email and/or phone channel needed by [AUTH.md](AUTH.md);
+- not require VA API/DD-214/in-person proofing unless later specified;
+- replace contradictory copy.
+
+Class: `MUST_CHANGE_FOR_PRODUCTION`.
+
+### 7.2 QRF deployment truthfulness
+
+The reference tells the user to deploy the QRF and implies a nearby responder will be notified immediately.
+
+Production must preserve the recognizable deploy/search/contact/cancel sequence, but the action means:
+
+> create/submit an explicit `PEER_SUPPORT` need/request and attempt responder coordination according to actual coverage, availability, consent, and operations.
+
+Production must not:
+- guarantee a responder exists;
+- guarantee immediate notification/contact unless the system actually knows it occurred;
+- claim geographic proximity without an accepted/location-authorized basis;
+- require continuous GPS;
+- imply emergency-service dispatch.
+
+Truthful states may include `REQUESTED`, `SEARCHING`, `RESPONDER_NOTIFIED`, `RESPONDER_ACCEPTED`, `NO_RESPONDER_CURRENTLY_AVAILABLE`, `DEGRADED`, `CANCELLED` as **UI labels mapped to canonical Case/Request/notification facts**, not new hidden domain states.
+
+`Call` and `Message` appear only when an authorized contact path actually exists.
+
+Class: `MUST_CHANGE_FOR_PRODUCTION` semantics, `MUST_PRESERVE_BEHAVIOR` interaction.
+
+### 7.3 Crisis / immediate-resource copy
+
+The reference gives immediate crisis resources prominently. Preserve that placement/immediacy, but exact approved production safety copy/destinations are governed by [SAFETY.md](SAFETY.md) and D-012.
+
+Do not treat prototype wording/statistics as accepted clinical/safety claims.
+
+Class: placement `MUST_MATCH`; exact copy `MUST_CHANGE_FOR_PRODUCTION` where not approved.
+
+### 7.4 Mission/statistic/clinical language
+
+Reference mission/landing copy contains strong claims and clinical/suicidality framing that are not automatically canonical product claims.
+
+Production brand can preserve urgency, service, mission, and veteran-centered directness, but must conform to [PRODUCT.md](PRODUCT.md), [SAFETY.md](SAFETY.md), and [COMPLIANCE.md](COMPLIANCE.md). Unsupported statistics/clinical efficacy claims do not become production copy through visual fidelity.
+
+### 7.5 Admin terminology
+
+The prototype's high-privilege admin styling may remain visually distinct. Production may replace informal labels such as “God Mode” with explicit `SUAS Admin`/`Admin` terminology to preserve least-privilege clarity and auditability.
+
+Class: `MAY_EVOLVE` / terminology must match canonical role semantics.
 
 ---
 
-## 8. Visual regression contract
+## 8. Resource-screen fidelity
 
-Before a release candidate is production-ready, automated or repeatable screenshot-based comparison MUST cover at least:
+Production Resource screens should preserve:
+- strong category title/header;
+- county/coverage context where verified;
+- scannable cards/rows;
+- direct phone/email/web actions where allowed;
+- clear back navigation;
+- visible freshness/availability truth when known;
+- mobile readability despite long lists.
 
-1. action / landing surface;
-2. veteran enrollment;
-3. request-support flow;
-4. resource categories;
-5. resource list/detail;
-6. responder/QRF home;
-7. responder availability;
-8. active needs/alerts;
-9. chat/communication;
-10. admin overview;
-11. mobile navigation.
+Production must not hard-code reference contact facts as eternal truth. Resource data is governed by [RESOURCES.md](RESOURCES.md), verification/freshness, provider neutrality, and current configured data.
 
-Each fixture records viewport, role, deterministic fixture data, reference revision/date, and conformance class.
-
-Pixel equality is not the goal. Review must detect hierarchy drift, missing controls, changed navigation depth, unreadable density, broken responsive behavior, and unauthorized product redesign.
+Long lists must use progressive loading/pagination/virtualization as needed without losing the reference's simple browse experience.
 
 ---
 
-## 9. Acceptance gate: UI CONFORMANCE
+## 9. Responder/QRF dashboard fidelity
+
+Preserve recognizable emphasis on:
+
+1. **On Duty / availability** as a primary responder control/state.
+2. Active needs/alerts as immediate work.
+3. Quick Resource Share for MVP resource capabilities.
+4. Chat/communication.
+5. Home/simple navigation.
+6. Lightweight performance/operational summaries only when derived from real data.
+
+Prototype placeholder metrics (`Responses`, `Rating`, `This Month`, `Avg Response`) may be retained only if exact definitions/data are specified. Do not display fabricated zero/placeholder values as production facts.
+
+The responder dashboard remains a coordination console, not a clinical chart.
+
+---
+
+## 10. Responsive / accessibility requirements
+
+Production MUST meet WCAG 2.2 AA unless strengthened later, including logical reading/focus order, keyboard operation on responder/admin desktop, visible focus, non-color-only signal meaning, large touch targets, text zoom/reflow, accessible icon names, reduced-motion compatibility, and urgent actions that remain operable under zoom/mobile conditions.
+
+Accessibility corrections are not visual drift.
+
+---
+
+## 11. Visual-regression fixture contract
+
+Repeatable screenshot/reference comparison covers at least:
+
+1. landing/action surface;
+2. role/enrollment surface;
+3. veteran support home;
+4. QRF request/searching/pending state;
+5. QRF no-availability/degraded state;
+6. resource category surface;
+7. resource list/detail;
+8. responder dashboard/on-duty state;
+9. active needs/alerts;
+10. chat entry/surface;
+11. admin overview;
+12. mobile navigation.
+
+Each fixture records:
+- viewport/device class;
+- role;
+- deterministic fixture data;
+- reference source/revision/observation date;
+- conformance class;
+- approved divergence references.
+
+Review detects hierarchy drift, missing actions, excessive navigation depth/density, broken responsive behavior, misleading states, and unauthorized redesign. Pixel equality is not required.
+
+---
+
+## 12. UI_CONFORMANCE gate
 
 `UI_CONFORMANCE = READY` only when:
 
-- every required surface in §4 exists;
-- each surface has a conformance classification;
-- visual-regression fixtures exist for §8;
-- no unresolved `MUST_MATCH` or `MUST_PRESERVE_BEHAVIOR` divergence remains;
-- production-only divergences are documented and trace to canonical specs;
-- canonical service categories are not silently redefined by UI copy;
+- every required surface exists;
+- reference-critical hierarchy/actions are recognizable;
+- QRF deploy flow is truthful about request/availability/contact state;
+- future reference categories are not silently implemented as released domain workflows;
+- production divergences trace to canonical specs;
+- resource data is not treated as timeless hard-coded truth;
+- visual-regression fixtures pass review;
 - accessibility checks pass;
-- veteran and responder critical paths remain low-friction on mobile.
+- veteran/responder mobile critical paths remain low-friction.
 
-Current status: `NOT_READY`.
+Current: `NOT_READY`.
 
 ---
 
-## 10. Non-goals
+## 13. Non-goals
 
-- Pixel-perfect cloning of a prototype
-- Freezing implementation technology or CSS framework
-- Allowing prototype copy to override safety/auth/privacy rules
-- Turning visual similarity into permission to copy incorrect domain semantics
-- Redesigning SUAS into a generic enterprise dashboard during production hardening
+- pixel-perfect prototype cloning;
+- copying prototype statistics/clinical claims as production truth;
+- freezing CSS/framework technology;
+- allowing prototype copy to override auth/safety/privacy rules;
+- requiring GPS because prototype says “near you”;
+- treating visual similarity as permission to create hidden domain states;
+- redesigning SUAS into a generic enterprise dashboard.
