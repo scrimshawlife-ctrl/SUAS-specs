@@ -1,60 +1,71 @@
-# ARCHITECTURE.md — Modular monolith (pilot)
+# ARCHITECTURE.md — Scalable modular monolith
 
-**Related:** [PRODUCT.md](PRODUCT.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [DEPLOYMENT.md](DEPLOYMENT.md), [SAFETY.md](SAFETY.md), [SETTLEMENT.md](SETTLEMENT.md)
+**Related:** [PRODUCT.md](PRODUCT.md), [MVP_REFERENCE.md](MVP_REFERENCE.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [APIS.md](APIS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [DEPLOYMENT.md](DEPLOYMENT.md), [SAFETY.md](SAFETY.md), [SETTLEMENT.md](SETTLEMENT.md)
 
-**Status:** `draft` / `0.1.0`. Unsettled technology choices are `DECISION_PENDING`. Do not lock a cloud provider.
+**Status:** `draft` / `0.1.0`. Unsettled technology choices are `DECISION_PENDING`. Do not lock a cloud, queue, cache, communications, or service-fulfillment vendor.
 
 ---
 
 ## 1. Purpose
 
-Describe the runtime shape of SUAS for the Santa Clara County pilot (~25–50 veterans). The architecture is a **modular monolith**. No microservices without a demonstrated need recorded as a later spec change.
+Describe the runtime shape of SUAS for a controlled Santa Clara County pilot while avoiding architecture decisions that create unnecessary migration barriers if adoption grows quickly.
+
+The architecture remains a **modular monolith**. Scale is achieved first through stateless application instances, PostgreSQL, durable background work, capability-port adapters, efficient/bounded APIs, backpressure, and observability.
+
+No microservices without demonstrated load, isolation, deployment, or security need recorded in a later released spec change.
+
+Pilot scope may be small. Architectural ceilings should not be.
 
 ---
 
 ## 2. High-level shape
 
-```
-Veteran PWA
-    │
-    ▼
-SUAS Application (modular monolith)
-    Auth
-    Veteran Profiles
-    Check-ins
-    Support Signals
-    Consent
-    Trusted Circle
-    Cases
-    Requests
-    Dispatch
-    Resources
-    Referrals
-    Fulfillment
-    Follow-up
-    Notifications
-    Administration
-    Audit / Event Layer
-    │
-    ▼
-PostgreSQL
-    │
-    ▼
-Background Jobs / Notifications
+```text
+Veteran / Responder / Admin clients
+              |
+              v
+      Stateless SUAS API tier
+      (modular monolith)
+              |
+       +------+-------+
+       |              |
+       v              v
+   PostgreSQL      Durable Jobs
+       |              |
+       |              v
+       |           Workers
+       |              |
+       |       +------+------------------+
+       |       |      |        |         |
+       |       v      v        v         v
+       |      SMS   Email   Provider   Scheduled
+       |                    Adapters     Work
+       |
+       v
+Domain/Audit Events
 ```
 
-Responder and admin clients consume the same application modules through the [API.md](API.md) contract. They are not separate systems.
+Responder and admin clients consume the same application modules through [API.md](API.md). They are not separate backends.
+
+The referenced MVP remains the visual/interaction authority subject to production constraints in [MVP_REFERENCE.md](MVP_REFERENCE.md).
 
 ---
 
-## 3. Style rules
+## 3. Architecture invariants
 
-1. One deployable application for the pilot.
-2. One PostgreSQL database (logical). Module tables may be schema-namespaced but are not separately hosted.
-3. Module boundaries are code and authorization boundaries, not network boundaries.
-4. Extraction of a module to a service requires: demonstrated load or isolation need, a released spec change, and a migration plan. None of that exists today (`NOT_COMPUTABLE` as a need).
-5. Cloud/platform = `DECISION_PENDING` (D-001, D-005). This file does not name a vendor.
-6. Auth provider, SMS provider, email provider = `DECISION_PENDING` (D-002, D-003, D-004).
+1. One logical deployable application architecture; multiple stateless instances may run concurrently.
+2. One logical PostgreSQL system of record per environment unless a later released spec changes data topology.
+3. Module boundaries are code/data-ownership/authorization boundaries, not network boundaries.
+4. Correctness-critical state MUST NOT exist only in one application process.
+5. Production-critical asynchronous work MUST survive worker/application restart.
+6. External services are accessed through capability ports; vendor SDKs are adapter-local.
+7. Manual service coordination remains first-class when provider APIs do not exist or are degraded.
+8. Every contested state transition is atomic.
+9. Every externally consequential retry path is idempotent.
+10. Growing API collections are bounded/paginated.
+11. Tenant isolation is a security invariant and must survive horizontal scaling.
+12. Extraction to services requires measured need + released spec + migration/rollback plan.
+13. Cloud/platform/vendor choices remain decisions, not domain architecture.
 
 ---
 
@@ -62,273 +73,356 @@ Responder and admin clients consume the same application modules through the [AP
 
 | Client | Users | Notes |
 |---|---|---|
-| Veteran PWA | Veteran | Check-In, consent management, request status, trusted-circle management, fulfillment confirmation. |
-| Responder console | Responder, Organization Administrator | Coordination console, not an EHR. See [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md). |
-| Admin console | SUAS System Administrator, Organization Administrator (scoped) | See [ADMIN.md](ADMIN.md). |
+| Veteran PWA | Veteran | Check-In, consent, request support/status, trusted circle, fulfillment confirmation |
+| Responder console | Responder, Organization Administrator | Coordination console, not an EHR |
+| Admin console | SUAS System Administrator, scoped Organization Administrator | Global/scoped admin surfaces |
 
-Native mobile apps are `FUTURE`. Push notifications are `FUTURE`.
+Native mobile apps and push notifications remain `FUTURE` unless separately promoted.
+
+All production clients must conform to [MVP_REFERENCE.md](MVP_REFERENCE.md) for required visual/interaction continuity.
 
 ---
 
 ## 5. Module catalog
 
-Each module: purpose, owns, depends on, authz, sync vs async.
-
 ### 5.1 Auth
 
-- **Purpose:** Identify users; issue and invalidate sessions; MFA for responder/admin; recovery.
-- **Owns:** credentials-of-record (magic-link tokens, OTP challenges), sessions, MFA factors. Not veteran need data.
-- **Depends on:** none (foundation).
-- **Authz:** unauthenticated challenge endpoints; all other modules require a session.
-- **Sync/async:** sync for challenge/verify; async for sending OTP/magic-link via Notifications.
-- **Spec:** [AUTH.md](AUTH.md).
+- Owns authentication challenges, sessions, MFA factors/recovery state.
+- Veteran auth is passwordless per [AUTH.md](AUTH.md).
+- Responder/admin MFA required.
+- Provider implementation behind `AuthPort` where external.
+- Sessions/correctness state must work across multiple app instances.
 
 ### 5.2 Veteran Profiles
 
-- **Purpose:** VeteranProfile and PilotEnrollment.
-- **Owns:** `VeteranProfile`, `PilotEnrollment`.
-- **Depends on:** Auth, Administration (pilot config).
-- **Authz:** veteran self; assigned responder (need-to-know fields); SUAS admin (audited).
-- **Sync/async:** sync.
+- Owns `VeteranProfile`, `PilotEnrollment`.
+- Veteran self-service; scoped responder/admin read as authorized.
 
 ### 5.3 Check-ins
 
-- **Purpose:** Versioned questionnaires and Check-In submissions.
-- **Owns:** `QuestionnaireVersion`, `Question`, `AnswerOption`, `CheckIn`, `CheckInResponse`.
-- **Depends on:** Veteran Profiles.
-- **Authz:** veteran writes own; responders read only with Consent Grant or case-assignment policy as specified in [CONSENT.md](CONSENT.md).
-- **Sync/async:** sync submit; async signal computation job.
-- **Spec:** [CHECKINS.md](CHECKINS.md).
+- Owns questionnaire versions, Check-Ins, responses.
+- Completion commits synchronously; signal computation may be durable async work.
 
 ### 5.4 Support Signals
 
-- **Purpose:** Deterministic signal computation and storage.
-- **Owns:** `SupportSignal`.
-- **Depends on:** Check-ins (inputs), Event Layer (emit `SUPPORT_SIGNAL_CHANGED`).
-- **Authz:** same visibility as specified for signals in Consent.
-- **Sync/async:** async job from check-in completion; sync read.
-- **Spec:** [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md).
+- Owns deterministic, versioned `SupportSignal` computation/storage.
+- No generative primary signal.
 
 ### 5.5 Consent
 
-- **Purpose:** Consent Grants and Consent Events.
-- **Owns:** `ConsentGrant`, `ConsentEvent`.
-- **Depends on:** Veteran Profiles, Trusted Circle (subject of many grants).
-- **Authz:** veteran manages own grants; all modules **must** query this module before share/notify.
-- **Sync/async:** sync evaluate; async notify on grant/revoke.
-- **Spec:** [CONSENT.md](CONSENT.md).
+- Owns `ConsentGrant`, `ConsentEvent`.
+- All disclosure/notify/provider projection paths evaluate consent at use time as specified.
 
 ### 5.6 Trusted Circle
 
-- **Purpose:** Invites, accepts, permissions, suspension, removal.
-- **Owns:** `TrustedContact`.
-- **Depends on:** Auth (contact user if enrolled), Consent, Notifications.
-- **Authz:** veteran manages; contact sees own membership; responders do not enumerate the circle without a grant.
-- **Sync/async:** sync mutations; async invite notifications.
-- **Spec:** [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md).
+- Owns trusted-contact invitation/membership lifecycle.
+- Membership alone grants no visibility.
 
 ### 5.7 Cases
 
-- **Purpose:** Support Case lifecycle, notes, assignments at case level.
-- **Owns:** `SupportCase`, `CaseAssignment`, `CaseNote`.
-- **Depends on:** Veteran Profiles, Consent, Event Layer.
-- **Authz:** assigned responder, org queue per [CASES.md](CASES.md), veteran (limited fields), SUAS admin (audited).
-- **Sync/async:** sync commands; async notifications.
-- **Spec:** [CASES.md](CASES.md).
+- Owns `SupportCase`, case assignments/notes/contact history as specified.
+- Case claim/assignment commands are atomic under contention.
 
 ### 5.8 Requests
 
-- **Purpose:** Service Request records attached to a Support Case.
-- **Owns:** `ServiceRequest`.
-- **Depends on:** Cases, Consent.
-- **Authz:** same case authz plus provider on assigned request (limited fields).
-- **Sync/async:** sync commands.
-- **Spec:** [DISPATCH.md](DISPATCH.md).
+- Owns `ServiceRequest`.
+- Canonical state machine is independent of provider status.
 
 ### 5.9 Dispatch
 
-- **Purpose:** Documented Service Request transitions, matching, assignment, exceptions.
-- **Owns:** transition logic (not a separate table beyond request status + events).
-- **Depends on:** Requests, Resources, Fulfillment, Notifications, Event Layer.
-- **Authz:** responder actions only; no hidden transitions.
-- **Sync/async:** sync transition commands; async matching suggestions are `FUTURE` and must not be generative "smart matching". MVP matching is responder-selected from the catalog.
-- **Spec:** [DISPATCH.md](DISPATCH.md).
+- Owns documented Service Request transition logic and coordination rules.
+- MVP matching remains responder/catalog driven unless later specified.
+- External provider routing is not a hidden Service Request state machine.
 
 ### 5.10 Resources
 
-- **Purpose:** Resource catalog and categories.
-- **Owns:** `Resource`, `ResourceCategory`, `ServiceOffer`.
-- **Depends on:** Organizations (via Administration).
-- **Authz:** responders and org-admins (org-owned writes); veterans may see non-sensitive public fields of active resources when a referral is being discussed — exact veteran-visible field set is listed in [RESOURCES.md](RESOURCES.md).
-- **Sync/async:** sync; freshness reports async.
-- **Spec:** [RESOURCES.md](RESOURCES.md).
+- Owns `Resource`, `ResourceCategory`, `ServiceOffer` and provider/resource metadata.
+- A Resource may declare integration modes without embedding provider SDK details.
 
 ### 5.11 Referrals
 
-- **Purpose:** Referral records distinct from Service Requests.
-- **Owns:** `Referral`.
-- **Depends on:** Cases, Requests (optional link), Resources, Consent, Notifications.
-- **Authz:** assigned responder; destination org sees referral fields only.
-- **Sync/async:** sync create/update; async notify destination if consented.
-- **Spec:** [REFERRALS.md](REFERRALS.md).
+- Owns `Referral` records distinct from Service Requests and Fulfillment.
 
 ### 5.12 Fulfillment
 
-- **Purpose:** ServiceFulfillment records; confirmation; failure/partial/cancel.
-- **Owns:** `ServiceFulfillment`.
-- **Depends on:** Requests, Event Layer.
-- **Authz:** assigned responder, assigned provider, veteran (confirm/dispute).
-- **Sync/async:** sync commands.
-- **Spec:** [FULFILLMENT.md](FULFILLMENT.md).
+- Owns `ServiceFulfillment` and SUAS-side Fulfillment Attempt records required for external idempotency/reconciliation.
+- Depends on Requests, Consent, Provider Router/ports, Event Layer.
+- External provider status never directly replaces canonical Fulfillment semantics.
+- See [FULFILLMENT.md](FULFILLMENT.md) and [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
 
-### 5.13 Follow-up
+### 5.13 Provider Router / Adapters
 
-- **Purpose:** First-class Follow-Up work items.
-- **Owns:** `FollowUp`.
-- **Depends on:** Cases, Requests (optional), Notifications, Event Layer.
-- **Authz:** responsible party, assigned responder, veteran when the follow-up is addressed to them.
-- **Sync/async:** sync commands; async due/overdue jobs.
-- **Spec:** [FOLLOWUP.md](FOLLOWUP.md).
+- **Purpose:** select and invoke configured provider adapters for an accepted capability.
+- **Owns:** adapter configuration/health references and routing policy configuration; does not own Service Request state.
+- **Depends on:** Resources, Fulfillment, Consent, Operations.
+- **Ports:** `TransportationPort`, `TemporaryShelterPort`, `FoodSupportPort`, `PeerSupportPort` plus infrastructure ports in [APIS.md](APIS.md).
+- **Adapters:** provider-specific; vendor SDKs/payloads do not escape this boundary.
+- **Manual Adapter:** required for each MVP fulfillment capability.
+- **Spec:** [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
 
-### 5.14 Notifications
+### 5.14 Follow-up
 
-- **Purpose:** Record and send EMAIL, SMS, IN_APP. PUSH is `FUTURE`.
-- **Owns:** `Notification`, `NotificationPreference`.
-- **Depends on:** Consent (required), Auth (addresses).
-- **Authz:** system writes; recipient reads own; no safety-critical logic in templates.
-- **Sync/async:** enqueue async; API read sync.
-- **Spec:** [NOTIFICATIONS.md](NOTIFICATIONS.md).
+- Owns first-class `FollowUp` work items and durable due/overdue processing.
 
-### 5.15 Administration
+### 5.15 Notifications
 
-- **Purpose:** Orgs, membership, pilot, templates, system config.
-- **Owns:** `Organization`, `OrganizationMembership`, `ResponderProfile`, `User` (profile fields), `Pilot`, `PilotEnrollment` (shared with Veteran Profiles), `Feedback`, questionnaire/signal/consent/notification template publication.
-- **Depends on:** Auth, Audit.
-- **Authz:** org-admin scoped; SUAS-admin global. Org-admin ≠ SUAS-admin.
-- **Sync/async:** sync.
-- **Spec:** [ADMIN.md](ADMIN.md).
+- Owns Notification and preference state.
+- EMAIL/SMS/IN_APP MVP; PUSH future.
+- Sends are durable async work in production.
+- External channels use capability ports.
 
-### 5.16 Audit / Event Layer
+### 5.16 Administration
 
-- **Purpose:** Immutable `DomainEvent` and `AuditEvent` append-only stores.
-- **Owns:** `DomainEvent`, `AuditEvent`.
-- **Depends on:** none (all modules emit here).
-- **Authz:** write via internal API only; read by SUAS-admin and by scoped incident process. Not mutable.
-- **Sync/async:** sync append in the same transaction as the domain write where feasible; if dual-write, the job must be exactly-once with idempotent `event_id`.
-- **Spec:** [EVENT_MODEL.md](EVENT_MODEL.md).
+- Owns Organizations, memberships, responder/admin configuration, pilot configuration, template publication, scoped provider configuration where authorized.
+- Organization Administrator is not SUAS System Administrator.
+
+### 5.17 Audit / Event Layer
+
+- Immutable append-only Domain/Audit Events.
+- Domain write and required event append occur atomically where feasible; any asynchronous completion path must be durable and idempotent.
+- Event/audit growth is an explicit scaling concern.
 
 ---
 
-## 6. Database ownership
+## 6. Database ownership and tenancy
 
-- One PostgreSQL instance per environment (see [DEPLOYMENT.md](DEPLOYMENT.md)).
-- Each module owns its tables. Cross-module reads go through module APIs or documented foreign keys, not ad-hoc joins that bypass authz.
-- Tenant isolation: `tenant_id` (pilot/org scope as defined in [DATA_MODEL.md](DATA_MODEL.md)) on every tenant-owned row. Row-level authz in [SECURITY.md](SECURITY.md).
-- Soft-delete on mutable operational entities where specified. No soft-delete on events.
+- PostgreSQL is the logical system of record.
+- Module-owned tables remain explicit.
+- Tenant-owned rows carry tenant/organization scope as defined by [DATA_MODEL.md](DATA_MODEL.md).
+- Authorization is role + tenant + row + consent.
+- High-volume tenant/status/due-time queries require indexes appropriate to measured/load-tested access paths.
+- Unbounded operational history is not loaded wholesale into normal UI paths.
+- Cross-tenant reads must remain blocked across API, jobs, provider callbacks, caches, and reporting.
 
----
-
-## 7. Background jobs
-
-| Job | Trigger | Module | Failure handling |
-|---|---|---|---|
-| Compute Support Signal | Check-In completed | Support Signals | Retry; do not emit `SUPPORT_SIGNAL_CHANGED` until persisted |
-| Due Follow-Up scan | Periodic | Follow-up | Emit `FOLLOWUP_DUE`; notify responsible party if consented |
-| Overdue Follow-Up escalation | Periodic | Follow-up | Per [FOLLOWUP.md](FOLLOWUP.md) |
-| Notification send | Enqueued Notification | Notifications | Retry with recorded `delivery_status` |
-| Notification retry | Failed send | Notifications | Bounded retries; then ops alert |
-| Resource freshness report | Periodic | Resources | Operational metric only |
-| Session expiry sweep | Periodic | Auth | Invalidate |
-| Magic-link / OTP expiry | Periodic | Auth | Invalidate challenges |
-
-Job runners are in-process or a single worker pool attached to the monolith. A separate job platform is `DECISION_PENDING` and not required for the pilot.
+Sharding is not required for MVP. Read replicas/partitioning/sharding require measured need and a later accepted/released architecture change where applicable. See [SCALING.md](SCALING.md).
 
 ---
 
-## 8. Notifications
+## 7. Application statelessness
 
-Events and policies generate notifications. Templates do not contain safety-critical branching. Red-state behavior lives in [SAFETY.md](SAFETY.md) and the Cases/Signals modules, which then request a notification with an explicit template id.
+Any healthy app instance must be able to serve any authorized request.
 
----
+The following cannot be process-local truth:
 
-## 9. Sync vs async summary
+- session validity;
+- Consent Grants;
+- Case/Service Request/Fulfillment state;
+- durable jobs;
+- idempotency records;
+- Fulfillment Attempt state;
+- correctness-critical locks/leases;
+- provider reconciliation state.
 
-- **Synchronous:** auth verify, consent evaluate, all state-transition commands, reads, admin writes.
-- **Asynchronous:** signal compute, notification send, follow-up due scan, freshness report, invite email/SMS.
-
-A user-facing command must not return success for a state transition that has not been committed. Notifications may lag.
-
----
-
-## 10. Authorization architecture
-
-- Authentication in Auth module.
-- Authorization is **role + tenant + row + consent**. Passing authentication is not authorization.
-- Consent evaluation is mandatory for veteran-data disclosure and for trusted-contact alerts.
-- See [AUTH.md](AUTH.md), [CONSENT.md](CONSENT.md), [SECURITY.md](SECURITY.md).
+Process-local caches may exist only as disposable optimizations.
 
 ---
 
-## 11. Audit
+## 8. Durable background jobs
 
-Every privileged admin action, every consent change, every case/request transition, every notification send attempt, and every data export emits an Audit Event and, where listed, a Domain Event. See [EVENT_MODEL.md](EVENT_MODEL.md).
+Production-critical jobs include at least:
 
----
+| Job | Trigger | Requirements |
+|---|---|---|
+| Compute Support Signal | Check-In completed | Durable; idempotent; persist before event |
+| Due Follow-Up scan | Periodic | Durable/observable; tenant scoped |
+| Overdue escalation | Periodic/event | Durable; bounded retries |
+| Notification send | Notification enqueued | Durable; consent recheck; adapter retry policy |
+| Notification retry | Failed attempt | Bounded/backoff; dead-letter visibility |
+| Provider fulfillment action | Fulfillment Attempt | Durable; idempotency key; reconcile unknown outcome |
+| Provider status reconciliation | ambiguous/delayed outcome | Durable; adapter-local external lookup |
+| Provider webhook processing | authenticated webhook | Deduplicated; out-of-order safe |
+| Resource freshness report | periodic | Lower priority than live support work |
+| Auth/session expiry work | periodic | Idempotent |
 
-## 12. Future extraction
-
-A module may be extracted only after: measured need, released spec, data-ownership plan, and an API that preserves the contracts in this stack. Not planned for the pilot.
-
----
-
-## 13. AI policy (architecture)
-
-**No generative AI for safety-critical decisions.**
-
-Safety-critical (must not be determined by a generative model):
-
-- primary Support Signal
-- suicidality or any clinical determination
-- emergency intervention
-- whether to notify a Trusted Contact
-- service qualification
-- case closure
-
-Future assistive uses (not MVP; require a later spec): resource deduplication, note summarization, categorization, admin search, aggregate analytics. Assistive output is advisory, must be inspectable, and must not write state without a human command.
-
-See [SAFETY.md](SAFETY.md).
+A volatile in-process-only queue that loses production-critical work on restart is not production-ready. Exact durable queue/job product is D-022.
 
 ---
 
-## 14. Funding / billing adapter (architecture)
+## 9. Sync vs async
 
+**Synchronous:** authentication verify, consent evaluation, reads, state-transition commit, admin commands whose success must be known immediately.
+
+**Asynchronous:** external notifications, external provider actions when not required to complete the user request transaction, support-signal computation, due/overdue scans, reconciliation, resource freshness.
+
+A user-facing command must not report success for a canonical state transition that has not committed.
+
+An external action may be accepted for processing and expose an explicit pending state where the domain contract permits it.
+
+---
+
+## 10. Concurrency and idempotency
+
+Atomic concurrency is required for operations such as:
+
+- Case claim;
+- Service Request assignment;
+- Fulfillment Attempt creation;
+- one-time challenge verification;
+- idempotency-key reservation;
+- any resource-capacity mutation later introduced.
+
+Network/client/job retries that can duplicate external consequences must use stable idempotency identity.
+
+Provider timeouts with ambiguous outcome follow [RESILIENCE.md](RESILIENCE.md), not blind retry.
+
+---
+
+## 11. Provider-neutral external services
+
+Infrastructure ports:
+
+- `AuthPort`
+- `SmsPort`
+- `EmailPort`
+
+Service-fulfillment ports:
+
+- `TransportationPort`
+- `TemporaryShelterPort`
+- `FoodSupportPort`
+- `PeerSupportPort`
+
+Provider Router selects configured adapters by explicit operational policy. Provider names/status/payload types remain adapter-local.
+
+Manual coordination is a valid adapter mode. Do not assume rides, rooms, food, or peer providers expose transactional APIs.
+
+See [APIS.md](APIS.md) and [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
+
+---
+
+## 12. Scalability doctrine
+
+Capacity bands in [SCALING.md](SCALING.md) are test envelopes, not adoption forecasts.
+
+The first scaling response should be:
+
+1. measure;
+2. remove inefficient queries/work;
+3. add stateless app/worker capacity;
+4. tune PostgreSQL/indexes/pooling;
+5. apply backpressure and adapter concurrency limits;
+6. add cache/read replica/partitioning only from evidence;
+7. extract a service only when module-specific evidence justifies it.
+
+Do not begin with distributed-system complexity.
+
+---
+
+## 13. Resilience doctrine
+
+External dependencies fail independently.
+
+Required properties include:
+
+- finite timeouts;
+- bounded/backoff retries;
+- provider rate-limit handling;
+- circuit breaking;
+- durable failed-work visibility;
+- duplicate job/webhook safety;
+- ambiguous external-outcome reconciliation;
+- manual fallback where policy permits;
+- backpressure under bursts;
+- backup/restore testing.
+
+See [RESILIENCE.md](RESILIENCE.md).
+
+---
+
+## 14. Observability
+
+Production telemetry must support investigation of:
+
+- API rate/latency/errors;
+- DB pool/query health;
+- queue depth/age/throughput/retries;
+- worker saturation;
+- notification delivery;
+- provider latency/errors/rate limits/circuit state;
+- webhook lag;
+- case-claim conflicts;
+- ambiguous/reconciled fulfillment attempts;
+- audit/event growth;
+- noisy-neighbor tenant behavior.
+
+Use correlation ids without unnecessary veteran PII.
+
+---
+
+## 15. Security and authorization
+
+Authentication alone is not authorization.
+
+Authorization remains role + tenant + row + consent. Provider disclosure also applies minimum-necessary field projection.
+
+Adapter webhooks are authenticated and cannot authorize a new disclosure or bypass canonical transitions.
+
+See [AUTH.md](AUTH.md), [CONSENT.md](CONSENT.md), [SECURITY.md](SECURITY.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
+
+---
+
+## 16. AI policy
+
+No generative AI for safety-critical decisions including primary Support Signal, clinical/suicidality determination, emergency intervention, Trusted Contact notification decision, service qualification, or case closure.
+
+Future assistive uses require later specs and human control.
+
+---
+
+## 17. Funding / billing boundary
+
+```text
+Fulfillment -> Funding Eligibility -> Funding Source -> Optional Billing Adapter
 ```
-Fulfillment → Funding Eligibility → Funding Source → Optional Billing Adapter
-```
 
-**Status:** `FUTURE`. No billing adapter module in the monolith for MVP. Do not assert Medi-Cal billability. See [SETTLEMENT.md](SETTLEMENT.md) and [PRODUCT.md](PRODUCT.md).
+Status remains `FUTURE`. No MVP payment-card/checkout architecture. Do not assert Medi-Cal billability.
 
 ---
 
-## 15. Unsettled technology
+## 18. Future extraction
+
+A module may be extracted only after measured evidence of independent scaling, fault isolation, deployment cadence, security/data isolation, or incompatible runtime needs.
+
+Extraction requires:
+
+- released spec change;
+- preserved API/domain semantics;
+- data-ownership plan;
+- migration/rollback plan;
+- observability plan;
+- failure/degradation contract.
+
+---
+
+## 19. Unsettled technology
 
 | Topic | Status |
 |---|---|
-| Cloud provider | `DECISION_PENDING` |
-| Auth provider vs in-house | `DECISION_PENDING` |
-| SMS provider | `DECISION_PENDING` |
-| Email provider | `DECISION_PENDING` |
-| Database hosting | `DECISION_PENDING` |
+| Cloud provider | D-001 `DECISION_PENDING` |
+| Auth provider | D-002 `DECISION_PENDING` |
+| SMS provider | D-003 `DECISION_PENDING` |
+| Email provider | D-004 `DECISION_PENDING` |
+| Database hosting | D-005 `DECISION_PENDING` |
 | PWA framework | `DECISION_PENDING` |
-| Job runner product | `DECISION_PENDING` (in-process acceptable for pilot) |
-
-Do not encode a vendor name as architecture.
+| Durable job/queue product | D-022 `DECISION_PENDING` |
+| Transportation adapter(s) | D-017 `DECISION_PENDING` |
+| Temporary shelter/room adapter(s) | D-018 `DECISION_PENDING` |
+| Food-support adapter(s) | D-019 `DECISION_PENDING` |
+| External peer-support adapter | D-020 `DECISION_PENDING` if used |
+| Cache product | Optional / measured need; not selected |
+| First-release scale target | D-021 `DECISION_PENDING` |
+| Performance SLO thresholds | D-023 `DECISION_PENDING` |
+| RTO/RPO | D-024 `DECISION_PENDING` |
 
 ---
 
-## 16. Non-goals
+## 20. Non-goals
 
-- Microservices
-- Event-sourcing as the system of record (events are an immutable log; mutable operational tables are the working store)
-- Multi-region active-active (`NOT_COMPUTABLE` as a need)
-- VA, county, or Medi-Cal integrations
+- Microservices as default
+- Kubernetes as requirement
+- Event sourcing as system of record
+- Database sharding before evidence
+- Multi-region active-active as an MVP requirement
+- Vendor-specific domain models
+- Provider APIs as a prerequisite for resource validity
+- VA/county/Medi-Cal integration assumptions
