@@ -46,16 +46,17 @@ Preflight work may prepare later worksheets and repair draft cross-artifact cont
 
 ## SPEC-005 — Accept resources, referrals, fulfillment, follow-up, settlement
 
-- **Status:** `BLOCKED_BY_SPEC_004`; not yet owner-preflighted in a dedicated worksheet.
+- **Status:** `BLOCKED_BY_SPEC_004`; preflight complete.
+- **Worksheet:** [SPEC-005.md](SPEC-005.md).
 - **Dependencies:** SPEC-004.
 - **Required:** [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [FULFILLMENT.md](FULFILLMENT.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md).
-- **Exit:** Referral/Assignment/Fulfillment/Settlement distinctions accepted; Fulfillment Attempt concept reconciled; funding remains future.
+- **Exit:** Resource/live-availability distinction; Referral send idempotency; Fulfillment Attempt/provider/manual semantics; Follow-Up retry/durable due semantics; multi-cycle Settlement history accepted; remaining schema representation handed to SPEC-006; funding remains future.
 
 ## SPEC-006 — Accept domain, data, event models
 
 - **Dependencies:** SPEC-001 through SPEC-005.
 - **Required:** [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md).
-- **Exit:** entities/ownership/tenancy/immutability align with accepted domain specs, including signal computation identity, Fulfillment Attempts, provider metadata, command/event idempotency, and deterministic current projections.
+- **Exit:** entities/ownership/tenancy/immutability align with accepted domain specs, including signal computation identity, Fulfillment Attempts, provider metadata, command/event idempotency, first-class Settlement resolution history, Follow-Up blocking/carry-forward rules, and deterministic current projections.
 
 ## SPEC-007 — Accept core architecture, API, auth, notifications, admin
 
