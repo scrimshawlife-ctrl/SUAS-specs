@@ -1,109 +1,133 @@
 # VERSIONING.md — Specification and artifact versioning (SUAS v0.1)
 
-**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`)  
-**Related:** [STATUS.md](STATUS.md), [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), [SPEC-001.md](SPEC-001.md)
+**SPEC-001 status:** `READY_FOR_REVIEW`  
+**Stack:** `0.1.0` / `draft`  
+**Related:** [STATUS.md](STATUS.md), [ROADMAP.md](ROADMAP.md), [CHANGELOG.md](CHANGELOG.md), [AGENTS.md](AGENTS.md), [SPEC-016.md](SPEC-016.md)
 
 ---
 
-## 1. Purpose
+## 1. Lifecycle
 
-Define how specification and runtime-artifact versions change, how implementations cite them, and when a version becomes implementation authority.
+Each specification artifact has exactly one lifecycle:
+
+| State | Meaning | Implementation authority? |
+|---|---|---|
+| `draft` | under active edit/preflight | No |
+| `accepted` | owner-reviewed/frozen for its roadmap stage | No |
+| `released` | included in a named implementation-authoritative release cut | Yes |
+| `superseded` | replaced by later released artifact | historical only |
+
+Preflight is not a lifecycle state. A preflight-complete draft remains `draft`.
 
 ---
 
 ## 2. Semantic versioning
 
-The specification stack begins at `0.1.0`.
+The stack begins at `0.1.0`.
 
-| Component | Meaning |
+- MAJOR: incompatible change to a released contract.
+- MINOR: backward-compatible addition; before first release, an explicitly documented breaking clarification may use 0.y MINOR according to owner governance.
+- PATCH: non-semantic clarification/cross-link/typo.
+
+After first released 1.x, breaking contract change requires MAJOR.
+
+Git commit SHA is provenance, not the product/spec version.
+
+---
+
+## 3. Owner-only lifecycle transitions
+
+Only `@scrimshawlife-ctrl` may accept or release.
+
+Rules:
+
+1. SPEC-001 acceptance applies only to its authority files.
+2. Later stages are independently accepted after their own exit criteria.
+3. `accepted` never authorizes implementation.
+4. First implementation-authoritative cut occurs only through **SPEC-016**.
+5. Agents/implementers never self-accept/self-release or tick owner worksheets.
+6. Lifecycle changes update STATUS, CHANGELOG, affected artifact metadata, and release manifest consistently.
+
+---
+
+## 4. SPEC-016 release manifest
+
+A release is a pinned contract set, not “current main.”
+
+[SPEC-016.md](SPEC-016.md) requires a manifest containing at least:
+
+- release version/date/owner;
+- source commit SHA;
+- released artifact paths/versions/lifecycles;
+- pinned runtime artifact versions where applicable;
+- D-001–D-025 release decision ledger reference;
+- enabled/manual-only/information-only/unavailable/future feature manifest;
+- safe deferrals;
+- supersedes relationship.
+
+Only artifacts explicitly listed as `released` in that manifest are implementation authority.
+
+---
+
+## 5. Versioned runtime artifacts
+
+Released stack pins enabled runtime artifacts such as:
+
+| Artifact | Identifier / authority |
 |---|---|
-| MAJOR | Incompatible change to a released contract |
-| MINOR | Backward-compatible contract addition; while unreleased 0.y, may also carry explicitly documented breaking clarification |
-| PATCH | Non-semantic clarification, typo, cross-link, or equivalent correction |
+| Questionnaire | `questionnaire_version` / CHECKINS |
+| Support Signal rules | `signal_version` / SUPPORT_SIGNALS |
+| Event schema | `schema_version` / EVENT_MODEL |
+| Product API | path/contract version (`/api/v0` if released unchanged) / API |
+| Consent template | `consent_template_version` / CONSENT |
+| Notification template | `template_version` / NOTIFICATIONS |
+| Approved safety copy | accepted artifact/version/reference required for enabled production red-state UI |
 
-After the first released 1.x contract, breaking contract changes require MAJOR.
+Published/versioned historical runtime records retain the version used when created and are never silently rewritten.
 
----
-
-## 3. Lifecycle
-
-Every versioned specification artifact has one lifecycle state:
-
-| State | Meaning | Implementation authority? |
-|---|---|---|
-| `draft` | Under active edit | No |
-| `accepted` | Owner-reviewed/frozen for its roadmap stage | No |
-| `released` | Canonical implementation contract | Yes |
-| `superseded` | Replaced by a later released version | Historical only |
-
-Current stack: `0.1.0` / `draft`.
-
-A file may describe `FUTURE` behavior without that behavior being released.
-
-### 3.1 Owner-only lifecycle transitions
-
-Only `@scrimshawlife-ctrl` may change lifecycle state.
-
-Agents and implementers must never self-accept or self-release.
-
-Lifecycle promotion is **artifact/stage specific**:
-
-1. Completing [SPEC-001.md](SPEC-001.md) can support owner acceptance of the SPEC-001 authority files only.
-2. It does not accept later roadmap artifacts.
-3. Later artifacts are accepted only when their own [ROADMAP.md](ROADMAP.md) stage exit criteria are met.
-4. `accepted` does not authorize implementation.
-5. The first implementation-authoritative released cut occurs only at **SPEC-016** after its dependencies and safe decision/defer rules are satisfied.
-6. Lifecycle changes must be reflected consistently in [STATUS.md](STATUS.md), [CHANGELOG.md](CHANGELOG.md), and the affected artifact/version metadata.
+Provider vendors, infrastructure products, capacity targets, SLOs, recovery objectives, and reporting privacy thresholds are decision/configuration records unless a released contract explicitly versions them; they do not redefine canonical domain behavior.
 
 ---
 
-## 4. Versioned runtime artifacts
+## 6. Implementation citations
 
-Released stack versions pin the runtime artifact versions they include.
+Implementation PRs cite:
 
-| Artifact | Identifier | Authority |
-|---|---|---|
-| Questionnaire | `questionnaire_version` | [CHECKINS.md](CHECKINS.md) |
-| Support Signal rules | `signal_version` | [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md) |
-| Event schema | `schema_version` | [EVENT_MODEL.md](EVENT_MODEL.md) |
-| Product API | contract/path version | [API.md](API.md) |
-| Consent template | `consent_template_version` | [CONSENT.md](CONSENT.md) |
-| Notification template | `template_version` | [NOTIFICATIONS.md](NOTIFICATIONS.md) |
+1. released spec file/section;
+2. released stack/artifact version;
+3. lifecycle = `released`;
+4. relevant runtime artifact pins;
+5. applicable readiness/conformance contract;
+6. release manifest/feature-availability boundary when relevant.
 
-Published/versioned runtime objects are not silently mutated. Historical records retain the versions used when created.
-
-Provider adapters, infrastructure vendors, capacity targets, SLOs, and recovery targets are deployment/decision configuration unless a released contract explicitly versions them. Their selection must not redefine canonical domain behavior.
+A citation to draft/accepted/preflight work does not make it authoritative.
 
 ---
 
-## 5. Implementation citation requirements
+## 7. Historical replay
 
-Implementation PRs in `SUAS` must cite:
+Check-Ins retain questionnaire version; Signals retain computation/rule/input identity; Consent retains template version; Notifications retain template/logical-send identity; Domain/Audit Events retain schema identity; Settlement cycles and FulfillmentAttempts preserve historical business meaning.
 
-1. spec file;
-2. section;
-3. stack version;
-4. lifecycle;
-5. relevant runtime artifact versions;
-6. applicable readiness/conformance contract when touching UI, provider integration, scaling, resilience, security, or operations.
-
-A citation to a `draft` or `accepted` artifact does not turn it into implementation authority.
+Recomputation/reopen/reroute creates new linked history rather than silently mutating old meaning.
 
 ---
 
-## 6. Historical replay
+## 8. Release vs readiness
 
-- Check-Ins retain `questionnaire_version`.
-- Support Signals retain rule/input versions, timestamp, and basis.
-- Consent Grants retain template version.
-- Domain/Audit Events retain schema version.
-- Recalculation writes a new record rather than overwriting historical meaning.
+`released` means implementation-authoritative. It does **not** mean production-ready.
+
+After SPEC-016:
+
+- SPEC-017 verifies implementation conformance;
+- SPEC-018 verifies launch readiness from test/load/failure/restore/operations evidence.
 
 ---
 
-## 7. Non-goals
+## 9. Non-goals
 
-- choosing a provider or infrastructure vendor;
-- inventing a marketing version name;
-- using git commit hashes as product specification versions;
-- treating owner acceptance of one roadmap stage as blanket acceptance or release of the entire stack.
+- blanket acceptance from one stage;
+- releasing all files merely because they are in one PR/branch;
+- using git SHA as spec version;
+- selecting providers/infrastructure in this file;
+- treating release as launch approval;
+- releasing `UNRELEASED_FIXTURE` artifacts or unreviewed implementation defaults.
