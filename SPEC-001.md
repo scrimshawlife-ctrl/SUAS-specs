@@ -24,7 +24,14 @@ SPEC-001 is the owner review of the v0.1 product and authority set:
 
 All remain `draft` until the owner accepts them.
 
-SPEC-001 does **not** accept later contracts for consent, safety, domain/data/API behavior, MVP visual conformance, provider integrations, scaling, resilience, testing, deployment, pilot operation, or release.
+SPEC-001 may establish **governing principles** that later roadmap stages must implement consistently, including:
+
+- preserve the referenced MVP as the visual/interaction source of truth subject to canonical production overrides;
+- preserve provider-neutral service fulfillment and manual-provider viability;
+- preserve scalable seams without premature distributed-system complexity;
+- keep provider-specific behavior from redefining canonical product state.
+
+Accepting those governing principles does **not** accept the detailed later contracts for consent, safety, domain/data/API behavior, MVP visual conformance, provider integrations, scaling, resilience, testing, deployment, pilot operation, or release. Those artifacts remain independently draft until their own roadmap stages are accepted.
 
 ---
 
@@ -73,11 +80,16 @@ Every item starts unchecked. Only `@scrimshawlife-ctrl` may mark it complete.
 - [ ] Role set is accepted; Organization Administrator ≠ SUAS System Administrator.
 - [ ] MVP categories remain `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`.
 - [ ] No EHR, diagnosis, automated emergency dispatch, VA-integration, or MVP billing claim is introduced.
+- [ ] Service Providers do not require API integration; provider brands are not product-domain semantics.
+- [ ] Pilot size is operating scope, not system capacity ceiling.
+- [ ] Governing production principles in PRODUCT §11 are accepted without accepting their later detailed contracts.
 - [ ] D-011 and D-012 remain open unless separately decided.
 
 ### GLOSSARY.md
 
 - [ ] Canonical terms and forbidden aliases are correct.
+- [ ] `Fulfillment Attempt` is defined separately from Service Request and Fulfillment.
+- [ ] Capability Port / Provider Adapter terminology preserves vendor-neutral boundaries.
 - [ ] Compliance Register is defined as a register, not a compliance claim.
 
 ### AGENTS.md
@@ -89,6 +101,7 @@ Every item starts unchecked. Only `@scrimshawlife-ctrl` may mark it complete.
 
 - [ ] Lifecycle remains `draft` / `accepted` / `released` / `superseded`.
 - [ ] Current stack remains `0.1.0` / `draft`.
+- [ ] Acceptance is stage-specific; first implementation-authoritative release remains SPEC-016.
 
 ### STATUS.md
 
@@ -110,12 +123,13 @@ Every item starts unchecked. Only `@scrimshawlife-ctrl` may mark it complete.
 - [ ] Pilot scope is not confused with production architectural capacity.
 - [ ] Provider-neutral architecture does not redefine canonical product states.
 - [ ] Referenced MVP visual authority does not override safety, consent, privacy, authentication, accessibility, or canonical domain rules.
+- [ ] Governing principles accepted in SPEC-001 do not bypass SPEC-002 through SPEC-015 detailed acceptance stages.
 
 ---
 
 ## 4. Terminology freeze
 
-Canonical product terms include: SUAS, Veteran, Responder, Trusted Circle, Trusted Contact, Organization, Organization Administrator, SUAS System Administrator, Service Provider, Support Signal, Check-In, Support Case, Service Request, Referral, Resource, Fulfillment, Fulfillment Attempt, Follow-Up, Settlement, Consent Grant, Domain Event, Audit Event, Pilot, Assignment, Case Note, Contact Attempt, QuestionnaireVersion, Compliance Register, External API, Capability Port, First-run / Bootstrap Checklist.
+Canonical product terms include: SUAS, Veteran, Responder, Trusted Circle, Trusted Contact, Organization, Organization Administrator, SUAS System Administrator, Service Provider, Support Signal, Check-In, Support Case, Service Request, Referral, Resource, Fulfillment, Fulfillment Attempt, Follow-Up, Settlement, Consent Grant, Domain Event, Audit Event, Pilot, Assignment, Case Note, Contact Attempt, QuestionnaireVersion, Compliance Register, External API, Capability Port, Provider Adapter, First-run / Bootstrap Checklist.
 
 Support Signal levels: `GREEN`, `YELLOW`, `ORANGE`, `RED`.
 
