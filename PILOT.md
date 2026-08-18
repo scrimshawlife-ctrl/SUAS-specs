@@ -1,6 +1,6 @@
 # PILOT.md — Santa Clara County pilot (SUAS v0.1)
 
-**Related:** [PRODUCT.md](PRODUCT.md), [OPERATIONS.md](OPERATIONS.md), [ANALYTICS.md](ANALYTICS.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md)
+**Related:** [PRODUCT.md](PRODUCT.md), [OPERATIONS.md](OPERATIONS.md), [ANALYTICS.md](ANALYTICS.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
 ---
 
@@ -13,92 +13,142 @@
 | Categories | `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT` |
 | Readiness | `NOT_READY` |
 
-Do **not** invent partners. Use `PARTNER_ORG_001`, `PARTNER_ORG_002`, … until D-008 is closed.
+Do not invent partners. Use `PARTNER_ORG_001`, `PARTNER_ORG_002`, … until D-008 is closed.
 
-Environment bootstrap (empty-system first-run) is [ONBOARDING.md](ONBOARDING.md). Counsel review of the [COMPLIANCE.md](COMPLIANCE.md) register is **D-013** `DECISION_PENDING` and is required before operating this pilot. Closing D-013 is not a compliance claim.
+Counsel review of the [COMPLIANCE.md](COMPLIANCE.md) register is D-013 `DECISION_PENDING` and is required before operating this pilot. Closing D-013 is not a compliance claim.
 
-Responder staffing and coverage hours: D-009 `DECISION_PENDING`.
+Responder staffing and coverage hours remain D-009 `DECISION_PENDING`.
+
+The pilot is intentionally small, but it runs on the same correctness, durability, provider-idempotency, tenant-isolation, and resilience rules required by the production architecture. Pilot size is not permission to build pilot-only architectural ceilings.
 
 ---
 
 ## 2. Enrollment
 
-1. MVP enrollment identity-proofing (`INFERRED` operational default): self-attested veteran status plus a working email and/or phone via passwordless auth ([AUTH.md](AUTH.md)). No VA identity API, no DD-214 upload, and no in-person proofing are required for this 25–50 veteran Santa Clara County pilot. Do not invent a VA partnership. Whether a later proofing step is required is **D-016** `DECISION_PENDING`.
+1. MVP enrollment identity-proofing (`INFERRED` operational default): self-attested veteran status plus a working email and/or phone via passwordless auth. No VA identity API, DD-214 upload, or in-person proofing is required by this draft pilot contract. D-016 remains open.
 2. Create User + VeteranProfile + PilotEnrollment `ENROLLED`.
 3. Emit `VETERAN_ENROLLED`.
-4. Collect only fields in [DOMAIN_MODEL.md](DOMAIN_MODEL.md). Do not collect SSN, service-record dumps, or medical history.
-5. Consent templates accepted before any third-party share.
+4. Collect only fields allowed by [DOMAIN_MODEL.md](DOMAIN_MODEL.md) and [PRIVACY.md](PRIVACY.md).
+5. Consent templates must be accepted before third-party disclosure.
 
-Capacity: refuse or waitlist above 50 without a spec change.
+Configured pilot enrollment capacity remains approximately 25–50. Growth beyond that is handled by a later accepted operating/spec decision; it must not require a core architecture rewrite.
 
 ---
 
 ## 3. Staffing
 
 - At least one Organization with ACTIVE responders is required before go-live (D-008, D-009).
-- Org participation is recorded as Organization + memberships, not as informal side channels.
-- SUAS-admin coverage for incidents: [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
+- Organization participation is represented by Organization + membership records.
+- SUAS-admin incident/recovery coverage follows [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md), and [RESILIENCE.md](RESILIENCE.md).
 
 ---
 
-## 4. Resource verification
+## 4. Resources and provider readiness
 
-Before go-live, every `ACTIVE` Resource used in the pilot must have `last_verified_at` within 30 days (freshness recommendation in [RESOURCES.md](RESOURCES.md)). Ongoing verification is an ops duty.
+Before go-live:
+
+1. Every `ACTIVE` Resource used by the pilot has current verification per [RESOURCES.md](RESOURCES.md).
+2. Every enabled external provider adapter conforms to [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
+3. A manual coordination path exists for MVP service categories where no reliable direct integration is configured.
+4. Provider outage/degraded-mode procedures have been exercised in STAGING.
 
 ---
 
-## 5. Consent
+## 5. Consent and safety
 
 Pilot operations do not bypass Consent Grants. Small scale is not an exception.
 
----
-
-## 6. Duration
-
-Start/end dates: `NOT_COMPUTABLE` until scheduled. Record them on the `Pilot` row when known.
+Safety behavior follows [SAFETY.md](SAFETY.md). Pilot operation does not introduce automated emergency dispatch or clinical claims.
 
 ---
 
-## 7. Feedback
+## 6. Scale and resilience boundary
 
-Use `Feedback` entities. Veteran and responder satisfaction are operational metrics ([ANALYTICS.md](ANALYTICS.md)), not clinical instruments.
+Pilot traffic is a deployment profile, not an architecture definition.
 
----
+Before launch, the implementation must demonstrate the launch-applicable portions of:
 
-## 8. Incidents
+- stateless application behavior;
+- durable production-critical jobs;
+- atomic contested claims/assignments;
+- bounded/paginated list APIs;
+- provider mutation idempotency and reconciliation;
+- duplicate webhook safety;
+- queue/provider/database health observability;
+- backup/restore procedure;
+- graceful degradation/manual fallback.
 
-Follow [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md). Distinguish technical incidents from veteran-support / safety incidents.
-
----
-
-## 9. Ops support
-
-See [OPERATIONS.md](OPERATIONS.md). App reliability and veteran-support ops are separate.
-
----
-
-## 10. Exit criteria
-
-The pilot may exit when **any** of the following is recorded on the Pilot row:
-
-- Target duration completed and SPEC-015 opened
-- Enrollment withdrawn to zero
-- Safety or security incident requiring stop (SUAS-admin decision, audited)
-- SPEC-014 waiver or fail that withdraws readiness
-
-MVP gates in [STATUS.md](STATUS.md) must be `READY` (or an explicit spec waiver) before start. D-013 must be closed. Environment bootstrap checklist must be `CHECKLIST_COMPLETE` in PRODUCTION ([ONBOARDING.md](ONBOARDING.md)).
+See [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), and [TESTING.md](TESTING.md).
 
 ---
 
-## 11. Non-goals
+## 7. Duration
 
-- Named county contracts (`NOT_COMPUTABLE`)
+Start/end dates are `NOT_COMPUTABLE` until scheduled. Record them on the Pilot row when known.
+
+---
+
+## 8. Feedback and analytics
+
+Use first-class Feedback entities. Veteran and responder satisfaction are operational metrics, not clinical instruments.
+
+No pilot result may be converted into a suicides-prevented, clinical-efficacy, or diagnosis-performance claim.
+
+---
+
+## 9. Incidents and operations
+
+Follow [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md) and [OPERATIONS.md](OPERATIONS.md). Distinguish technical incidents from veteran-support/safety incidents.
+
+External dependency outages do not silently close Service Requests. They enter the documented retry, reconciliation, reroute, or manual path.
+
+---
+
+## 10. Launch gate
+
+The pilot may start only when:
+
+- the required specification artifacts are released;
+- SPEC-017 implementation conformance is complete for the target build;
+- SPEC-018 launch-applicable readiness review passes or has explicit owner-approved spec waivers;
+- all launch-applicable readiness gates in [STATUS.md](STATUS.md) are `READY` or explicitly waived;
+- D-013 is closed;
+- required partner/staffing/provider/environment decisions for enabled features are closed;
+- the PRODUCTION bootstrap checklist is `CHECKLIST_COMPLETE`;
+- load, failure, and restore evidence required by the target launch has been recorded.
+
+---
+
+## 11. Exit criteria
+
+The pilot may exit when any of the following is recorded on the Pilot row:
+
+- target duration completes and **SPEC-019** post-pilot/post-launch revision is opened;
+- enrollment is withdrawn to zero;
+- a safety/security/technical incident requires an audited stop;
+- **SPEC-018** readiness is withdrawn or a launch waiver is revoked.
+
+---
+
+## 12. Non-goals
+
+- named county contracts without evidence
 - VA partnership claims
-- Expanding past 50 veterans without a spec change
-- Using the pilot to justify clinical-efficacy claims
+- permanent housing semantics under MVP `SHELTER`
+- clinical-efficacy claims
+- treating the 25–50 participant target as the technical capacity ceiling
+- selecting a provider merely to satisfy this pilot document
 
 ---
 
-## 12. Testability
+## 13. Testability
 
-Pilot simulation suite in [TESTING.md](TESTING.md): enroll N synthetic veterans (N<=50), run the loop, produce operational metrics, no production data.
+The pilot simulation suite must:
+
+- enroll synthetic pilot users only;
+- exercise the full canonical loop;
+- exercise at least one manual fulfillment path;
+- exercise configured fake provider adapters and duplicate/timeout behavior;
+- produce allowed operational metrics;
+- validate tenant isolation;
+- use no production veteran data.
