@@ -26,7 +26,6 @@ Preflight work may prepare later worksheets and repair draft cross-artifact cont
 - **Dependencies:** SPEC-001.
 - **Required:** [CONSENT.md](CONSENT.md), [PRIVACY.md](PRIVACY.md), [SAFETY.md](SAFETY.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [SECURITY.md](SECURITY.md).
 - **Exit:** use-time consent, provider disclosure/minimization, safety non-goals, security boundaries accepted; D-006/D-012 handled per release rules.
-- **Handoff:** none until release.
 
 ## SPEC-003 — Accept Check-In / Support Signal / event contracts
 
@@ -42,7 +41,7 @@ Preflight work may prepare later worksheets and repair draft cross-artifact cont
 - **Worksheet:** [SPEC-004.md](SPEC-004.md).
 - **Dependencies:** SPEC-001, SPEC-002.
 - **Required:** [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md).
-- **Exit:** state names/transitions frozen; atomic one-winner claim/assignment and idempotency semantics accepted; provider evidence cannot bypass canonical Request/Fulfillment transitions; schema representation questions handed to SPEC-006.
+- **Exit:** state names/transitions frozen; atomic one-winner claim/assignment and idempotency semantics accepted; provider evidence cannot bypass canonical Request/Fulfillment transitions.
 
 ## SPEC-005 — Accept resources, referrals, fulfillment, follow-up, settlement
 
@@ -50,13 +49,16 @@ Preflight work may prepare later worksheets and repair draft cross-artifact cont
 - **Worksheet:** [SPEC-005.md](SPEC-005.md).
 - **Dependencies:** SPEC-004.
 - **Required:** [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [FULFILLMENT.md](FULFILLMENT.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md).
-- **Exit:** Resource/live-availability distinction; Referral send idempotency; Fulfillment Attempt/provider/manual semantics; Follow-Up retry/durable due semantics; multi-cycle Settlement history accepted; remaining schema representation handed to SPEC-006; funding remains future.
+- **Exit:** Resource/live-availability distinction; Referral send idempotency; Fulfillment Attempt/provider/manual semantics; Follow-Up retry/durable due semantics; multi-cycle Settlement history accepted; funding remains future.
 
-## SPEC-006 — Accept domain, data, event models
+## SPEC-006 — Accept domain, data, event, architecture reconciliation
 
+- **Status:** `BLOCKED_BY_SPEC_001_THROUGH_SPEC_005`; preflight complete.
+- **Worksheet:** [SPEC-006.md](SPEC-006.md).
 - **Dependencies:** SPEC-001 through SPEC-005.
 - **Required:** [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md).
-- **Exit:** entities/ownership/tenancy/immutability align with accepted domain specs, including signal computation identity, Fulfillment Attempts, provider metadata, command/event idempotency, first-class Settlement resolution history, Follow-Up blocking/carry-forward rules, and deterministic current projections.
+- **Exit:** entity ownership, tenancy, history/current projections, concurrency, command/event idempotency, first-class Settlement cycles, Follow-Up stale-job identity, provider/FulfillmentAttempt separation, and scale-friendly access paths are accepted as one coherent logical model.
+- **Physical representation:** implementation may choose equivalent PostgreSQL mechanisms after release, but must prove the accepted invariants.
 
 ## SPEC-007 — Accept core architecture, API, auth, notifications, admin
 
@@ -170,4 +172,4 @@ SPEC-001
                                            SPEC-019 revision
 ```
 
-No implementation milestone may use an MVP, prototype, provider response, queue message, or browser state to skip the corresponding accepted/released specification contract.
+No implementation milestone may use an MVP, prototype, provider response, queue message, browser state, or physical database shortcut to skip the corresponding accepted/released specification contract.
