@@ -13,6 +13,7 @@ The roadmap was expanded before first release to account for observed product tr
 ## SPEC-001 — Accept product and authority set
 
 - **Status:** `READY_FOR_REVIEW`.
+- **Worksheet:** [SPEC-001.md](SPEC-001.md).
 - **Objective:** Accept [README.md](README.md), [PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [AGENTS.md](AGENTS.md), [VERSIONING.md](VERSIONING.md), [STATUS.md](STATUS.md), [DECISIONS.md](DECISIONS.md).
 - **Exit:** terminology/authority frozen for v0.1; owner checklist complete.
 - **Handoff:** none.
@@ -20,10 +21,12 @@ The roadmap was expanded before first release to account for observed product tr
 
 ## SPEC-002 — Accept consent, privacy, safety, security boundaries
 
+- **Status:** `BLOCKED_BY_SPEC_001`; preflight/worksheet may be prepared but not accepted.
+- **Worksheet:** [SPEC-002.md](SPEC-002.md).
 - **Dependencies:** SPEC-001.
 - **Required:** [CONSENT.md](CONSENT.md), [PRIVACY.md](PRIVACY.md), [SAFETY.md](SAFETY.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [SECURITY.md](SECURITY.md).
-- **Exit:** consent/use-time rules and safety non-goals accepted; HIPAA remains D-006 unless decided; safety copy may remain D-012 but ship constraint explicit.
-- **Handoff:** auth/consent/safety implementation only after release.
+- **Exit:** consent/use-time rules and safety non-goals accepted; provider disclosure/privacy/security boundary accepted; HIPAA remains D-006 unless decided; safety copy may remain D-012 but ship constraint explicit.
+- **Handoff:** none until released; downstream auth/consent/safety/provider work must conform to these boundaries.
 
 ## SPEC-003 — Accept check-in and Support Signal contracts
 
