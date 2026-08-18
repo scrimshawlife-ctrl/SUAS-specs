@@ -4,10 +4,10 @@
 **System identifier:** SUAS  
 **Specification version:** 0.1.0  
 **Specification status:** `draft`  
-**SPEC-001 status:** `READY_FOR_REVIEW` (not accepted/released)  
-**Phase:** `SPECIFICATION_BOOTSTRAP`
+**Phase:** `SPECIFICATION_BOOTSTRAP`  
+**Implementation authority:** `NOT_YET_RELEASED`
 
-This repository (`SUAS-specs`) is the **canonical specification authority** for Shut Up and Serve. The implementation repository (`scrimshawlife-ctrl/SUAS`) must conform to released specifications. Undocumented implementation is not canonical.
+This repository (`SUAS-specs`) is the canonical specification authority for Shut Up and Serve. The implementation repository (`scrimshawlife-ctrl/SUAS`) must conform to released specifications. Undocumented implementation is not canonical.
 
 ---
 
@@ -42,32 +42,29 @@ See [PRODUCT.md](PRODUCT.md).
 SIGNAL → NEED → CONSENT → COORDINATION → FULFILLMENT → FOLLOW-UP → SETTLEMENT
 ```
 
-These concepts are not interchangeable: Check-In, Support Signal, Support Case, Service Request, Referral, Assignment, Fulfillment, Follow-Up, Settlement.
+These concepts are not interchangeable: Check-In, Support Signal, Support Case, Service Request, Referral, Assignment, Fulfillment Attempt, Fulfillment, Follow-Up, Settlement.
 
-**Support Case** = coordination around a veteran.  
+**Support Case** = coordination around a Veteran.  
 **Service Request** = one specific requested need.  
 One Case may contain multiple Service Requests.
 
 ---
 
-## 4. MVP scope
+## 4. Pilot scope vs architecture capacity
 
 - Controlled pilot: approximately 25–50 veterans
 - Geography: Santa Clara County, California
-- MVP service categories: `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`
-- Partner organizations remain placeholders until decided
+- MVP categories: `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`
+- Pilot readiness: `NOT_READY`
+- Production readiness: `NOT_READY`
 
-Pilot readiness: `NOT_READY`.  
-Production readiness: `NOT_READY`.  
-Implementation authority: `NOT_YET_RELEASED`.
-
-**The pilot size is an operating scope, not an architecture ceiling.** Production design must avoid unnecessary migration barriers if adoption grows quickly. See [SCALING.md](SCALING.md).
+**Pilot scope is not an architecture ceiling.** Production design must avoid avoidable migration barriers if adoption grows quickly. See [SCALING.md](SCALING.md).
 
 ---
 
 ## 5. Production architecture doctrine
 
-SUAS remains a **scalable modular monolith**:
+SUAS remains a scalable modular monolith:
 
 ```text
 Clients
@@ -89,100 +86,96 @@ Stateless SUAS application tier
 
 Rules:
 
-1. Do not introduce microservices without measured need and a released spec change.
-2. Correctness-critical state must not depend on one app process.
-3. Production-critical async work must be durable across worker restart.
+1. No microservices without measured need and released spec change.
+2. Correctness-critical state does not depend on one app process.
+3. Production-critical async work is durable across worker restart.
 4. External services are capability ports with replaceable adapters.
-5. Manual providers are first-class; API availability is not required for a valid Resource/Service Provider.
-6. Provider-specific status never replaces canonical Service Request/Fulfillment state.
-7. External mutations use idempotent Fulfillment Attempts and ambiguous outcomes are reconciled.
+5. Manual providers are first-class.
+6. Provider status never replaces canonical Request/Fulfillment state.
+7. External mutations are idempotent and ambiguous outcomes reconcile.
 8. Growing APIs are bounded/paginated.
-9. Scale/resilience are verified with load/failure evidence, not assumed from architecture diagrams.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md).
+9. Contested Case/Request commands use mutation-time one-winner semantics.
+10. Event identity is distinct from command/job idempotency identity.
+11. Scale/resilience are verified by load/failure evidence, not assumed.
 
 ---
 
 ## 6. Referenced MVP visual authority
 
-The existing MVP at `https://suasqrf.org/app/` is the production **visual and interaction reference**.
+The existing MVP at `https://suasqrf.org/app/` is the production visual and interaction reference.
 
-Production should preserve its recognizable action-first hierarchy, low cognitive load, role clarity, resource visibility, responder/QRF immediacy, and mobile-first navigation.
+Production preserves its action-first hierarchy, low cognitive load, role clarity, resource visibility, responder/QRF immediacy, and mobile-first navigation.
 
-The MVP reference does **not** override canonical security, auth, consent, privacy, accessibility, safety, or domain semantics. Required production divergences are explicit in [MVP_REFERENCE.md](MVP_REFERENCE.md).
-
-Visual conformance is a readiness gate, not an informal design preference.
+The MVP does not override security, auth, consent, privacy, accessibility, safety, or canonical domain semantics. See [MVP_REFERENCE.md](MVP_REFERENCE.md).
 
 ---
 
-## 7. Provider-neutral service fulfillment
+## 7. Provider-neutral fulfillment
 
-The MVP categories map to capability ports:
-
-| Category | Port | Provider choice |
+| Category | Capability port | Provider decision |
 |---|---|---|
-| `TRANSPORTATION` | `TransportationPort` | D-017 `DECISION_PENDING` |
-| `SHELTER` | `TemporaryShelterPort` | D-018 `DECISION_PENDING` |
-| `FOOD` | `FoodSupportPort` | D-019 `DECISION_PENDING` |
-| `PEER_SUPPORT` | `PeerSupportPort` | D-020 if external; internal/manual path valid |
+| `TRANSPORTATION` | `TransportationPort` | D-017 |
+| `SHELTER` | `TemporaryShelterPort` | D-018 |
+| `FOOD` | `FoodSupportPort` | D-019 |
+| `PEER_SUPPORT` | `PeerSupportPort` | D-020 if external; internal/manual valid |
 
-Specific rides, rooms, food, and peer-support vendors are **not** architecture. They are conforming adapters/configuration choices.
+Specific rides, rooms, food, and peer-support vendors are adapters/configuration, not architecture.
 
 Integration modes may include `API`, `WEBHOOK`, `DEEP_LINK`, `PHONE`, `EMAIL`, `MANUAL_COORDINATION`, `NONE`.
-
-See [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md) and [APIS.md](APIS.md).
 
 ---
 
 ## 8. Readiness gates
 
-All are currently `NOT_READY`:
+All are `NOT_READY`:
 
-- `AUTH`
-- `CONSENT`
-- `CHECK-IN`
-- `COORDINATION`
-- `EXTERNAL_FULFILLMENT`
-- `UI_CONFORMANCE`
-- `SAFETY`
-- `PRIVACY`
-- `SCALE`
-- `RESILIENCE`
-- `OPERATIONS`
-- `REPORTING`
+`AUTH`, `CONSENT`, `CHECK-IN`, `COORDINATION`, `EXTERNAL_FULFILLMENT`, `UI_CONFORMANCE`, `SAFETY`, `PRIVACY`, `SCALE`, `RESILIENCE`, `OPERATIONS`, `REPORTING`.
 
 See [STATUS.md](STATUS.md) and [TESTING.md](TESTING.md).
 
 ---
 
-## 9. Document index
+## 9. Governance / review frontier
+
+Preflight work may repair draft contradictions and prepare later owner worksheets, but cannot bypass dependencies or change lifecycle.
+
+| Stage | Current state | Worksheet |
+|---|---|---|
+| SPEC-001 | `READY_FOR_REVIEW` | [SPEC-001.md](SPEC-001.md) |
+| SPEC-002 | blocked by SPEC-001; preflight complete | [SPEC-002.md](SPEC-002.md) |
+| SPEC-003 | blocked by SPEC-001/002; preflight complete | [SPEC-003.md](SPEC-003.md) |
+| SPEC-004 | blocked by SPEC-001/002; preflight complete | [SPEC-004.md](SPEC-004.md) |
+| SPEC-005 | blocked by SPEC-004; preflight complete | [SPEC-005.md](SPEC-005.md) |
+| SPEC-006+ | follow [ROADMAP.md](ROADMAP.md) | — |
+
+Only the owner may accept/release artifacts. The first implementation-authoritative release is SPEC-016.
+
+---
+
+## 10. Document index
 
 ### Product / authority
 
-| File | Purpose |
-|---|---|
-| [PRODUCT.md](PRODUCT.md) | Mission, roles, categories, loop, non-goals |
-| [MVP_REFERENCE.md](MVP_REFERENCE.md) | Referenced MVP visual/interaction conformance contract |
-| [GLOSSARY.md](GLOSSARY.md) | Canonical terminology |
-| [STATUS.md](STATUS.md) | Spec/pilot/production readiness |
-| [VERSIONING.md](VERSIONING.md) | Artifact lifecycle/versioning |
-| [ROADMAP.md](ROADMAP.md) | Ordered Spec-Driven Development path to release |
-| [DECISIONS.md](DECISIONS.md) | Open decisions; no guessing |
-| [AGENTS.md](AGENTS.md) | Cross-repo/agent governance |
+- [PRODUCT.md](PRODUCT.md) — mission, roles, categories, loop, non-goals
+- [MVP_REFERENCE.md](MVP_REFERENCE.md) — visual/interaction conformance
+- [GLOSSARY.md](GLOSSARY.md) — terminology authority
+- [STATUS.md](STATUS.md) — governance/readiness state
+- [VERSIONING.md](VERSIONING.md) — lifecycle/versioning
+- [ROADMAP.md](ROADMAP.md) — ordered specification path
+- [DECISIONS.md](DECISIONS.md) — open decisions
+- [AGENTS.md](AGENTS.md) — agent/implementation governance
 
-### Architecture / integrations / scale
+### Architecture / integration / scale
 
-| File | Purpose |
-|---|---|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Scalable modular monolith and module boundaries |
-| [DOMAIN_MODEL.md](DOMAIN_MODEL.md) | Entities/ownership/lifecycle/authz |
-| [DATA_MODEL.md](DATA_MODEL.md) | Logical PostgreSQL schema |
-| [EVENT_MODEL.md](EVENT_MODEL.md) | Domain/Audit Events |
-| [API.md](API.md) | SUAS Plane A resource/domain contract |
-| [APIS.md](APIS.md) | Plane A minimum + Plane B capability inventory |
-| [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md) | Provider-neutral fulfillment ports/adapters/manual fallback |
-| [SCALING.md](SCALING.md) | Scale bands, statelessness, durable work, DB/API/load rules |
-| [RESILIENCE.md](RESILIENCE.md) | Failure/degradation/retry/reconciliation/recovery contract |
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [DOMAIN_MODEL.md](DOMAIN_MODEL.md)
+- [DATA_MODEL.md](DATA_MODEL.md)
+- [EVENT_MODEL.md](EVENT_MODEL.md)
+- [API.md](API.md)
+- [APIS.md](APIS.md)
+- [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md)
+- [SCALING.md](SCALING.md)
+- [RESILIENCE.md](RESILIENCE.md)
 
 ### Domain
 
@@ -192,48 +185,61 @@ See [STATUS.md](STATUS.md) and [TESTING.md](TESTING.md).
 
 [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [ONBOARDING.md](ONBOARDING.md), [ADMIN.md](ADMIN.md), [PILOT.md](PILOT.md), [ANALYTICS.md](ANALYTICS.md), [TESTING.md](TESTING.md), [DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
 
-### Process
+### Owner review worksheets
 
-[CONTRIBUTING.md](CONTRIBUTING.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md), [CHANGELOG.md](CHANGELOG.md), [SPEC_AUDIT.md](SPEC_AUDIT.md), `CODEOWNERS`.
-
----
-
-## 10. Engineer rules
-
-1. Read PRODUCT, GLOSSARY, README, and relevant released specs before implementation.
-2. Treat draft specs as design work, not shipping authority.
-3. Cite spec file/section/version in implementation PRs.
-4. Do not invent partners, providers, county/VA/Medi-Cal agreements, legal status, signal weights, staffing, performance SLOs, or recovery objectives.
-5. Do not implement generative AI for safety-critical decisions.
-6. Do not encode provider names/SDK types into domain modules.
-7. Do not treat an external provider callback as permission to bypass canonical transitions or confirmation.
-8. Preserve the referenced MVP experience unless a documented production constraint requires divergence.
-9. Run the applicable critical/readiness suites before claiming a domain or release ready.
-10. Do not claim HIPAA compliance; D-006 remains open.
-11. Do not write production application code in this specification repository.
+[SPEC-001.md](SPEC-001.md), [SPEC-002.md](SPEC-002.md), [SPEC-003.md](SPEC-003.md), [SPEC-004.md](SPEC-004.md), [SPEC-005.md](SPEC-005.md).
 
 ---
 
-## 11. Epistemic labels
+## 11. Key unresolved SPEC-006 handoffs
 
-| Label | Meaning |
-|---|---|
-| `OBSERVED` | Directly evidenced |
-| `INFERRED` | Derived from stated rules; not independently evidenced |
-| `SPECULATIVE` | Possible, not decided |
-| `NOT_COMPUTABLE` | Cannot be determined from available information |
-| `DECISION_PENDING` | Open decision; do not guess |
-| `FUTURE` | Explicitly outside MVP scope |
+Preflight has made these schema/model obligations explicit:
+
+- Support Signal computation identity + deterministic effective projection;
+- event identity/idempotency/correlation/causation representation;
+- replay-safe event publication/outbox semantics;
+- one-active-case/active-assignment concurrency representation;
+- Service Request current assignment/provider history;
+- first-class multi-cycle Settlement history;
+- deterministic current/latest Settlement projection;
+- blocking vs carried-forward Follow-Up representation;
+- Follow-Up schedule/version identity;
+- FulfillmentAttempt/ServiceFulfillment history/current constraints;
+- command idempotency persistence where needed.
+
+Implementation must not choose these silently before SPEC-006 is accepted/released.
 
 ---
 
-## 12. Quality rules
+## 12. Engineer rules
 
-- Explicit, testable, non-redundant, internally linked.
-- Preserve canonical terminology and separate non-interchangeable concepts.
-- Preserve MVP product identity without copying unsafe/incorrect prototype behavior.
-- No unsupported clinical/compliance claims.
-- No automated emergency dispatch.
-- No vendor-specific domain lock-in.
-- No pilot-scale architectural assumptions where a simple scalable seam is available.
-- Complexity must solve measured or clearly foreseeable production ambiguity; do not add distributed-system machinery for its own sake.
+1. Read PRODUCT/GLOSSARY/README plus relevant released specs before implementation.
+2. Draft/preflight/accepted artifacts are not shipping authority until release.
+3. Cite spec file/section/version/lifecycle in implementation PRs.
+4. Do not invent partners, providers, legal status, signal weights, staffing, SLOs, RTO/RPO, or adoption forecasts.
+5. No safety-critical generative AI.
+6. No provider SDK/vendor status in domain modules.
+7. Provider callbacks are evidence, not hidden state authority.
+8. Preserve referenced MVP experience unless documented production constraint requires divergence.
+9. Run applicable conformance/readiness suites.
+10. Do not claim HIPAA compliance while D-006 is open.
+11. Do not add production application code to this specs repository.
+
+---
+
+## 13. Epistemic labels
+
+`OBSERVED`, `INFERRED`, `SPECULATIVE`, `NOT_COMPUTABLE`, `DECISION_PENDING`, `FUTURE`.
+
+---
+
+## 14. Quality rules
+
+- explicit, testable, non-redundant, cross-linked;
+- canonical terminology;
+- MVP identity preserved without unsafe prototype behavior;
+- no unsupported clinical/compliance claims;
+- no automated emergency dispatch;
+- no vendor-domain lock-in;
+- no pilot-only correctness assumptions;
+- complexity must remove concrete ambiguity or risk.
