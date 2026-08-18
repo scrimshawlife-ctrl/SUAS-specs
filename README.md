@@ -10,6 +10,8 @@
 
 `SUAS-specs` is canonical. `scrimshawlife-ctrl/SUAS` implements released contracts and may not redefine them from code, prototype behavior, provider behavior, deployment state, or traction.
 
+The weekend-build document **HACKATHON BUILD SPECIFICATION Rev 3 (2026-08-14)** is build direction, not a released SUAS product spec. Where it touches this repository, [FENCE_POSTS.md](FENCE_POSTS.md), [SURFACES.md](SURFACES.md), [ISLANDS.md](ISLANDS.md), and [RIDES.md](RIDES.md) define draft contracts that may be reviewed during the event. They are **not** implementation authority. If Rev 3 and this released stack conflict, record the conflict as `DECISION_PENDING` in [DECISIONS.md](DECISIONS.md). Santa Clara County v0.1 remains the same consent-governed identified coordination platform already defined on `main`.
+
 ## Start here for implementation / Fable handoff
 
 1. [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)
@@ -93,8 +95,10 @@ See [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md).
 
 **Domain:** [AUTH.md](AUTH.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [FULFILLMENT.md](FULFILLMENT.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md).
 
+**Draft Rev 3 contracts (not implementation authority):** [FENCE_POSTS.md](FENCE_POSTS.md), [SURFACES.md](SURFACES.md), [ISLANDS.md](ISLANDS.md), [RIDES.md](RIDES.md).
+
 **Operations/verification:** [MVP_REFERENCE.md](MVP_REFERENCE.md), [ADMIN.md](ADMIN.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [ANALYTICS.md](ANALYTICS.md), [TESTING.md](TESTING.md), [DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md), [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
 
 ## Next work
 
-Proceed with SPEC-017 in `scrimshawlife-ctrl/SUAS`, using [HANDOFF.md](HANDOFF.md) as the entrypoint. Semantic gaps return here; they are not resolved by implementation defaults.
+Proceed with SPEC-017 in `scrimshawlife-ctrl/SUAS`, using [HANDOFF.md](HANDOFF.md) as the entrypoint. Semantic gaps return here; they are not resolved by implementation defaults. Draft Rev 3 files are not released contracts.
