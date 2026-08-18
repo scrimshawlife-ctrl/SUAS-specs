@@ -1,7 +1,7 @@
 # DECISIONS.md — Open decisions (do not guess)
 
 **SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
-**Related:** [STATUS.md](STATUS.md), [PRODUCT.md](PRODUCT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md)
+**Related:** [STATUS.md](STATUS.md), [PRODUCT.md](PRODUCT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), [PRIVACY.md](PRIVACY.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [MVP_REFERENCE.md](MVP_REFERENCE.md), [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md)
 
 This file lists decisions that are **not** made in v0.1.0. Implementation must not invent values. Use `DECISION_PENDING` or `NOT_COMPUTABLE` until a later spec version records a decision.
 
@@ -11,10 +11,12 @@ This file lists decisions that are **not** made in v0.1.0. Implementation must n
 
 1. Do not guess.
 2. Do not treat a vendor preference, a blog post, or an informal conversation as a decision.
-3. Do not lock a cloud provider, auth vendor, SMS vendor, or email vendor in architecture or deployment.
-4. Do not name pilot partner organizations. Use `PARTNER_ORG_001` placeholders.
-5. Do not write exact Support Signal scoring weights until they are specified, versioned, and test-vectored.
-6. When a decision is made, record: decision, date (PT), owner, spec version, supersedes.
+3. Do not lock a cloud provider, auth vendor, SMS vendor, email vendor, transportation vendor, room/shelter vendor, food vendor, peer-support vendor, queue vendor, or cache vendor in domain architecture.
+4. Provider choices are adapter/configuration decisions. They do not redefine Service Request or Fulfillment contracts.
+5. Do not name pilot partner organizations. Use `PARTNER_ORG_001` placeholders.
+6. Do not write exact Support Signal scoring weights until they are specified, versioned, and test-vectored.
+7. Do not invent capacity/SLO/RTO/RPO numbers. Record them as release-specific decisions with evidence.
+8. When a decision is made, record: decision, date (PT), owner, spec version, supersedes.
 
 ---
 
@@ -38,6 +40,14 @@ This file lists decisions that are **not** made in v0.1.0. Implementation must n
 | D-014 | Whether a geocoding / maps API is required for MVP (`coverage_geometry` vs county list) | `DECISION_PENDING` | [RESOURCES.md](RESOURCES.md), [APIS.md](APIS.md) `GEOCODE_MAPS` |
 | D-015 | Case-note veteran visibility (whether veterans may see full Case Notes later) | `DECISION_PENDING` (MVP default `INFERRED`: veterans cannot see full Case Notes; not a clinical chart) | [CASES.md](CASES.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [PRODUCT.md](PRODUCT.md) |
 | D-016 | Enrollment identity-proofing beyond self-attest | `DECISION_PENDING` (MVP default `INFERRED`: self-attested veteran status + working email and/or phone via passwordless auth; no VA identity API, no DD-214 upload, no in-person proofing for the 25–50 Santa Clara pilot). Do not invent a VA partnership. | [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [AUTH.md](AUTH.md) |
+| D-017 | Enabled transportation provider adapter(s) by environment/coverage | `DECISION_PENDING` | External transportation fulfillment; architecture remains provider-neutral |
+| D-018 | Enabled temporary shelter/room provider adapter(s) by environment/coverage | `DECISION_PENDING` | External shelter fulfillment; `SHELTER` remains temporary support |
+| D-019 | Enabled food-support provider adapter(s) by environment/coverage | `DECISION_PENDING` | External food fulfillment; manual/catalog providers remain valid |
+| D-020 | Whether any external peer-support provider adapter is enabled | `DECISION_PENDING`; internal/manual QRF path remains valid | External peer-support fulfillment only |
+| D-021 | Target production capacity band for first production release (`PILOT`, `REGIONAL`, or release-specific envelope) | `DECISION_PENDING` | [SCALING.md](SCALING.md) performance plan |
+| D-022 | Durable job/queue implementation for production | `DECISION_PENDING` | [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md); in-process-only volatile jobs are not production-ready |
+| D-023 | Release-specific API/queue/provider performance SLOs and alert thresholds | `DECISION_PENDING` | Production load/operations acceptance |
+| D-024 | Production RTO/RPO and backup/restore objectives | `DECISION_PENDING` | [RESILIENCE.md](RESILIENCE.md), production operations |
 
 ---
 
@@ -56,7 +66,11 @@ Analysis in [FRICTION.md](FRICTION.md) proposes two owner closes. **Neither is a
 
 - Product is coordination, not diagnosis, not EHR, not automated emergency dispatch.
 - Canonical loop and non-interchangeable concepts.
-- Modular monolith for the pilot.
+- Modular monolith remains the default architecture; microservices require measured need and a released spec change.
+- Production application correctness state must not depend on one application process; horizontal stateless application scaling is the target contract.
+- Production-critical asynchronous work must be durable across worker restart; exact queue/job provider remains open.
+- External fulfillment is capability-port based; provider SDKs are adapter-local; manual coordination is first-class.
+- The referenced MVP is the visual/interaction source of truth subject to production safety, auth, privacy, accessibility, and domain-contract overrides in [MVP_REFERENCE.md](MVP_REFERENCE.md).
 - Passwordless veteran auth (magic link, email OTP, phone OTP where supported). No passwords unless later justified.
 - No social login assumption.
 - MFA required for Responders and Administrators.
@@ -65,13 +79,22 @@ Analysis in [FRICTION.md](FRICTION.md) proposes two owner closes. **Neither is a
 - No automated 911 / emergency dispatch.
 - Medi-Cal / billing adapter is `FUTURE`. Do not assert activities are Medi-Cal billable.
 - Pilot geography: Santa Clara County, California. Size: approximately 25–50 veterans.
+- Pilot size does not define production architectural ceilings; scale bands are capacity envelopes, not adoption forecasts.
 - Specs are canonical; implementation cites.
 
 ---
 
-## 4. Decision record template (for future versions)
+## 4. Provider-decision rule
 
-```
+Closing D-017 through D-020 selects enabled adapters; it does **not** authorize provider-specific types or statuses in domain modules. The selected provider must conform to [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
+
+A later provider replacement must be possible through adapter/configuration changes unless the provider exposes a genuinely new product capability that requires a separate accepted spec change.
+
+---
+
+## 5. Decision record template (for future versions)
+
+```text
 ### D-0XX — <title>
 - Status: decided
 - Date (PT):
