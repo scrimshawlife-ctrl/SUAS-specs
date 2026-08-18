@@ -1,99 +1,74 @@
-# DEPLOYMENT.md — Environments and production topology (SUAS v0.1)
+# DEPLOYMENT.md — Environments and production topology (SUAS v0.1.1)
 
-**Related:** [ARCHITECTURE.md](ARCHITECTURE.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SECURITY.md](SECURITY.md), [OPERATIONS.md](OPERATIONS.md), [DECISIONS.md](DECISIONS.md), [FRICTION.md](FRICTION.md)
+**Lifecycle:** `released` via [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)  
+**Related:** [ENVIRONMENT.md](ENVIRONMENT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SECURITY.md](SECURITY.md), [OPERATIONS.md](OPERATIONS.md), [DECISIONS.md](DECISIONS.md)
 
-**Status:** `draft` / `0.1.0`. Cloud/platform/database/job providers remain `DECISION_PENDING`.
+Cloud/platform/database/job providers remain deferred for production. This file defines topology and environment separation; [ENVIRONMENT.md](ENVIRONMENT.md) defines runtime configuration, startup validation, external-effect safety, and build provenance.
 
----
+## 1. Environments
 
-## 1. Purpose
+| Environment | Purpose | Real veteran data | Real external support effects |
+|---|---|---|---|
+| `LOCAL` | developer work | forbidden | forbidden |
+| `TEST` | automated tests / CI | forbidden | forbidden |
+| `STAGING` | integrated synthetic validation/load/failure drills | forbidden | forbidden except non-real sandbox effects explicitly allow-listed |
+| `PRODUCTION` | eventual live operation | blocked until SPEC-018 | blocked until SPEC-018 and relevant decisions close |
 
-Define environment separation and minimum production topology without locking a cloud, database host, durable-job product, cache, or external service provider.
+Each environment has separate databases, secrets, provider configuration, telemetry boundaries, durable work state, and user data. Environment class must be explicit and validated as required by ENVIRONMENT.md.
 
----
+## 2. Production topology requirements
 
-## 2. Environments
-
-| Environment | Purpose | Production veteran data? |
-|---|---|---|
-| `LOCAL` | Developer work | No |
-| `TEST` | Automated tests / CI | No; fixtures only |
-| `STAGING` | Pre-production integration/load/failure drills | No; synthetic data only |
-| `PRODUCTION` | Real pilot/production operation | Yes |
-
-Each environment has separate databases, secrets, provider credentials/configuration, telemetry boundaries, queues/jobs, and user data.
-
----
-
-## 3. Production topology requirements
-
-Production must support:
+When production is eventually authorized, topology must support:
 
 - one or more stateless SUAS application instances;
 - PostgreSQL as logical system of record;
-- durable production-critical async work that survives worker restart;
-- independently scalable worker capacity;
-- provider adapter configuration per environment/tenant/coverage;
+- durable production-critical async work surviving worker restart;
+- independently scalable workers;
+- provider adapter configuration by environment/tenant/coverage;
 - authenticated provider/notification webhook ingress;
-- environment-scoped secrets; provider credentials are not domain data;
-- health/metrics for app, DB, jobs, notification channels, and fulfillment adapters;
-- backup/restore process.
+- environment-scoped secret storage;
+- app/DB/job/notification/provider health telemetry;
+- backup/restore process;
+- build provenance identifying application commit/version, released spec/manifest, schema version, and environment.
 
-The first deployment may run minimal instance counts, but deployment topology must not require domain changes to add app/worker capacity.
+Adding app/worker capacity must not require domain changes.
 
----
+## 3. Rules
 
-## 4. Rules
+1. LOCAL/TEST/STAGING never use production veteran data.
+2. Non-production communications/providers use disabled/fake/sink/manual/sandbox modes that cannot affect real veterans or scarce support resources.
+3. STAGING supports provider fakes/sandboxes, visual tests, representative load profiles, and resilience drills.
+4. Schema migrations run per environment and cite released specs.
+5. Production-critical work never relies on volatile in-process-only queues.
+6. Secrets never live in Git, domain rows, release manifests, logs, screenshots, or client bundles.
+7. Deployment/configuration cannot redefine released semantics or enable manifest-UNAVAILABLE features.
+8. Horizontal app/worker scaling must not require a domain/data rewrite.
+9. Real provider adapters may be enabled only by a later released provider decision plus conformance/security/consent readiness.
+10. Cache is an optimization, not accidental source of truth.
+11. Invalid environment/feature/config combinations fail closed at startup.
+12. A build must reject a DB/schema state it cannot safely operate against.
 
-1. No production data in LOCAL, TEST, or STAGING.
-2. Non-production communications/providers must use sinks, fakes, sandboxes, or allow-listed test destinations; never message/book real veteran support by accident.
-3. STAGING must support representative provider fakes/sandboxes, load profiles, and resilience drills.
-4. Schema migrations run per environment; production contract changes cite released specs.
-5. Production-critical work may not rely on a volatile in-process-only queue.
-6. Secrets do not live in Git, Resource rows, ServiceProvider rows, or ProviderAdapterConfiguration rows.
-7. Deploy does not redefine specification.
-8. Horizontal app/worker scaling must not require a domain/data-model rewrite.
-9. Production provider adapters are enabled only when configuration, consent projection, webhook/auth, and conformance tests are ready.
-10. Cache, if added, is an optimization and must not become accidental source of truth.
+## 4. Current deferred production decisions
 
----
+D-001 hosting, D-002 auth implementation, D-003 SMS, D-004 email, D-005 database hosting, D-007 retention, D-017–D-020 real service adapters, D-021 workload envelope, D-022 durable-job implementation, D-023 SLOs/alerts, and D-024 RTO/RPO remain production-unavailable under the current release boundary unless superseded by a later decision release.
 
-## 5. Unsettled deployment decisions
+## 5. Deployment verification before SPEC-018
 
-| Topic | Status |
-|---|---|
-| Cloud/application hosting | D-001 `DECISION_PENDING` |
-| Database hosting | D-005 `DECISION_PENDING` |
-| Auth/SMS/email providers | D-002–D-004 |
-| Transportation/room/food/peer provider adapters | D-017–D-020 |
-| First-release scale target | D-021 |
-| Durable job/queue product | D-022 |
-| Performance SLO/alert thresholds | D-023 |
-| RTO/RPO and backup objectives | D-024 |
-| Retention/backup duration details | D-007 adjacent |
+Evidence must show:
 
----
-
-## 6. Deployment verification
-
-Before production readiness:
-
-- environment secrets/data separation verified;
+- environment/secrets/data separation;
+- startup configuration fail-closed behavior;
 - at least two app instances can serve the same staging workload without correctness drift;
-- worker restart does not lose acknowledged production-critical test work;
-- deployment/restart graceful behavior tested;
-- provider webhook endpoints reject unauthenticated callbacks;
-- one provider outage/degraded drill completed in staging;
-- queue depth/age and provider health are observable;
-- restore procedure executed and recorded for the release environment;
-- scale/resilience evidence maps to [TESTING.md](TESTING.md).
+- worker restart does not lose acknowledged critical work;
+- deploy/restart graceful behavior;
+- webhook authentication/duplicate safety;
+- provider-degraded drill;
+- queue depth/age and provider health observability;
+- restore exercise with duplicate-external-effect protection;
+- schema compatibility/migration evidence;
+- build provenance matches the released spec manifest;
+- scale/resilience evidence maps to TESTING.md.
 
----
+## 6. Non-goals
 
-## 7. Non-goals
-
-- Multi-region active-active as an MVP requirement
-- Kubernetes/microservices as requirements
-- Naming a vendor as architecture
-- Shared DB/secrets between STAGING and PRODUCTION
-- Requiring API-backed providers for every service
+No Kubernetes/microservices mandate, speculative multi-region active-active, vendor selection by architecture, shared STAGING/PRODUCTION data or secrets, or requirement that providers expose APIs.

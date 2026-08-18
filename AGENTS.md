@@ -1,68 +1,50 @@
 # AGENTS.md — Required rules for agents and implementers
 
-**SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`)  
-**Related:** [README.md](README.md), [CONTRIBUTING.md](CONTRIBUTING.md), [VERSIONING.md](VERSIONING.md), [STATUS.md](STATUS.md), [ROADMAP.md](ROADMAP.md), [SPEC-001.md](SPEC-001.md)
+**Released stack:** `0.1.1`  
+**Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`  
+**Current stage:** `SPEC-017`  
+**Start here:** [HANDOFF.md](HANDOFF.md), [ENVIRONMENT.md](ENVIRONMENT.md), [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)
 
-This file binds human and automated agents working on SUAS specifications or the SUAS implementation.
+This file binds human and automated agents working on SUAS specifications or implementation.
 
----
+## Required rules
 
-## 1. Required rules
+1. `SUAS-specs` is canonical. `SUAS` conforms to released specs.
+2. Implementation PRs cite released spec file/section, stack version, release manifest, and applicable test/readiness contract.
+3. Semantic gaps return to specs. Do not invent product/domain rules in code.
+4. Deployment, configuration, vendor choice, runtime flags, and provider behavior cannot redefine canonical semantics.
+5. Follow [ENVIRONMENT.md](ENVIRONMENT.md). Invalid environment/feature combinations fail closed; LOCAL/TEST/STAGING must not contact real veterans/providers or use production data.
+6. Do not guess deferred production decisions or external facts.
+7. No safety-critical generative AI and no automated emergency dispatch.
+8. Match canonical terminology/state/event names exactly.
+9. Preserve [MVP_REFERENCE.md](MVP_REFERENCE.md), including required truthful/safe divergences.
+10. Preserve provider neutrality. Provider SDKs/payloads/statuses remain adapter-local; Manual/Fake adapters are first-class during current implementation.
+11. Preserve stateless/shared correctness state, durable async-work semantics, persistent idempotency, tenant isolation, replay-safe events, and bounded access paths.
+12. No real production-unavailable surface may be enabled merely through configuration or implementation default.
+13. Every shared build exposes app commit/version, spec version, release manifest, environment, and schema/migration version where applicable.
+14. Do not commit secrets, `.env`, production data, provider credentials, real contact details, or copied production payloads.
 
-1. **Specs are authority.** `SUAS-specs` is canonical. `SUAS` must conform to released specs.
-2. **Cite contracts.** Implementation PRs cite spec file, section, stack version, lifecycle, relevant artifact versions, and applicable readiness contract.
-3. **Gaps return to specs.** Do not invent unstated product/domain rules in implementation.
-4. **Deploy does not redefine product semantics.** Vendor choice, topology, runtime flags, and scaling mechanism must not change canonical domain meaning.
-5. **Undocumented implementation is not canonical.** Code behavior is not a product rule until specified and released.
-6. **Do not guess open decisions.** Follow [DECISIONS.md](DECISIONS.md); use `DECISION_PENDING` / `NOT_COMPUTABLE`.
-7. **Do not invent external facts.** No invented partner capabilities, county agreements, VA integrations, Medi-Cal eligibility, provider coverage, funding, staffing, legal status, SLAs, or adoption forecasts.
-8. **No safety-critical generative AI.** No generative primary Support Signal, suicidality determination, emergency intervention, trusted-contact notify decision, service qualification, or case closure.
-9. **No automated emergency dispatch.** SUAS does not implement 911/PSAP auto-dispatch or claim to replace emergency services.
-10. **Match canonical names exactly.** State-machine names, event types, role names, and glossary terms must match released contracts.
-11. **Preserve the MVP reference.** UI work must follow [MVP_REFERENCE.md](MVP_REFERENCE.md); visual drift is not an implementation preference.
-12. **Preserve provider neutrality.** Domain code must not import provider SDKs or expose vendor statuses as SUAS states. Follow [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
-13. **Do not design to pilot-only ceilings.** Follow [SCALING.md](SCALING.md) and [RESILIENCE.md](RESILIENCE.md); keep the modular monolith simple but stateless/durable where required.
-
----
-
-## 2. Cross-repo governance
+## Cross-repo governance
 
 | Rule | `SUAS-specs` | `SUAS` |
 |---|---|---|
-| Authority | Canonical specification source | Conforms to released specs |
-| Content | Specs + hygiene only | Application/infrastructure implementation |
-| Gaps | Resolved here | Returned here |
-| Vendors | May define capability boundaries/open decisions | May configure selected adapters after decision closure |
-| Deploy | Does not redefine semantics | Must preserve released contracts |
-| Undocumented behavior | Not canonical | Not canonical |
+| Authority | canonical released contract | implementation/conformance |
+| Product gaps | specified/released here | returned to specs |
+| Vendors | capability boundaries + decision records | adapters only when release permits |
+| Environments | `ENVIRONMENT.md` contract | validated configuration implementation |
+| Versioning | stack/release/runtime authority | app/schema/build versions mapped to released stack |
+| Undocumented behavior | not canonical | not canonical |
 
----
+## Current release boundary
 
-## 3. Epistemic discipline
+v0.1.1 authorizes implementation, not production operation. Pilot and production readiness remain `NOT_READY`.
 
-Use `OBSERVED`, `INFERRED`, `SPECULATIVE`, `NOT_COMPUTABLE`, `DECISION_PENDING`, and `FUTURE` as defined in the specification set. Do not upgrade a label without evidence or an owner decision.
+Still unavailable for production include real infrastructure/provider effects, production Support Signal scoring, official safety copy, real veteran data/live pilot operation, production workload/SLO/RTO/RPO claims, and sensitive aggregate reporting unless superseded by a later released decision/evidence set.
 
----
+## Epistemic discipline
 
-## 4. Forbidden vague claims
+Use `OBSERVED`, `INFERRED`, `SPECULATIVE`, `NOT_COMPUTABLE`, `DECISION_PENDING`, and `FUTURE` accurately. Prototype behavior, a vendor API, or code behavior is not evidence of a product decision.
 
-Do not use `AI-powered`, `smart matching`, `seamless`, `intelligent`, `automatically handles`, or equivalent language as a contract unless exact inputs, outputs, limits, failure modes, and authority are specified.
+## Repository boundary
 
----
-
-## 5. Repository boundary
-
-Agents working in `SUAS-specs` do not add application/production code, provider credentials, real veteran data, or vendor-specific deployment implementation.
-
----
-
-## 6. Acceptance and release are owner-only
-
-Only `@scrimshawlife-ctrl` may change lifecycle.
-
-- Agents must not tick [SPEC-001.md](SPEC-001.md).
-- Completing SPEC-001 may support owner acceptance of SPEC-001 authority files only.
-- Later roadmap artifacts remain independently draft until their own stages are accepted.
-- `accepted` is not implementation authority.
-- The first released implementation-authoritative specification cut occurs at **SPEC-016** under [ROADMAP.md](ROADMAP.md).
-- Agents must not mark the stack or any artifact `released`.
+`SUAS-specs` contains specification/governance/handoff material, not application code or credentials. `SUAS` contains implementation. Fable and other implementers should follow [HANDOFF.md](HANDOFF.md) before the first change.

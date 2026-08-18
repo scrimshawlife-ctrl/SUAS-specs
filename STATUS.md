@@ -1,90 +1,38 @@
-# STATUS.md — SUAS specification status (v0.1.0)
+# STATUS.md — SUAS specification status (v0.1.1)
 
 **Specification lifecycle:** `released`  
 **Phase:** `IMPLEMENTATION_AUTHORIZED`  
 **Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`  
-**Release manifest:** [RELEASE_MANIFEST-0.1.0.md](RELEASE_MANIFEST-0.1.0.md)  
-**Release decision ledger:** [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md)  
+**Release manifest:** [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)  
+**Base decision ledger:** [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md)  
 **Pilot readiness:** `NOT_READY`  
 **Production readiness:** `NOT_READY`
 
----
+## Governance frontier
 
-## 1. Governance frontier
+SPEC-001 through SPEC-015 are accepted. SPEC-016 established the first released cut. v0.1.1 is a patch-level handoff clarification release that supersedes v0.1.0 without changing product/domain semantics. SPEC-017 implementation conformance is active. SPEC-018 remains the go/no-go stage for any real pilot or production operation.
 
-| Stage | Status |
-|---|---|
-| SPEC-001 | `accepted` |
-| SPEC-002 | `accepted` |
-| SPEC-003 | `accepted` |
-| SPEC-004 | `accepted` |
-| SPEC-005 | `accepted` |
-| SPEC-006 | `accepted` |
-| SPEC-007 | `accepted` |
-| SPEC-008 | `accepted` |
-| SPEC-009 | `accepted` |
-| SPEC-010 | `accepted` |
-| SPEC-011 | `accepted` |
-| SPEC-012 | `accepted` |
-| SPEC-013 | `accepted` |
-| SPEC-014 | `accepted` |
-| SPEC-015 | `accepted` with v0.1.0 release decision ledger |
-| SPEC-016 | `released` — first implementation-authoritative cut |
-| SPEC-017 | `READY_TO_BEGIN` — implementation conformance |
-| SPEC-018 | blocked by implementation/conformance + operational evidence |
-| SPEC-019 | future post-launch revision |
+## Handoff additions in v0.1.1
 
-The owner explicitly authorized and completed the acceptance/release chain on 2026-08-18 PT.
+- [ENVIRONMENT.md](ENVIRONMENT.md) — canonical environment/config/startup-validation/secrets/provenance/migration contract.
+- [HANDOFF.md](HANDOFF.md) — canonical implementation handoff and Fable start-here path.
 
----
+## Release meaning
 
-## 2. Release meaning
+v0.1.1 authorizes implementation in `scrimshawlife-ctrl/SUAS`. It does not authorize production deployment, real veteran data, live pilot operation, production Support Signal thresholds, official safety copy, real external provider bookings, compliance claims, production SLO/RTO/RPO claims, or sensitive aggregate reporting.
 
-Artifacts named in [RELEASE_MANIFEST-0.1.0.md](RELEASE_MANIFEST-0.1.0.md) are implementation authority for stack version `0.1.0`.
-
-This release authorizes implementation in `scrimshawlife-ctrl/SUAS`. It does **not** authorize:
-
-- production deployment;
-- operation with real veteran data;
-- a live controlled pilot;
-- production Support Signal thresholds;
-- official safety/crisis copy;
-- real external provider bookings;
-- compliance claims;
-- production capacity/SLO/RTO/RPO claims;
-- small/sensitive aggregate reporting.
-
-Those surfaces remain unavailable until their decisions close and SPEC-017/018 evidence passes.
-
----
-
-## 3. Readiness gates
+## Readiness gates
 
 All remain `NOT_READY`:
 
 `AUTH`, `CONSENT`, `CHECK-IN`, `COORDINATION`, `EXTERNAL_FULFILLMENT`, `UI_CONFORMANCE`, `SAFETY`, `PRIVACY`, `SCALE`, `RESILIENCE`, `OPERATIONS`, `REPORTING`.
 
-A gate changes only with reproducible evidence under [TESTING.md](TESTING.md). Release or implementation existence is not readiness evidence.
+A gate changes only with reproducible evidence under [TESTING.md](TESTING.md).
 
----
+## Decision boundary
 
-## 4. Release decision state
+D-001–D-025 release handling remains exactly as recorded in [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md). v0.1.1 does not silently close or alter any deferred production decision.
 
-D-001–D-025 are resolved for this implementation-only release as `DECIDED` or `DEFERRED_FOR_RELEASE` in [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md).
+## Next stage
 
-Notable v0.1.0 decisions:
-
-- D-015 accepted default: Veterans do not see full Case Notes.
-- D-016 accepted default: self-attested veteran status + working passwordless contact channel; no VA/DD-214/in-person proofing requirement in the implementation contract.
-- D-010 funding/billing remains `FUTURE`.
-- Production infrastructure, legal posture, staffing, production signal rules, official safety copy, production service providers, workload/SLO/recovery targets, and sensitive aggregate-reporting policy remain deferred and therefore unavailable for production use.
-
----
-
-## 5. Next stage
-
-Proceed with **SPEC-017 implementation conformance** against release `0.1.0`.
-
-Implementation must cite the released artifact/section/version and return any gap to `SUAS-specs`; code does not redefine canon.
-
-SPEC-018 remains the go/no-go stage for any real pilot or production operation.
+Proceed with SPEC-017 implementation conformance against release `0.1.1`, using [HANDOFF.md](HANDOFF.md) and [ENVIRONMENT.md](ENVIRONMENT.md) as mandatory implementation inputs.
