@@ -3,11 +3,12 @@
 **Product:** Shut Up and Serve  
 **System:** SUAS  
 **Version:** `0.1.0`  
-**Lifecycle:** `draft`  
-**Phase:** `SPECIFICATION_BOOTSTRAP`  
-**Implementation authority:** `NOT_YET_RELEASED`
+**Lifecycle:** `released`  
+**Phase:** `IMPLEMENTATION_AUTHORIZED`  
+**Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`  
+**Release manifest:** [RELEASE_MANIFEST-0.1.0.md](RELEASE_MANIFEST-0.1.0.md)
 
-`SUAS-specs` is the canonical specification authority. `scrimshawlife-ctrl/SUAS` implements only released contracts. Prototype, code, deployment state, provider behavior, or traction do not silently redefine canon.
+`SUAS-specs` is the canonical specification authority. `scrimshawlife-ctrl/SUAS` may now implement the artifacts named in the v0.1.0 release manifest. Code, prototypes, provider behavior, deployment state, or traction still do not silently redefine canon.
 
 ---
 
@@ -25,15 +26,30 @@ SUAS is not an EHR, diagnosis system, suicide-prediction product, automated emer
 
 ---
 
-## 2. Controlled pilot vs scale
+## 2. Release status
 
-The controlled Santa Clara County pilot remains approximately 25–50 enrolled veterans unless explicitly changed. High demand/traction may justify waitlist or later launch planning, but does not silently expand PilotEnrollment.
+Owner `@scrimshawlife-ctrl` accepted SPEC-001 through SPEC-015 and released SPEC-016 on 2026-08-18 PT.
 
-Pilot size is an operating boundary, not a technical capacity ceiling. D-021/D-023 define release-specific workload/performance evidence; unsupported regional/multi-region user-count forecasts are not canonical.
+- SPEC-001–SPEC-015: `accepted`.
+- SPEC-016: `released`.
+- Current next stage: SPEC-017 implementation conformance.
+- Pilot readiness: `NOT_READY`.
+- Production readiness: `NOT_READY`.
+- All 12 readiness gates remain `NOT_READY` until reproducible evidence exists.
+
+Release authorizes implementation only. It does **not** authorize production deployment, real veteran data, or a live pilot.
 
 ---
 
-## 3. Production architecture doctrine
+## 3. Controlled pilot vs scale
+
+The controlled Santa Clara County pilot remains approximately 25–50 enrolled veterans unless explicitly changed. High demand/traction may justify waitlist or later launch planning, but does not silently expand PilotEnrollment.
+
+Pilot size is an operating boundary, not a technical capacity ceiling. Release-specific production workload/SLO evidence remains deferred under D-021/D-023 because production operation is unavailable in v0.1.0.
+
+---
+
+## 4. Architecture doctrine
 
 ```text
 Veteran / Responder / Admin clients
@@ -52,39 +68,37 @@ Veteran / Responder / Admin clients
                    Adapters   Reconcile
 ```
 
-Core rules:
+Released rules:
 
 - scalable modular monolith; no premature microservices;
 - correctness-critical state is shared/persistent, not process-local;
-- production-critical async work is durable;
+- production-critical async work is durable by contract;
 - persistent command idempotency is distinct from event identity;
 - required Domain Event publication is replay-safe;
 - contested Case/assignment/Settlement operations have deterministic one-winner semantics;
 - Support Signal/current Settlement/current assignment projections are deterministic;
 - Follow-Up stale jobs are version-guarded;
 - growing APIs/queries are bounded;
-- scale and resilience are proven by evidence, not diagrams.
+- scale/resilience are proven by evidence, not diagrams.
 
 ---
 
-## 4. MVP visual authority
+## 5. MVP visual authority
 
-The existing MVP at `https://suasqrf.org/app/` is the visual/interaction reference. [MVP_REFERENCE.md](MVP_REFERENCE.md) preserves the recognizable `TAKE ACTION`, `I NEED SUPPORT`, `I WANT TO SERVE`, QRF deploy/search/contact flow, immediate resources, resource category browsing, responder on-duty dashboard, Quick Resource Share, Alerts/Chat/Home, and distinct admin surface.
+The existing MVP at `https://suasqrf.org/app/` is the visual/interaction reference. [MVP_REFERENCE.md](MVP_REFERENCE.md) preserves the recognizable `TAKE ACTION`, `I NEED SUPPORT`, `I WANT TO SERVE`, QRF deploy/search/contact flow, Immediate Resources, resource browsing, responder on-duty dashboard, Quick Resource Share, Alerts/Chat/Home, and distinct admin surface.
 
-Production must be truthful where the prototype is not canonical:
+Released truthful divergences include:
 
 - replace contradictory `No email` enrollment copy;
 - do not guarantee responder proximity/immediate notification without evidence;
-- do not require continuous GPS to preserve “near you” wording;
-- exact crisis copy follows accepted SAFETY/D-012;
+- do not require continuous GPS to preserve prototype wording;
+- official crisis copy remains unavailable until D-012 closes;
 - prototype statistics/clinical claims are not inherited;
 - future category cards may remain informational/`COMING_SOON`, not hidden released workflows.
 
-`UI_CONFORMANCE` is a readiness gate.
-
 ---
 
-## 5. Provider-neutral fulfillment
+## 6. Provider-neutral fulfillment
 
 Canonical capability ports:
 
@@ -93,17 +107,29 @@ Canonical capability ports:
 - `FoodSupportPort`
 - `PeerSupportPort`
 
-Integration modes include `API`, `WEBHOOK`, `DEEP_LINK`, `PHONE`, `EMAIL`, `MANUAL_COORDINATION`, `NONE`.
+Manual coordination is first-class. Provider SDKs/payloads/statuses stay inside adapters. External mutations use stable `FulfillmentAttempt` idempotency; ambiguous outcomes become `PROVIDER_UNKNOWN` and reconcile before duplicate-risk retry.
 
-Manual coordination is first-class. A Service Provider does not need an API.
-
-Provider SDKs/payloads/statuses stay inside adapters. External mutations use stable `FulfillmentAttempt` idempotency. Ambiguous outcomes become `PROVIDER_UNKNOWN` and reconcile before duplicate-risk retry.
-
-See [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
+For v0.1.0, real production external providers are not selected. Transportation, shelter/room, food, and peer support are `MANUAL_ONLY`/fake-test paths as defined in the release manifest.
 
 ---
 
-## 6. Readiness gates
+## 7. Release-safe deferrals
+
+The first cut is implementation-authoritative, not production-operating. The following remain unavailable until their decisions/evidence close:
+
+- production hosting/auth/email/SMS/database/job infrastructure;
+- production legal/retention/partner/staffing/counsel posture;
+- production Support Signal rules;
+- official safety/crisis copy;
+- real external service adapters;
+- production workload/SLO/RTO/RPO targets;
+- small/sensitive aggregate-reporting policy.
+
+D-015 and D-016 defaults are accepted. See [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md).
+
+---
+
+## 8. Readiness gates
 
 All are `NOT_READY`:
 
@@ -113,59 +139,24 @@ See [STATUS.md](STATUS.md), [TESTING.md](TESTING.md).
 
 ---
 
-## 7. Governance / owner review chain
+## 9. Governance chain
 
-Preflight repairs draft contradictions and prepares review artifacts. **Preflight is not acceptance.** Only the owner changes lifecycle.
+| Stage | State |
+|---|---|
+| SPEC-001 through SPEC-015 | `accepted` |
+| SPEC-016 | `released` |
+| SPEC-017 | `READY_TO_BEGIN` |
+| SPEC-018 | blocked by implementation/evidence/production decisions |
+| SPEC-019 | future |
 
-| Stage | Purpose | State |
-|---|---|---|
-| [SPEC-001](SPEC-001.md) | product/authority | `READY_FOR_REVIEW` |
-| [SPEC-002](SPEC-002.md) | consent/privacy/safety/security | blocked; preflight complete |
-| [SPEC-003](SPEC-003.md) | Check-In/signal/events | blocked; preflight complete |
-| [SPEC-004](SPEC-004.md) | Case/Request/responder workflow | blocked; preflight complete |
-| [SPEC-005](SPEC-005.md) | resources/referrals/fulfillment/follow-up/settlement | blocked; preflight complete |
-| [SPEC-006](SPEC-006.md) | domain/data/event/architecture reconciliation | blocked; preflight complete |
-| [SPEC-007](SPEC-007.md) | API/auth/notifications/admin | blocked; preflight complete |
-| [SPEC-008](SPEC-008.md) | MVP visual conformance | blocked; preflight complete |
-| [SPEC-009](SPEC-009.md) | provider-neutral fulfillment | blocked; preflight complete |
-| [SPEC-010](SPEC-010.md) | scaling | blocked; preflight complete |
-| [SPEC-011](SPEC-011.md) | resilience | blocked; preflight complete |
-| [SPEC-012](SPEC-012.md) | testing/readiness evidence | blocked; preflight complete |
-| [SPEC-013](SPEC-013.md) | deployment/operations/incidents/recovery | blocked; preflight complete |
-| [SPEC-014](SPEC-014.md) | controlled pilot/analytics | blocked; preflight complete |
-| [SPEC-015](SPEC-015.md) | release decisions/safe deferrals | blocked; preflight complete |
-| [SPEC-016](SPEC-016.md) | first release assembly | blocked by SPEC-001–015 |
-| SPEC-017 | implementation conformance | post-release |
-| SPEC-018 | launch readiness | post-conformance |
-| SPEC-019 | post-launch revision | future |
-
-First implementation-authoritative release is SPEC-016. Release is not launch readiness.
+Implementation PRs must cite released file/section/version and the v0.1.0 release manifest. Gaps return to specs; code does not redefine canon.
 
 ---
 
-## 8. Open decisions
-
-D-001 through D-025 are canonical in [DECISIONS.md](DECISIONS.md).
-
-Key hardening decisions:
-
-- D-017–D-020 external service adapters;
-- D-021 release workload/capacity envelope;
-- D-022 durable job/queue implementation;
-- D-023 performance SLOs/alerts;
-- D-024 RTO/RPO;
-- D-025 aggregate reporting privacy/small-cell policy.
-
-No provider, infrastructure product, capacity/SLO/recovery number, or reporting threshold may be guessed.
-
-SPEC-015 classifies each release-relevant decision as `MUST CLOSE`, conditional, or safely deferrable only with an explicit feature boundary.
-
----
-
-## 9. Core spec index
+## 10. Core spec index
 
 ### Product / authority
-[PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [STATUS.md](STATUS.md), [VERSIONING.md](VERSIONING.md), [ROADMAP.md](ROADMAP.md), [DECISIONS.md](DECISIONS.md), [AGENTS.md](AGENTS.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SPEC_AUDIT.md](SPEC_AUDIT.md).
+[PRODUCT.md](PRODUCT.md), [GLOSSARY.md](GLOSSARY.md), [STATUS.md](STATUS.md), [VERSIONING.md](VERSIONING.md), [ROADMAP.md](ROADMAP.md), [DECISIONS.md](DECISIONS.md), [AGENTS.md](AGENTS.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SPEC_AUDIT.md](SPEC_AUDIT.md), [RELEASE_MANIFEST-0.1.0.md](RELEASE_MANIFEST-0.1.0.md), [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md).
 
 ### Architecture / API / scale
 [ARCHITECTURE.md](ARCHITECTURE.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [APIS.md](APIS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md).
@@ -178,41 +169,6 @@ SPEC-015 classifies each release-relevant decision as `MUST CLOSE`, conditional,
 
 ---
 
-## 10. Production correctness additions
+## 11. Next work
 
-The preflight now includes first-class logical representations for:
-
-- auth challenges and revocable sessions;
-- Support Signal computation/effective projection;
-- command idempotency;
-- event correlation/causation/replay-safe publication;
-- `ProviderAdapterConfiguration`;
-- `FulfillmentAttempt`;
-- Follow-Up schedule identity/business retry count/blocking disposition;
-- multi-cycle `Settlement` history/current projection;
-- Notification logical-send dedupe.
-
-These remain unaccepted draft contracts until their roadmap stages are owner-reviewed.
-
----
-
-## 11. Engineer rules
-
-- Implement against **released** specs only.
-- Cite spec file/section/version/lifecycle/artifact pins.
-- Return gaps to specs; do not invent implementation defaults.
-- Never encode provider brands/SDK statuses into domain semantics.
-- Preserve MVP experience except for documented truthful/safe production divergences.
-- No safety-critical generative AI or automated emergency dispatch.
-- No unsupported HIPAA/clinical/causal claims.
-- No invented capacity/recovery/reporting thresholds.
-
----
-
-## 12. Release boundary
-
-[SPEC-016.md](SPEC-016.md) requires prerequisite acceptance, a D-001–D-025 release decision ledger, pinned artifact versions, feature availability manifest, and cross-artifact consistency check before any named artifact becomes `released`.
-
-Until the owner executes that release:
-
-`IMPLEMENTATION_AUTHORITY = NOT_YET_RELEASED`.
+Proceed with SPEC-017 implementation conformance in `scrimshawlife-ctrl/SUAS` against release `0.1.0`. No production-unavailable feature may be made operational merely as an implementation default.
