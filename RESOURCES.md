@@ -1,102 +1,173 @@
 # RESOURCES.md — Resource catalog (SUAS v0.1)
 
-**Related:** [REFERRALS.md](REFERRALS.md), [DISPATCH.md](DISPATCH.md), [ADMIN.md](ADMIN.md), [ANALYTICS.md](ANALYTICS.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md)
+**Status:** `draft` / `0.1.0` / SPEC-005 preflight; not implementation authority.  
+**Related:** [REFERRALS.md](REFERRALS.md), [DISPATCH.md](DISPATCH.md), [ADMIN.md](ADMIN.md), [ANALYTICS.md](ANALYTICS.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md)
 
-**Actors:** Organization Administrator (org-owned writes), SUAS System Administrator, Responder (read / verify), Veteran (limited public fields).
+**Actors:** Organization Administrator, SUAS System Administrator, authorized Responder, Veteran (limited public fields).
 
 ---
 
 ## 1. Purpose
 
-A Resource is a first-class catalog entry describing an available support offering. Stale resources are an operational problem, not silently hidden as "smart."
+A Resource is a first-class catalog entry describing an available support offering. A Resource may be API-backed, referral-only, phone/email/manual, information-only, or currently unavailable.
+
+Catalog freshness, provider transactional availability, and actual fulfillment are separate concepts.
 
 ---
 
-## 2. Required fields
+## 2. Core fields
 
-| Field | Notes |
+| Field | Rule |
 |---|---|
-| `organization` | Owning Organization |
-| `service_name` | Human name |
-| `category` | MVP: `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT` |
-| `eligibility` | Text; do not invent Medi-Cal or VA eligibility rules |
-| `counties` | Pilot default includes Santa Clara; do not claim statewide coverage |
-| `coverage_geometry` | Optional; type `DECISION_PENDING` |
-| `hours` | Optional text/structured |
-| `contact_method` | How a responder reaches the resource |
-| `referral_method` | How a Referral is sent |
-| `cost` | Optional; not a billing claim |
-| `capacity` | Optional; not real-time unless verified |
-| `active` | Boolean |
-| `last_verified_at` | **Required** |
-| `verification_source` | **Required** (who/what verified) |
+| `organization` / provider linkage | owning/serving entity; placeholders until decisions close |
+| `service_name` | human-facing name |
+| `category` | MVP `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT` |
+| `eligibility` | recorded criteria only; do not invent VA/Medi-Cal rules |
+| `counties` | recorded coverage; pilot default may include Santa Clara |
+| `coverage_geometry` | optional; D-014/physical representation open |
+| `hours` | optional |
+| `contact_method` | public/operational contact path, no credentials |
+| `referral_method` | how a Referral is initiated |
+| `cost` | optional/informational; not billing authority |
+| `capacity` | optional snapshot; not presumed real-time |
+| `integration_modes` | optional subset of `API`,`WEBHOOK`,`DEEP_LINK`,`PHONE`,`EMAIL`,`MANUAL_COORDINATION`,`NONE` |
+| `active` | catalog eligibility for use |
+| `last_verified_at` | required |
+| `verification_source` | required |
+
+Provider API credentials/secrets are never Resource fields.
 
 ---
 
-## 3. Freshness bands (operational recommendations)
+## 3. Catalog freshness
 
-| Band | Age of `last_verified_at` | Recommendation |
+Operational freshness bands:
+
+| Band | Age | Required UI behavior |
 |---|---|---|
-| Fresh | < 30 days | Prefer in matching lists |
-| Aging | 30–90 days | Show a freshness warning to the responder |
-| Stale | > 90 days | Show a stale warning; do not auto-hide unless `active=false` |
+| Fresh | <30 days | normal display |
+| Aging | 30–90 days | warning to responder |
+| Stale | >90 days | prominent stale warning; not silently hidden if still active |
 
-These bands are **operational recommendations**, not legal coverage claims. A stale resource may still be selected; the warning is mandatory in the responder UI.
+These are operational recommendations, not legal/service-availability claims.
 
-Critical suite: **stale-resource handling** ([TESTING.md](TESTING.md)).
+A stale Resource may still be selected through a responder/manual process if `active=true`, but the warning is mandatory.
 
 ---
 
-## 4. Veteran-visible fields
+## 4. Freshness is not live availability
 
-When a Referral is being discussed with the Veteran, the veteran may see: `service_name`, `category`, `counties`, `hours` (if present), `cost` (if present). They do not see internal `contact_method` credentials, verification source internals, or other veterans' capacity notes.
+`last_verified_at` and catalog `capacity` do not imply a provider can fulfill a request now.
+
+Where a provider port supports live search/availability:
+
+- live results are represented as normalized Provider Offers/attempt evidence;
+- the catalog remains the durable discovery/resource record;
+- a failed live availability check does not silently deactivate the Resource;
+- provider outage does not erase the Resource;
+- stale cached Provider Offers must not masquerade as current Resource truth.
+
+For manual/referral-only providers, responder verification/contact remains valid.
 
 ---
 
 ## 5. Verification
 
-Org-admin or SUAS-admin (or a responder with org permission) updates `last_verified_at` and `verification_source`. Periodic freshness report job: [ARCHITECTURE.md](ARCHITECTURE.md), [OPERATIONS.md](OPERATIONS.md).
+Verification is an explicit audited action.
 
-Do not invent partner capabilities. Placeholder orgs: `PARTNER_ORG_001` ….
+Rules:
 
----
+1. Authorized verifier records `last_verified_at` and `verification_source`.
+2. Replaying the same logical verification command is idempotent and does not create false multiple verification history.
+3. Verification source text must not contain credentials/secrets or unrelated veteran data.
+4. A provider webhook/status callback is not automatically a Resource verification unless the accepted verification policy explicitly treats that source as authoritative.
+5. Verification of one Service Offer does not imply all services/capabilities of an Organization are verified.
 
-## 6. States
-
-`ACTIVE` ↔ `INACTIVE` (`active` boolean). Referenced resources are not hard-deleted.
-
----
-
-## 7. Non-goals
-
-- Live county inventory feeds (`NOT_COMPUTABLE`)
-- VA or Medi-Cal eligibility engines
-- Generative resource invention
-- Coverage claims beyond recorded fields
+Periodic freshness reporting is durable operational work but does not mutate Resource status merely because time passed.
 
 ---
 
-## 8. Testability
+## 6. Veteran-visible fields
 
-- Missing `last_verified_at` rejected.
-- Stale band warning present.
-- Inactive resources are not assignable.
-- Category must be a known code.
+Veteran-facing Resource views expose only appropriate public fields such as:
 
+- `service_name`
+- `category`
+- public coverage/county
+- public hours
+- public cost when recorded
+- public contact/referral instructions when policy allows
+
+Do not expose:
+
+- internal provider adapter identifiers/configuration;
+- API credentials/secrets;
+- verification-source internals not intended for public display;
+- other veterans' demand/capacity notes;
+- responder-only ranking/routing metadata.
 
 ---
 
-## 9. Events
+## 7. Active/inactive state
 
-Resource create/update/verify/deactivate emit Audit Events. There is no Domain Event in the v0.1 catalog for resource changes (catalog is operational). Adding `RESOURCE_VERIFIED` would be a MINOR change to [EVENT_MODEL.md](EVENT_MODEL.md).
+Catalog state is `ACTIVE` ↔ `INACTIVE` (`active` boolean in current logical model).
 
-Stale-band computation is a read-time function of `last_verified_at` versus server now. It is not a stored state that can drift.
+- Inactive Resources are not assignable/selectable for new fulfillment/referrals unless a documented historical/recovery path applies.
+- Referenced Resources are not hard-deleted.
+- Provider integration failure alone does not automatically set `active=false`; manual/referral paths may still be viable.
+- Deactivation is an explicit authorized action with audit.
 
 ---
 
-## 10. Actors (restated)
+## 8. Query/scaling contract
 
-- Organization Administrator: write org-owned resources; verify.
-- SUAS System Administrator: write any; verify; deactivate across orgs.
-- Responder: read; verify if org permission granted.
-- Veteran: limited public fields only when a Referral is in discussion ([§4](#4-veteran-visible-fields)).
+Resource search/list APIs are bounded/paginated and tenant/coverage scoped.
+
+Search/filter may use:
+
+- category;
+- geography/coverage;
+- active state;
+- freshness band;
+- integration mode/capability;
+- provider/organization;
+- responder-selected criteria allowed by accepted product rules.
+
+Do not load the full Resource catalog into browser memory for normal matching. Search/ranking must not make clinical judgments or invent eligibility.
+
+---
+
+## 9. Events/audit
+
+Resource create/update/verify/deactivate emit Audit Events.
+
+There is no accepted Resource Domain Event in the current event catalog. Any future `RESOURCE_*` event requires explicit event-model reconciliation; implementation must not invent it silently.
+
+Freshness band is computed from server time at read/report time and is not stored business state.
+
+---
+
+## 10. Non-goals
+
+- assuming real-time inventory from catalog freshness;
+- VA/Medi-Cal eligibility engines;
+- generative resource invention;
+- provider/API requirement for validity;
+- vendor-specific catalog schema;
+- storing provider credentials;
+- silently deactivating resources because one adapter is down;
+- claiming geographic/service coverage beyond recorded evidence.
+
+---
+
+## 11. Testability
+
+- missing `last_verified_at`/verification source rejected where Resource activation requires them;
+- stale warnings correct at boundary times;
+- inactive Resource not newly assignable;
+- provider outage does not erase/deactivate a still-valid manual Resource automatically;
+- live Provider Offer expiration does not rewrite catalog verification;
+- duplicate verification command is idempotent;
+- veteran view excludes internal adapter/verification secrets;
+- resource list/search is bounded and tenant scoped;
+- unknown category/integration mode rejected.
