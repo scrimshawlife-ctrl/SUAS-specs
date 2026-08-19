@@ -1,8 +1,8 @@
 # ROADMAP.md — Specification-driven path to production
 
-**Stack:** `0.1.0` / `released`  
+**Stack:** `0.1.3` / `released`
 **Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`  
-**Release manifest:** [RELEASE_MANIFEST-0.1.0.md](RELEASE_MANIFEST-0.1.0.md)
+**Release manifest:** [RELEASE_MANIFEST-0.1.3.md](RELEASE_MANIFEST-0.1.3.md)
 
 The owner completed the specification acceptance chain on 2026-08-18 PT.
 
@@ -31,11 +31,11 @@ The owner completed the specification acceptance chain on 2026-08-18 PT.
 
 **Status:** `READY_TO_BEGIN`
 
-Objective: implement `scrimshawlife-ctrl/SUAS` against release `0.1.0` and continuously compare the implementation with the released contracts.
+Objective: implement `scrimshawlife-ctrl/SUAS` against release `0.1.3` and continuously compare the implementation with the released contracts.
 
 Rules:
 
-1. Implementation PRs cite released artifact/section/version and the v0.1.0 release manifest.
+1. Implementation PRs cite released artifact/section/version and the v0.1.3 release manifest.
 2. Gaps return to `SUAS-specs`; code does not redefine canon.
 3. Production-unavailable surfaces in the release manifest remain unavailable in implementation except for explicit fake/sink/manual/test scaffolding.
 4. Conformance evidence covers domain states, auth, consent, provider neutrality, MVP visuals, idempotency, durability, scale/resilience semantics, and tests.

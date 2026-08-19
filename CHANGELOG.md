@@ -6,16 +6,28 @@ Dates are America/Los_Angeles (PT). Lifecycle changes are owner-controlled.
 
 ## Unreleased — draft Rev 3 fence-post contracts (not a version bump)
 
-**Draft / not implementation authority.** Released `0.1.2` remains the implementation contract. These additions do not bump the stack and do not mark any artifact `accepted` or `released`.
+**Draft / not implementation authority.** Released `0.1.3` remains the implementation contract. These additions do not bump the stack and do not mark any artifact `accepted` or `released`.
 
 - Added [FENCE_POSTS.md](FENCE_POSTS.md) — Rev 3 fence-post outcomes `G1`–`G14` as draft, testable contracts.
 - Added [SURFACES.md](SURFACES.md) — anonymous public front door vs identified opt-in platform; crossing remains an affirmative act and declining costs nothing.
 - Added [ISLANDS.md](ISLANDS.md) — island config schema, resolve-before-consume behavior, hardcoded 988 / Veterans Crisis Line fallback, and `island_id` isolation boundary.
 - Added [RIDES.md](RIDES.md) — ride-adapter contract with human dispatch, minimized provider payloads, and cost guardrails that fail to a human.
-- Opened D-026 through D-032 for island scope, dispatcher routing operations, resource-list curation, reporting/minimization, dual enrollment/minors, contracting entity, and volunteer-driver screening. D-017 is closed by v0.1.2 for Uber adapter-local implementation; D-018–D-025 remain the released production-adapter / scale / recovery ledger.
+- Opened D-026 through D-032 for island scope, dispatcher routing operations, resource-list curation, reporting/minimization, dual enrollment/minors, contracting entity, and volunteer-driver screening. D-017 is closed by v0.1.2 for Uber adapter-local implementation; D-018 is closed by v0.1.3 for Amadeus shelter search/inventory; D-019–D-025 remain the released production-adapter / scale / recovery ledger.
 - Added an SB 903 / peer-support register row to [COMPLIANCE.md](COMPLIANCE.md) as a `NOT_COMPUTABLE` note only; no legal or compliance claim.
 
 No implementation code is included.
+
+---
+
+## 0.1.3 — 2026-08-19 — `released`
+
+**D-018 shelter adapter decision patch. Product/domain/API semantics and production readiness unchanged.**
+
+- Added [RELEASE_MANIFEST-0.1.3.md](RELEASE_MANIFEST-0.1.3.md), superseding v0.1.2 while preserving v0.1.0 through v0.1.2 release history.
+- Added [RELEASE_DECISIONS-0.1.3.md](RELEASE_DECISIONS-0.1.3.md), closing D-018 by selecting Amadeus as the first commercial search/inventory adapter family behind `TemporaryShelterPort`.
+- Kept `ManualShelterAdapter` mandatory and added deterministic explainable ranking, a field-level shelter disclosure projection, provider health/fallback, idempotency, and ambiguous-outcome contracts.
+- Prohibited raw payment-card handling and made reservation `BLOCKED_BY_PAYMENT_ARCHITECTURE` unless a documented card-free enterprise contract permits reservation without SUAS card handling.
+- Production/pilot readiness, real veteran data, and real external provider effects remain `NOT_READY` / prohibited until SPEC-018.
 
 ---
 

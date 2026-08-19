@@ -1,6 +1,6 @@
-# PROVIDER_INTEGRATIONS.md — Provider-neutral fulfillment integration contract (SUAS v0.1)
+# PROVIDER_INTEGRATIONS.md — Provider-neutral fulfillment integration contract (SUAS v0.1.3)
 
-**Status:** `draft` / `0.1.0` / not implementation authority until accepted and released.
+**Lifecycle:** `released` via [RELEASE_MANIFEST-0.1.3.md](RELEASE_MANIFEST-0.1.3.md)
 **Related:** [APIS.md](APIS.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DISPATCH.md](DISPATCH.md), [FULFILLMENT.md](FULFILLMENT.md), [RESOURCES.md](RESOURCES.md), [CONSENT.md](CONSENT.md), [SECURITY.md](SECURITY.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md)
 
 ---
@@ -26,7 +26,10 @@ A Service Provider does not need an API to be valid. Manual and referral-only pr
 7. A provider may be replaced without changing the canonical Service Request or Fulfillment state machines.
 8. Manual coordination MUST remain available where an API is absent or unavailable.
 9. Routing by geography, organization, capability, health, capacity, or funding policy MUST occur above the provider adapter.
-10. A provider name is canonical only when explicitly recorded as a deployment/partner decision. D-017 v0.1.2 records Uber as the first API-backed transportation adapter family, but only behind `TransportationPort` and without changing domain semantics.
+10. A provider name is canonical only when explicitly recorded as a released decision. D-017 v0.1.2 records Uber behind `TransportationPort`; D-018 v0.1.3 records Amadeus as the first commercial shelter search/inventory adapter family behind `TemporaryShelterPort`. Neither changes domain semantics.
+11. A commercial search result is not fulfillment, a hold is not a confirmed reservation, and provider reservation status is not canonical SUAS state.
+12. `ManualShelterAdapter` is mandatory even when Amadeus search/inventory is configured.
+13. SUAS MUST NOT collect, transmit, proxy, tokenize, or store raw payment-card data for shelter fulfillment.
 
 ---
 
@@ -68,7 +71,7 @@ The port must support providers that require responder confirmation, phone dispa
 
 ### 4.2 TemporaryShelterPort
 
-Supports temporary shelter/accommodation coordination. It MUST NOT redefine MVP `SHELTER` as permanent housing placement.
+Supports temporary shelter/accommodation coordination. It MUST NOT redefine MVP `SHELTER` as permanent housing placement. D-018 v0.1.3 selects Amadeus as the first commercial search/inventory adapter family that may implement this port. The selection does not make Amadeus property, rate, offer, payment, or reservation concepts canonical.
 
 Minimum capability vocabulary:
 
@@ -79,6 +82,10 @@ Minimum capability vocabulary:
 - `cancel(external_reference, idempotency_key)` when supported
 
 Provider offers may require manual or telephone confirmation.
+
+`ManualShelterAdapter` is mandatory. It remains available when commercial search is absent, degraded, payment-blocked, contractually unsupported, or inappropriate for the request.
+
+Search results MUST be normalized before routing/display and ranked deterministically from versioned explicit inputs. Each ranked result records bounded explainability reason codes and uses a stable documented tie-breaker. Allowed ranking inputs are explicit availability, geography/coverage, requested stay window, recorded accessibility fit, cancellation terms, and informational cost. Ranking MUST NOT infer clinical need, hidden eligibility, household facts, or ability to pay, and MUST NOT present inventory as guaranteed availability or a completed reservation.
 
 ### 4.3 FoodSupportPort
 
@@ -120,6 +127,30 @@ An Uber transportation adapter MUST:
 6. preserve manual coordination and fake/test adapters;
 7. fail closed if credentials, webhook verification, environment authorization, or SPEC-018 production readiness are absent;
 8. avoid defining funding, reimbursement, payment-card, maps/geocoding, SLO, capacity, RTO, or RPO policy.
+
+---
+
+## 4.6 D-018 Amadeus shelter adapter constraints
+
+An Amadeus temporary-shelter adapter MUST:
+
+1. live behind `TemporaryShelterPort` and the Provider Router;
+2. keep Amadeus SDKs, endpoints, credentials, property/rate/offer identifiers, availability payloads, statuses, and reservation objects adapter-local;
+3. normalize search/inventory results before SUAS-owned offer/ranking flows;
+4. preserve `ManualShelterAdapter` and fake/test adapters;
+5. implement deterministic, explainable ranking under §4.2 and retain the ranking rule/input identity and bounded reason codes for audit;
+6. disclose only the released field-level shelter projection in §13.2 after use-time consent evaluation;
+7. use a stable FulfillmentAttempt idempotency identity for every hold, reserve, or cancel mutation;
+8. record ambiguous mutation outcomes as `PROVIDER_UNKNOWN` and reconcile before duplicate-risk retry;
+9. publish normalized health/degradation state and preserve truthful fallback/manual continuity;
+10. fail closed if credentials, environment authorization, callback/webhook validation where applicable, or SPEC-018 readiness are absent;
+11. never collect, transmit, proxy, tokenize, or store raw payment-card data;
+12. report reservation as `BLOCKED_BY_PAYMENT_ARCHITECTURE` unless a documented, owner-approved card-free enterprise contract permits the selected reservation path with no SUAS raw-card handling;
+13. avoid defining funding, reimbursement, deposits, incidentals, guarantees, cancellation-fee policy, eligibility, minors/guardian, identity-document, SLO, capacity, RTO, or RPO semantics.
+
+Search/inventory may remain available while reservation is blocked. Capability support must be reported truthfully, and the adapter must not fake reservation success.
+
+`BLOCKED_BY_PAYMENT_ARCHITECTURE` is an explicit adapter/application capability-block reason. It is not a new canonical Service Request, Fulfillment, or provider integration status. The Service Request remains actionable through an authorized manual or alternate path.
 
 ---
 
@@ -301,6 +332,8 @@ Provider Router behavior must be explicit for each state.
 
 Where allowed by policy, an unavailable API may degrade to another compatible adapter or `MANUAL_COORDINATION`. SUAS must not report fulfillment merely because an adapter failed.
 
+For shelter, `MISCONFIGURED`, payment-dependent reservation, unsupported mutation, ambiguous outcome, rate limiting, or provider outage preserves the Service Request and exposes `ManualShelterAdapter` when policy permits. Search may remain informational while reservation is blocked, but that limitation must be stated truthfully.
+
 Circuit breaking, bounded retries, timeout limits, and backoff are required for external network calls. Retry behavior must respect provider rate-limit headers when available.
 
 See [RESILIENCE.md](RESILIENCE.md).
@@ -342,6 +375,28 @@ medical or military records, SSNs, unrelated requests, and continuous location
 history remain outside the provider projection. Provider-specific DTO names and
 payloads remain adapter-local.
 
+### 13.2 Released `SHELTER` projection (D-018 v0.1.3)
+
+The SUAS-owned temporary-shelter search projection may contain only:
+
+- requested `check_in_date` and `check_out_date`;
+- requested locality/coverage as city, county, postal code, or bounded search coordinates/region when required;
+- `room_count` and `guest_count` when explicitly supplied for this request;
+- recorded accessibility requirements limited to accommodation matching;
+- explicit request-scoped shelter constraints represented as bounded codes rather than Case/Check-In free text.
+
+The reservation projection, only when a documented card-free enterprise contract makes reservation permissible, may additionally contain:
+
+- selected adapter-local offer reference;
+- guest `first_name` and `last_name`;
+- one E.164 phone number and/or email address required for reservation/contact;
+- a necessary bounded accessibility or arrival note;
+- opaque `service_request_id` / `fulfillment_attempt_id` correlation references where accepted.
+
+This projection requires an active, use-time `can_share` Consent Grant for `service_request_fulfillment` to the selected adapter. Raw payment-card data, payment security codes, payment tokens/forms, government identity documents, unrelated addresses, Case Notes, Check-In answers, Support Signal level/basis, Trusted Circle data, medical/military records, SSNs, unrelated requests, and unbounded free text remain outside the projection.
+
+If the provider requires a field outside this projection, the operation is not production-ready and returns to a human/spec decision rather than expanding disclosure implicitly.
+
 ---
 
 ## 14. Configuration and secrets
@@ -366,7 +421,7 @@ Secrets MUST NOT be stored in Resource rows or client-visible configuration.
 
 ## 15. Provider decisions
 
-Specific providers for transportation, temporary shelter/rooms, food, and peer support remain `DECISION_PENDING` unless named in [DECISIONS.md](DECISIONS.md).
+Specific providers remain `DECISION_PENDING` unless named in [DECISIONS.md](DECISIONS.md). D-017 names Uber for transportation, and D-018 names Amadeus for temporary-shelter search/inventory. Food and external peer-support providers remain pending.
 
 Choosing a provider must not require changing this contract. A selected provider is an adapter/configuration decision plus any partner/legal/compliance review required for that data flow.
 
@@ -386,7 +441,9 @@ Choosing a provider must not require changing this contract. A selected provider
 - provider failure does not lose/close Service Requests;
 - consent/minimum-necessary projection is tested;
 - provider status mapping cannot bypass canonical transitions;
-- routing can replace one adapter with another without domain changes.
+- routing can replace one adapter with another without domain changes;
+- shelter search ranking is deterministic and explainable with bounded reason codes;
+- payment-dependent shelter reservation fails closed as `BLOCKED_BY_PAYMENT_ARCHITECTURE`, and any card-free enterprise path has documented authority and no raw-card handling.
 
 Current status: `NOT_READY`.
 
@@ -394,8 +451,8 @@ Current status: `NOT_READY`.
 
 ## 17. Non-goals
 
-- Selecting a rides vendor
-- Selecting a hotel/rooms vendor
+- Selecting additional rides vendors
+- Selecting additional hotel/rooms vendors
 - Selecting a food-delivery vendor
 - Requiring all providers to expose an API
 - Embedding provider pricing or eligibility as product law

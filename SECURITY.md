@@ -82,6 +82,15 @@ D-017 Uber Guest Rides adapter security requirements:
 - Treat provider access tokens, refresh tokens if any, webhook secrets, request IDs, receipt URLs/data, rider contact data, pickup/dropoff data, and trip status payloads as adapter-confined sensitive data.
 - Provider-native create idempotency was not confirmed and must not be invented. SUAS FulfillmentAttempt idempotency and reconciliation records are the security boundary against duplicate ride creation.
 
+D-018 Amadeus shelter adapter security requirements:
+
+- Keep Amadeus credentials and provider tokens in server-side secret storage, scoped by environment, redacted from logs/errors/admin reads, and unavailable to clients.
+- Treat property/rate/offer identifiers, search criteria, guest contact data, stay dates, accessibility notes, reservation references, and provider responses as adapter-confined sensitive data.
+- SUAS MUST NOT collect, transmit, proxy, tokenize, or store raw card numbers, security codes, magnetic-stripe data, or provider payment-form content. A payment-dependent reservation fails closed as `BLOCKED_BY_PAYMENT_ARCHITECTURE`.
+- A `card_free_enterprise` reservation path is permitted only when the owner-approved deployment record documents a contract requiring no SUAS raw-card handling; implementation configuration cannot manufacture that authority.
+- Every hold/reserve/cancel mutation uses a stable FulfillmentAttempt idempotency identity. Timeout or ambiguous acceptance records `PROVIDER_UNKNOWN` and reconciles before duplicate-risk retry.
+- Provider health degradation, authentication failure, rate limiting, or unsupported capability must preserve the Service Request and route truthfully to `ManualShelterAdapter` or another authorized adapter when policy permits.
+
 ---
 
 ## 5. Threat categories

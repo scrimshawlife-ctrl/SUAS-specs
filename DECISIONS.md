@@ -1,7 +1,7 @@
 # DECISIONS.md — SUAS decision register
 
-**Stack:** `0.1.2` / `released`
-**Release decision ledger:** [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md) for D-017; [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md) otherwise
+**Stack:** `0.1.3` / `released`
+**Release decision ledger:** [RELEASE_DECISIONS-0.1.3.md](RELEASE_DECISIONS-0.1.3.md) for D-018; [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md) for D-017; [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md) otherwise
 
 Global decisions remain open until explicitly decided. A release-specific `DEFERRED_FOR_RELEASE` boundary does not globally close the decision; it only makes the affected capability unavailable/manual/future for that release.
 
@@ -26,7 +26,7 @@ Global decisions remain open until explicitly decided. A release-specific `DEFER
 | D-015 | Full Case Note veteran visibility | `DECIDED` for v0.1 default: full Case Notes are not veteran-visible |
 | D-016 | Identity proofing beyond self-attest/passwordless contact | `DECIDED` for v0.1 default: no VA/DD-214/in-person proofing requirement |
 | D-017 | Production transportation adapter(s) | `DECIDED` 2026-08-19 PT: Uber selected as first API-backed transportation adapter family; manual path remains required; production use still blocked until SPEC-018/readiness gates |
-| D-018 | Production shelter/room adapter(s) | `DECISION_PENDING` |
+| D-018 | Production shelter/room adapter(s) | `DECIDED` 2026-08-19 PT: Amadeus selected as first commercial search/inventory adapter family; `ManualShelterAdapter` remains mandatory; reservation is `BLOCKED_BY_PAYMENT_ARCHITECTURE` absent a documented card-free enterprise contract; production use still blocked until SPEC-018/readiness gates |
 | D-019 | Production food adapter(s) | `DECISION_PENDING` |
 | D-020 | Production external peer-support adapter | `DECISION_PENDING`; internal/manual QRF remains valid |
 | D-021 | Production workload/capacity envelope | `DECISION_PENDING` |
@@ -42,11 +42,11 @@ Global decisions remain open until explicitly decided. A release-specific `DEFER
 | D-031 | Which legal entity contracts for island and ride operations | `DECISION_PENDING`; draft Rev 3 contract only |
 | D-032 | Volunteer-driver insurance and screening requirements | `DECISION_PENDING`; draft Rev 3 contract only |
 
-D-026–D-032 are additive draft questions from Rev 3 fence-post work. They do not replace D-017–D-025 in the released ledger. D-017 is now closed by [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md); D-018–D-025 remain open unless later released decisions close them.
+D-026–D-032 are additive draft questions from Rev 3 fence-post work. They do not replace D-017–D-025 in the released ledger. D-017 is closed by [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md), D-018 is closed by [RELEASE_DECISIONS-0.1.3.md](RELEASE_DECISIONS-0.1.3.md), and D-019–D-025 remain open unless later released decisions close them.
 
 ## v0.1.0 release boundary
 
-The first released cut is implementation-authoritative but not production-operating. Therefore unresolved production decisions are safely deferred only because the associated production surfaces are unavailable/manual-only/information-only/future in release manifests. D-017 was later closed for adapter selection by v0.1.2; that closure does not authorize production operation.
+The first released cut is implementation-authoritative but not production-operating. Therefore unresolved production decisions are safely deferred only because the associated production surfaces are unavailable/manual-only/information-only/future in release manifests. D-017 and D-018 were later closed for adapter-local selection by v0.1.2 and v0.1.3 respectively; those closures do not authorize production operation.
 
 No implementation default may silently close an open decision.
 

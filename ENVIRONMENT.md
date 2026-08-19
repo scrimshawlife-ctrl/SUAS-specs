@@ -1,8 +1,8 @@
-# ENVIRONMENT.md — Environment and configuration contract (SUAS v0.1.2)
+# ENVIRONMENT.md — Environment and configuration contract (SUAS v0.1.3)
 
-**Lifecycle:** `released` with v0.1.2 D-017 patch
+**Lifecycle:** `released` with v0.1.3 D-018 patch
 **Authority:** implementation configuration contract
-**Related:** [DEPLOYMENT.md](DEPLOYMENT.md), [SECURITY.md](SECURITY.md), [ARCHITECTURE.md](ARCHITECTURE.md), [RESILIENCE.md](RESILIENCE.md), [RELEASE_MANIFEST-0.1.2.md](RELEASE_MANIFEST-0.1.2.md)
+**Related:** [DEPLOYMENT.md](DEPLOYMENT.md), [SECURITY.md](SECURITY.md), [ARCHITECTURE.md](ARCHITECTURE.md), [RESILIENCE.md](RESILIENCE.md), [RELEASE_MANIFEST-0.1.3.md](RELEASE_MANIFEST-0.1.3.md)
 
 ## 1. Purpose
 
@@ -68,18 +68,23 @@ Until provider decisions close:
 - `SUAS_EMAIL_MODE` = `disabled|fake|sink`
 - `SUAS_SMS_MODE` = `disabled|fake|sink`
 
-Production notification external modes are not valid in v0.1.2.
+Production notification external modes are not valid in v0.1.3.
 
 ### Fulfillment adapters
 
 For each MVP capability:
 
 - `SUAS_TRANSPORTATION_ADAPTER_MODE` = `manual|fake|uber_api|disabled`
-- `SUAS_SHELTER_ADAPTER_MODE` = `manual|fake|disabled`
+- `SUAS_SHELTER_ADAPTER_MODE` = `manual|fake|amadeus_search|disabled`
+- `SUAS_SHELTER_RESERVATION_MODE` = `blocked_by_payment_architecture|card_free_enterprise`
 - `SUAS_FOOD_ADAPTER_MODE` = `manual|fake|disabled`
 - `SUAS_PEER_SUPPORT_ADAPTER_MODE` = `manual|fake|disabled`
 
-`uber_api` is authorized only as the D-017 transportation adapter mode. It remains invalid for real external effects until `SUAS_ENV=PRODUCTION`, SPEC-018 readiness passes, required secrets/webhook validation are configured, and `SUAS_ALLOW_REAL_EXTERNAL_EFFECTS=true` is valid. Future real modes still require the corresponding D-018–D-020 decision and a released manifest update.
+`uber_api` is authorized only as the D-017 transportation adapter mode. `amadeus_search` is authorized only as the D-018 temporary-shelter search/inventory adapter mode. Both remain invalid for real external effects until `SUAS_ENV=PRODUCTION`, SPEC-018 readiness passes, required secrets and callback/webhook validation are configured, and `SUAS_ALLOW_REAL_EXTERNAL_EFFECTS=true` is valid.
+
+`SUAS_SHELTER_RESERVATION_MODE` defaults to `blocked_by_payment_architecture`. `card_free_enterprise` is valid only when a released, owner-approved deployment record identifies a documented enterprise contract under which the selected reservation can complete without SUAS collecting, transmitting, proxying, tokenizing, or storing raw payment-card data. Configuration alone cannot assert that contract exists. Otherwise reservation initiation fails closed as `BLOCKED_BY_PAYMENT_ARCHITECTURE` and returns to `ManualShelterAdapter` or another explicitly allowed human path.
+
+Future real food or external peer-support modes still require D-019 or D-020 closure and a released manifest update.
 
 ### Support Signal / safety / reporting
 
@@ -111,7 +116,8 @@ Before serving traffic or running workers, configuration validation must fail cl
 - spec version or release manifest mismatch;
 - real external effects enabled outside an authorized production release;
 - LOCAL/TEST/STAGING points at known production data resources;
-- a real provider adapter is configured without a released provider decision, or `uber_api` is configured for real effects before SPEC-018/readiness authorization;
+- a real provider adapter is configured without a released provider decision, or `uber_api`/`amadeus_search` is configured for real effects before SPEC-018/readiness authorization;
+- `card_free_enterprise` shelter reservation is configured without the documented contract and release/deployment record required above;
 - required secrets are absent for an enabled capability;
 - `SUAS_SUPPORT_SIGNAL_MODE` attempts production scoring without a released signal version;
 - official safety copy is requested without an approved released artifact;

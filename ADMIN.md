@@ -2,7 +2,7 @@
 
 **Related:** [AUTH.md](AUTH.md), [SECURITY.md](SECURITY.md), [PILOT.md](PILOT.md), [RESOURCES.md](RESOURCES.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [ONBOARDING.md](ONBOARDING.md), [COMPLIANCE.md](COMPLIANCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [OPERATIONS.md](OPERATIONS.md)
 
-**Status:** `draft` / `0.1.0`. SPEC-007 is dependency-blocked; this is preflight reconciliation.
+**Lifecycle:** `released` via [RELEASE_MANIFEST-0.1.3.md](RELEASE_MANIFEST-0.1.3.md)
 
 ---
 
@@ -38,7 +38,7 @@ May manage, all with MFA and audit:
 
 ## 3. Provider adapter administration
 
-Provider selection remains D-017–D-020 and deployment configuration, not domain architecture. D-017 now selects Uber for adapter-local transportation implementation; admin surfaces must not expose provider SDK/status details as canonical state.
+Provider selection remains D-017–D-020 and deployment configuration, not domain architecture. D-017 selects Uber for adapter-local transportation implementation; D-018 selects Amadeus for adapter-local temporary-shelter search/inventory implementation. Admin surfaces must not expose provider SDK/status, property, rate, offer, or reservation details as canonical state.
 
 Admin surfaces may expose:
 - opaque `adapter_id`;
@@ -50,16 +50,20 @@ Admin surfaces may expose:
 - normalized health/circuit/degraded status;
 - last successful reconciliation/health-check metadata;
 - secret-presence/credential-reference state such as `CONFIGURED|MISSING`, never the secret value.
+- shelter reservation capability state such as `SEARCH_ONLY|BLOCKED_BY_PAYMENT_ARCHITECTURE|CARD_FREE_ENTERPRISE_CONFIGURED`, without card data or unsupported claims that a contract exists.
 
 Admin surfaces must **not** expose:
 - API keys/tokens/passwords;
 - raw provider webhook secrets;
 - arbitrary provider payload dumps;
 - provider-specific status as canonical Service Request/Fulfillment state.
+- payment-card numbers, security codes, magnetic-stripe data, provider payment forms, or raw payment tokens.
 
 Enabling an adapter that lacks a closed decision/accepted capability is rejected. Disabling an adapter must not delete or rewrite existing FulfillmentAttempt history.
 
 Manual Adapter paths remain first-class and visible as configuration, not as a failure mode.
+
+`ManualShelterAdapter` is mandatory. Admin configuration must not bypass `BLOCKED_BY_PAYMENT_ARCHITECTURE`; `CARD_FREE_ENTERPRISE_CONFIGURED` requires the owner-approved deployment record specified by the v0.1.3 environment contract.
 
 ---
 

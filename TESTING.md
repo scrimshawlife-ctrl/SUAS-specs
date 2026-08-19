@@ -1,13 +1,13 @@
 # TESTING.md — Test suites and production-readiness gates (SUAS v0.1)
 
-**Status:** `draft` / `0.1.0`; SPEC-012 dependency-blocked.  
+**Lifecycle:** `released` via [RELEASE_MANIFEST-0.1.3.md](RELEASE_MANIFEST-0.1.3.md)
 **Related:** [STATUS.md](STATUS.md), [API.md](API.md), [AUTH.md](AUTH.md), [MVP_REFERENCE.md](MVP_REFERENCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [SETTLEMENT.md](SETTLEMENT.md), [FOLLOWUP.md](FOLLOWUP.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [CONSENT.md](CONSENT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md), [SECURITY.md](SECURITY.md)
 
 ---
 
 ## 1. Purpose
 
-Define evidence required before any domain, MVP, or production release can be claimed conformant/ready. Tests use released specs as authority; draft preflight defines the future evidence contract only.
+Define evidence required before any domain, MVP, or production release can be claimed conformant/ready. Tests use released specs as authority.
 
 ---
 
@@ -128,6 +128,24 @@ D-017 Uber Guest Rides deterministic adapter matrix uses synthetic data/fakes an
 | Manual fallback | fallback creates a deliberate new attempt only when policy permits and preserves original unknown outcome audit |
 | Webhook HMAC | if webhook ingress exists, valid HMAC over raw body is required; invalid/missing/replayed/duplicate webhooks have no second domain effect |
 | Receipt handling | receipt fetch/projection is adapter-local and redacted from ordinary logs |
+
+D-018 Amadeus shelter deterministic adapter matrix uses synthetic data/fakes and must not access scarce real inventory, contact real properties/guests, create holds/reservations, or incur charges:
+
+| Case | Deterministic assertion |
+|---|---|
+| Provider replaceability | Domain tests pass with Amadeus fake and `ManualShelterAdapter`; no Amadeus SDK, property/rate/offer status, or reservation types enter domain packages |
+| Field-level projection | Only the released shelter projection is transmitted; Case Notes, Check-In answers, Support Signal basis, military/medical records, unrelated requests, and raw payment-card data are absent |
+| Ranking determinism | Same normalized offers + same versioned explicit inputs produce the same order and reason codes; ties use a stable documented tie-breaker |
+| Ranking explainability | Each result records bounded reason codes based on explicit availability, location/coverage, stay window, accessibility fit, cancellation terms, and informational cost; no clinical/hidden-eligibility/ability-to-pay inference |
+| Mandatory manual path | `ManualShelterAdapter` remains available when search is unavailable, degraded, unsupported, or payment-blocked |
+| Payment boundary | Payment-dependent reservation fails before provider mutation as `BLOCKED_BY_PAYMENT_ARCHITECTURE`; fixtures/logs contain no card number, security code, raw payment token, or provider payment form |
+| Card-free contract gate | `card_free_enterprise` mode fails startup/operation without the required owner-approved deployment record; configuration alone cannot enable it |
+| Local idempotency | Same FulfillmentAttempt and request fingerprint produce one logical hold/reserve/cancel intent across restart and multiple workers |
+| Conflicting idempotency | Same attempt key with a different request fingerprint fails before provider call |
+| Unknown mutation outcome | Timeout/lost response after possible hold/reservation/cancel records `PROVIDER_UNKNOWN` and reconciles before retry |
+| Health and fallback | Auth failure, 429, timeout, malformed response, unavailable inventory, and circuit-open states are observable and preserve the Request/manual fallback |
+| Status isolation | Provider availability/reservation status cannot directly transition canonical Service Request or Fulfillment state |
+| Cancellation | Cancellation support/terms are represented truthfully; unsupported cancellation fails to a human rather than reporting success |
 
 ---
 

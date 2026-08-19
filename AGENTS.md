@@ -1,9 +1,9 @@
 # AGENTS.md — Required rules for agents and implementers
 
-**Released stack:** `0.1.2`
+**Released stack:** `0.1.3`
 **Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`
 **Current stage:** `SPEC-017`
-**Start here:** [HANDOFF.md](HANDOFF.md), [ENVIRONMENT.md](ENVIRONMENT.md), [RELEASE_MANIFEST-0.1.2.md](RELEASE_MANIFEST-0.1.2.md)
+**Start here:** [HANDOFF.md](HANDOFF.md), [ENVIRONMENT.md](ENVIRONMENT.md), [RELEASE_MANIFEST-0.1.3.md](RELEASE_MANIFEST-0.1.3.md)
 
 This file binds human and automated agents working on SUAS specifications or implementation.
 
@@ -37,7 +37,7 @@ This file binds human and automated agents working on SUAS specifications or imp
 
 ## Current release boundary
 
-v0.1.2 authorizes implementation, including D-017 Uber adapter implementation, not production operation. Pilot and production readiness remain `NOT_READY`.
+v0.1.3 authorizes implementation, including D-017 Uber transportation and D-018 Amadeus shelter search/inventory adapters, not production operation. `ManualShelterAdapter` remains mandatory; raw-card handling is prohibited; shelter reservation remains payment-architecture-blocked absent a documented card-free enterprise contract. Pilot and production readiness remain `NOT_READY`.
 
 Still unavailable for production include real infrastructure/provider effects, production Support Signal scoring, official safety copy, real veteran data/live pilot operation, production workload/SLO/RTO/RPO claims, and sensitive aggregate reporting unless superseded by a later released decision/evidence set.
 

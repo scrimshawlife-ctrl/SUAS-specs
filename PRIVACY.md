@@ -60,6 +60,8 @@ Rules:
 8. Adapter telemetry should prefer opaque identifiers (`service_request_id`, `fulfillment_attempt_id`, adapter id, external reference) over names, phone numbers, addresses, or free text.
 9. If a provider requires data outside the accepted projection, the integration is not production-ready until the relevant consent/privacy/spec boundary is updated and accepted.
 
+For D-018 temporary-shelter search/inventory, the released projection is limited to the fields listed in [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md) §13.2. Raw payment-card data, government identity documents, full Case/Check-In content, Support Signal basis, medical history, military records, and unrelated household information are excluded. A provider requirement outside that projection fails to a human/spec decision rather than expanding disclosure implicitly.
+
 See [CONSENT.md](CONSENT.md) and [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md).
 
 ---

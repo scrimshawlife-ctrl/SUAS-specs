@@ -183,6 +183,8 @@ Where multiple distinct attempts are allowed, each must be deliberate, separatel
 
 No funding/payment-card fields in MVP.
 
+For D-018 shelter, a payment-dependent reservation that cannot proceed without SUAS card handling is reported as the non-canonical capability-block reason `BLOCKED_BY_PAYMENT_ARCHITECTURE`. It does not mark the Service Request fulfilled or failed automatically; the request remains actionable through `ManualShelterAdapter` or another authorized path.
+
 ```text
 Fulfillment → Funding Eligibility → Funding Source → Optional Billing Adapter
 ```

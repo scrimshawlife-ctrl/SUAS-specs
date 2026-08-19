@@ -126,7 +126,7 @@ Sends are event/job-driven; there is no public `POST /notifications/send`.
 
 ## 3. Plane B — external capability inventory
 
-Vendors are `DECISION_PENDING`. Inventory is by capability, not brand.
+Inventory is by capability, not brand. Specific vendors remain `DECISION_PENDING` unless a released decision names an adapter-local implementation family; D-017 names Uber for transportation and D-018 names Amadeus for temporary-shelter search/inventory.
 
 ### 3.1 Infrastructure/communications capabilities required for production MVP
 
@@ -143,12 +143,12 @@ If SMS or email has no configured provider in an environment, mark the channel `
 
 ### 3.2 MVP service-fulfillment capabilities
 
-These are **ports**, not commitments to a commercial provider, except where a released decision names a provider for adapter-local implementation. D-017 v0.1.2 selects Uber as the first API-backed transportation adapter family while preserving the required manual path.
+These are **ports**, not commitments to a commercial provider, except where a released decision names a provider for adapter-local implementation. D-017 v0.1.2 selects Uber for transportation, and D-018 v0.1.3 selects Amadeus as the first commercial shelter search/inventory adapter family. Required manual paths remain unchanged.
 
 | Capability ID | Canonical category | Port contract | Provider decision | Manual path |
 |---|---|---|---|---|
 | `TRANSPORTATION_FULFILLMENT` | `TRANSPORTATION` | `TransportationPort` | D-017: Uber selected for first API-backed adapter; manual remains required | Required |
-| `TEMPORARY_SHELTER_FULFILLMENT` | `SHELTER` | `TemporaryShelterPort` | D-018 | Required |
+| `TEMPORARY_SHELTER_FULFILLMENT` | `SHELTER` | `TemporaryShelterPort` | D-018: Amadeus selected for first commercial search/inventory adapter; reservation blocked absent documented card-free enterprise contract | `ManualShelterAdapter` required |
 | `FOOD_SUPPORT_FULFILLMENT` | `FOOD` | `FoodSupportPort` | D-019 | Required |
 | `PEER_SUPPORT_FULFILLMENT` | `PEER_SUPPORT` | `PeerSupportPort` | D-020 if external; internal/manual QRF may satisfy | Required |
 
@@ -162,6 +162,8 @@ D-017 Uber Guest Rides adapter facts are adapter-local implementation facts, not
 - Cancel trip endpoint: `DELETE /v1/guests/trips/{request_id}`.
 - Receipt endpoint: `GET /v1/guests/trips/{request_id}/receipt`.
 - Provider-native create idempotency was not confirmed and must not be invented; SUAS FulfillmentAttempt idempotency/reconciliation remains required.
+
+D-018 Amadeus facts are likewise adapter-local implementation facts. Provider endpoints, SDK types, credentials, property/rate/offer identifiers, availability payloads, and reservation objects are not Plane A contracts. SUAS may implement search/inventory against synthetic or non-real sandbox data, but reservation is `BLOCKED_BY_PAYMENT_ARCHITECTURE` unless a documented card-free enterprise contract requires no SUAS raw-card handling.
 
 Rules:
 
