@@ -113,6 +113,22 @@ Every enabled adapter proves:
 13. unsupported provider capability is reported unsupported, not faked;
 14. disabling/replacing adapter preserves historical attempts.
 
+D-017 Uber Guest Rides deterministic adapter matrix uses synthetic data/fakes and must not create real rides or contact real riders/drivers:
+
+| Case | Deterministic assertion |
+|---|---|
+| OAuth scope/secret | adapter requests only `guests.trips`; missing/malformed client secret fails closed; secret absent from logs/client fixtures |
+| API path mapping | estimates use `POST /v1/guests/trips/estimates`; create uses `POST /v1/guests/trips`; get uses `GET /v1/guests/trips/{request_id}`; cancel uses `DELETE /v1/guests/trips/{request_id}`; receipt uses `GET /v1/guests/trips/{request_id}/receipt` |
+| Provider replaceability | domain tests pass with fake/manual adapter and contain no Uber SDK/status/payload types |
+| Local idempotency | same FulfillmentAttempt and request fingerprint produce one logical create intent across process restart and multiple workers |
+| Conflicting idempotency | same attempt key with different request fingerprint fails before provider call |
+| Unknown create outcome | timeout/lost response after possible acceptance records `PROVIDER_UNKNOWN` and reconciles by stored request reference/status before retry |
+| Provider idempotency gap | tests do not assert or rely on provider-native create idempotency because it was not confirmed |
+| Rate limit/backoff | 429/limit response enters rate-limited/circuit path with bounded jittered retry and operator visibility |
+| Manual fallback | fallback creates a deliberate new attempt only when policy permits and preserves original unknown outcome audit |
+| Webhook HMAC | if webhook ingress exists, valid HMAC over raw body is required; invalid/missing/replayed/duplicate webhooks have no second domain effect |
+| Receipt handling | receipt fetch/projection is adapter-local and redacted from ordinary logs |
+
 ---
 
 ## 6. Notification suite

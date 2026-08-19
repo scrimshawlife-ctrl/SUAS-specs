@@ -230,6 +230,10 @@ Fulfillment ports: `TransportationPort`, `TemporaryShelterPort`, `FoodSupportPor
 
 Provider Router selects configured adapters through explicit operational policy. Manual coordination is valid. Vendor status/payload types stay adapter-local.
 
+D-017 selects Uber Guest Rides as the first API-backed `TRANSPORTATION_FULFILLMENT` adapter family for implementation only. Uber remains replaceable: no Uber SDK type, OAuth token shape, trip status, request identifier, estimate field, receipt field, webhook payload, or error code may enter domain models, public SUAS APIs, readiness gates, or canonical state names. The adapter stores only SUAS-owned FulfillmentAttempt identity plus the minimum adapter-local external references needed for reconciliation. Provider-native create idempotency was not confirmed in the released evidence and must not be invented; SUAS-side persistent FulfillmentAttempt idempotency is therefore mandatory before estimates/create/cancel and across process restart/horizontal instances.
+
+Uber OAuth client secrets are server-side adapter secrets only. They are loaded through the approved secret mechanism for the environment, never committed, never exposed to browser/mobile clients, never echoed in health checks or logs, and rotated/revoked as adapter configuration. The adapter requests only the official Guest Rides token scope `guests.trips` unless a later released decision authorizes additional scopes.
+
 ---
 
 ## 12. Scaling doctrine

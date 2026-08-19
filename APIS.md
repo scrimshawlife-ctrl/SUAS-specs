@@ -152,6 +152,16 @@ These are **ports**, not commitments to a commercial provider, except where a re
 | `FOOD_SUPPORT_FULFILLMENT` | `FOOD` | `FoodSupportPort` | D-019 | Required |
 | `PEER_SUPPORT_FULFILLMENT` | `PEER_SUPPORT` | `PeerSupportPort` | D-020 if external; internal/manual QRF may satisfy | Required |
 
+D-017 Uber Guest Rides adapter facts are adapter-local implementation facts, not Plane A contracts:
+
+- OAuth token scope: `guests.trips`.
+- Estimate endpoint: `POST /v1/guests/trips/estimates`.
+- Create trip endpoint: `POST /v1/guests/trips`.
+- Get trip endpoint: `GET /v1/guests/trips/{request_id}`.
+- Cancel trip endpoint: `DELETE /v1/guests/trips/{request_id}`.
+- Receipt endpoint: `GET /v1/guests/trips/{request_id}/receipt`.
+- Provider-native create idempotency was not confirmed and must not be invented; SUAS FulfillmentAttempt idempotency/reconciliation remains required.
+
 Rules:
 
 1. The capability port exists even if the only configured adapter is `ManualAdapter`.

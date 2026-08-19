@@ -127,6 +127,10 @@ A provider mutation with ambiguous response becomes `PROVIDER_UNKNOWN` and recon
 
 Router may choose another compatible adapter/manual path only through a deliberate new FulfillmentAttempt when policy permits.
 
+For the D-017 Uber Guest Rides adapter, local/persistent idempotency is authoritative. A SUAS FulfillmentAttempt stores the logical attempt key, adapter operation, request fingerprint, provider request identifier when known, last observed provider status, reconciliation state, retry/backoff state, and enough audit metadata to distinguish duplicate retry from deliberate new attempt. Because provider-native create idempotency was not confirmed, the adapter must not assume an Uber create call can be safely replayed by provider idempotency key. Ambiguous create/cancel outcomes enter `PROVIDER_UNKNOWN`, then reconcile through stored external reference/status lookup where possible before any duplicate-risk mutation or before manual fallback creates a deliberate new attempt.
+
+The adapter must handle Uber rate limits and transient failures with finite timeouts, bounded exponential backoff with jitter, circuit/rate-limited state, operator-visible DLQ or failed-work surface, and manual coordination fallback when policy permits. Backoff must not hide urgent support state, and manual fallback must record whether the original provider outcome remains unknown to avoid double dispatch.
+
 ---
 
 ## 11. Notification degradation
@@ -185,11 +189,11 @@ Staging with synthetic data exercises at least:
 
 1. notification provider unavailable;
 2. fulfillment provider timeout after possible acceptance;
-3. duplicate/out-of-order provider webhook;
+3. duplicate/out-of-order provider webhook, including invalid Uber HMAC when Uber webhook ingress is implemented;
 4. worker restart with queued work;
 5. queue backlog/burst;
 6. DB transient failure/lost response around domain commit;
-7. provider rate limiting/manual fallback;
+7. provider rate limiting/backoff/circuit behavior and manual fallback;
 8. duplicate API command after lost response;
 9. concurrent Settlement resolve using same/different idempotency keys;
 10. Follow-Up reschedule followed by stale due job;

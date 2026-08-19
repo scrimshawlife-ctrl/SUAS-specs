@@ -74,6 +74,14 @@ Rules:
 9. Adapter configuration must prevent arbitrary server-side fetch destinations. If a provider API requires callbacks/URLs, allowed destinations/patterns must be configuration-owned rather than veteran/user-controlled.
 10. Compromise or outage of one provider must not grant access to another tenant, provider configuration, or unrelated veteran data.
 
+D-017 Uber Guest Rides adapter security requirements:
+
+- OAuth client secret handling is exact: keep the client secret only in server-side secret storage/configuration, inject it only into the adapter runtime, redact it from logs/traces/errors, exclude it from client bundles and admin read APIs, rotate/revoke on suspected exposure, and fail closed when absent or malformed.
+- Request the official token scope `guests.trips`; broader scopes are disallowed unless a later released decision names them.
+- If Uber webhook ingress is implemented, verify the provider HMAC signature using the adapter-local webhook secret over the exact raw request body before parsing or enqueueing work. Reject missing/invalid signatures and replay/duplicate deliveries without domain transition.
+- Treat provider access tokens, refresh tokens if any, webhook secrets, request IDs, receipt URLs/data, rider contact data, pickup/dropoff data, and trip status payloads as adapter-confined sensitive data.
+- Provider-native create idempotency was not confirmed and must not be invented. SUAS FulfillmentAttempt idempotency and reconciliation records are the security boundary against duplicate ride creation.
+
 ---
 
 ## 5. Threat categories
@@ -100,6 +108,10 @@ Implementation and review must address each:
 | Provider status injection | Vendor text/status writes canonical state | Adapter normalization + command/state-machine enforcement |
 | SSRF-style provider abuse | User controls server-side provider destination URL | Configuration-owned endpoints/allowlists; reject arbitrary destinations |
 | Duplicate external mutation | Retry books two rides/rooms | Fulfillment Attempt idempotency + reconcile-before-retry |
+| Overbroad Uber OAuth scope | Adapter obtains privileges outside Guest Rides | Allow only `guests.trips`; fail closed on unexpected configured scopes |
+| Uber OAuth client-secret leakage | Secret appears in client bundle, logs, admin API, or repo | Server-side secret storage, redaction, no client exposure, rotation/revoke |
+| Forged Uber webhook | Attacker posts fake trip status | HMAC over raw body before parse/enqueue; reject/audit invalid signature |
+| Receipt over-disclosure | Receipt details leak veteran route/contact data | Adapter-local receipt retrieval/projection; no ordinary logs; minimum necessary display |
 
 ---
 
