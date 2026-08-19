@@ -1,6 +1,6 @@
-# DEPLOYMENT.md — Environments and production topology (SUAS v0.1.1)
+# DEPLOYMENT.md — Environments and production topology (SUAS v0.1.2)
 
-**Lifecycle:** `released` via [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)  
+**Lifecycle:** `released` via [RELEASE_MANIFEST-0.1.2.md](RELEASE_MANIFEST-0.1.2.md)
 **Related:** [ENVIRONMENT.md](ENVIRONMENT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SECURITY.md](SECURITY.md), [OPERATIONS.md](OPERATIONS.md), [DECISIONS.md](DECISIONS.md)
 
 Cloud/platform/database/job providers remain deferred for production. This file defines topology and environment separation; [ENVIRONMENT.md](ENVIRONMENT.md) defines runtime configuration, startup validation, external-effect safety, and build provenance.
@@ -50,7 +50,7 @@ Adding app/worker capacity must not require domain changes.
 
 ## 4. Current deferred production decisions
 
-D-001 hosting, D-002 auth implementation, D-003 SMS, D-004 email, D-005 database hosting, D-007 retention, D-017–D-020 real service adapters, D-021 workload envelope, D-022 durable-job implementation, D-023 SLOs/alerts, and D-024 RTO/RPO remain production-unavailable under the current release boundary unless superseded by a later decision release.
+D-001 hosting, D-002 auth implementation, D-003 SMS, D-004 email, D-005 database hosting, D-007 retention, D-018–D-020 real service adapters; real Uber transportation effects under D-017, D-021 workload envelope, D-022 durable-job implementation, D-023 SLOs/alerts, and D-024 RTO/RPO remain production-unavailable under the current release boundary unless superseded by a later decision release.
 
 ## 5. Deployment verification before SPEC-018
 

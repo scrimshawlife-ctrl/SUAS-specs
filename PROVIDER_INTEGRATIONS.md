@@ -1,6 +1,6 @@
 # PROVIDER_INTEGRATIONS.md — Provider-neutral fulfillment integration contract (SUAS v0.1)
 
-**Status:** `draft` / `0.1.0` / not implementation authority until accepted and released.  
+**Status:** `draft` / `0.1.0` / not implementation authority until accepted and released.
 **Related:** [APIS.md](APIS.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DISPATCH.md](DISPATCH.md), [FULFILLMENT.md](FULFILLMENT.md), [RESOURCES.md](RESOURCES.md), [CONSENT.md](CONSENT.md), [SECURITY.md](SECURITY.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md)
 
 ---
@@ -26,7 +26,7 @@ A Service Provider does not need an API to be valid. Manual and referral-only pr
 7. A provider may be replaced without changing the canonical Service Request or Fulfillment state machines.
 8. Manual coordination MUST remain available where an API is absent or unavailable.
 9. Routing by geography, organization, capability, health, capacity, or funding policy MUST occur above the provider adapter.
-10. No provider name is canonical until explicitly recorded as a deployment/partner decision.
+10. A provider name is canonical only when explicitly recorded as a deployment/partner decision. D-017 v0.1.2 records Uber as the first API-backed transportation adapter family, but only behind `TransportationPort` and without changing domain semantics.
 
 ---
 
@@ -54,7 +54,7 @@ The following port names are logical examples. Exact programming-language interf
 
 ### 4.1 TransportationPort
 
-Supports transportation coordination without assuming a rideshare business model.
+Supports transportation coordination without assuming a rideshare business model. D-017 v0.1.2 selects Uber as the first API-backed transportation adapter family that may implement this port. That selection does not make Uber concepts canonical, does not remove Manual/Fake adapters, and does not authorize real bookings before SPEC-018 readiness.
 
 Minimum capability vocabulary:
 
@@ -105,6 +105,21 @@ Minimum capability vocabulary:
 - `cancel(external_reference, idempotency_key)` when supported
 
 A local responder/QRF workflow may implement this port internally without an external vendor.
+
+---
+
+## 4.5 D-017 Uber adapter constraints
+
+An Uber transportation adapter MUST:
+
+1. live behind `TransportationPort` and the Provider Router;
+2. keep Uber SDKs, payloads, quote details, webhook signatures, status values, and booking identifiers adapter-local;
+3. normalize all provider statuses to integration-level statuses before they can inform canonical Fulfillment workflows;
+4. require SUAS-side idempotency for every quote/request/cancel external mutation;
+5. disclose only consented, minimum-necessary ride-operational data;
+6. preserve manual coordination and fake/test adapters;
+7. fail closed if credentials, webhook verification, environment authorization, or SPEC-018 production readiness are absent;
+8. avoid defining funding, reimbursement, payment-card, maps/geocoding, SLO, capacity, RTO, or RPO policy.
 
 ---
 

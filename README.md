@@ -1,12 +1,12 @@
-# Shut Up and Serve (SUAS) — Specification v0.1.1
+# Shut Up and Serve (SUAS) — Specification v0.1.2
 
-**Product:** Shut Up and Serve  
-**System:** SUAS  
-**Version:** `0.1.1`  
-**Lifecycle:** `released`  
-**Phase:** `IMPLEMENTATION_AUTHORIZED`  
-**Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`  
-**Release manifest:** [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)
+**Product:** Shut Up and Serve
+**System:** SUAS
+**Version:** `0.1.2`
+**Lifecycle:** `released`
+**Phase:** `IMPLEMENTATION_AUTHORIZED`
+**Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`
+**Release manifest:** [RELEASE_MANIFEST-0.1.2.md](RELEASE_MANIFEST-0.1.2.md)
 
 `SUAS-specs` is canonical. `scrimshawlife-ctrl/SUAS` implements released contracts and may not redefine them from code, prototype behavior, provider behavior, deployment state, or traction.
 
@@ -14,7 +14,7 @@ The weekend-build document **HACKATHON BUILD SPECIFICATION Rev 3 (2026-08-14)** 
 
 ## Start here for implementation / Fable handoff
 
-1. [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)
+1. [RELEASE_MANIFEST-0.1.2.md](RELEASE_MANIFEST-0.1.2.md)
 2. [HANDOFF.md](HANDOFF.md)
 3. [ENVIRONMENT.md](ENVIRONMENT.md)
 4. [STATUS.md](STATUS.md)
@@ -48,7 +48,7 @@ SUAS is not an EHR, diagnosis system, suicide-prediction product, automated emer
 - Production readiness: `NOT_READY`
 - All 12 readiness gates: `NOT_READY`
 
-v0.1.1 is a patch-level handoff/environment clarification over v0.1.0. Product/domain/API semantics are unchanged.
+v0.1.2 is a D-017 transportation adapter decision patch over v0.1.1. Product/domain/API semantics are unchanged; Uber may be implemented adapter-locally behind `TransportationPort` while production use remains blocked.
 
 ## Environment and configuration
 
@@ -80,12 +80,12 @@ Until later decisions/evidence close, do not make operational:
 - real production infrastructure or real veteran data;
 - production Support Signal scoring;
 - official safety/crisis copy;
-- real transportation/shelter/food/external peer provider adapters;
+- real shelter/food/external peer provider adapters, and real transportation bookings until SPEC-018 readiness even though Uber is selected for D-017 implementation;
 - production workload/SLO/RTO/RPO claims;
 - sensitive aggregate reporting;
 - unsupported compliance claims.
 
-See [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md).
+See [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md) and [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md).
 
 ## Core index
 

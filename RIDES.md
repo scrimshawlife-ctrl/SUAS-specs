@@ -1,13 +1,13 @@
 # RIDES.md — Ride-adapter contract for transportation coordination
 
-**Related:** [PRODUCT.md](PRODUCT.md), [DISPATCH.md](DISPATCH.md), [FULFILLMENT.md](FULFILLMENT.md), [SETTLEMENT.md](SETTLEMENT.md), [ISLANDS.md](ISLANDS.md), [DECISIONS.md](DECISIONS.md), [FENCE_POSTS.md](FENCE_POSTS.md)  
-**Status:** `draft` / unreleased / not implementation authority
+**Related:** [PRODUCT.md](PRODUCT.md), [DISPATCH.md](DISPATCH.md), [FULFILLMENT.md](FULFILLMENT.md), [SETTLEMENT.md](SETTLEMENT.md), [ISLANDS.md](ISLANDS.md), [DECISIONS.md](DECISIONS.md), [FENCE_POSTS.md](FENCE_POSTS.md)
+**Status:** `draft` / unreleased / not implementation authority, except D-017 v0.1.2 cites Uber as the selected first API-backed transportation adapter family and preserves the human-dispatch/minimization/status-boundary guardrails below.
 
 ---
 
 ## 1. Purpose
 
-Define the draft adapter contract for transportation booking during the weekend build direction.
+Define the draft adapter contract for transportation booking during the weekend build direction. D-017 v0.1.2 now selects Uber as the first API-backed transportation adapter family for implementation behind the released `TransportationPort`; the remainder of this file remains draft unless cited by released artifacts.
 
 This file is **additive** to the existing `TRANSPORTATION` Service Request contract. It does **not** replace the Service Request state machine in [DISPATCH.md](DISPATCH.md).
 
@@ -72,14 +72,14 @@ Required mapping rule:
 
 ## 5. Supported stub adapter shapes
 
-Rev 3 draft scope allows stub adapters for:
+Rev 3 draft scope allowed stub adapters for:
 
-- Uber Guest
+- Uber — selected by D-017 v0.1.2 as the first API-backed transportation adapter family for adapter-local implementation
 - Lyft Concierge
 - voucher
 - volunteer
 
-These are stub capability names only. They do not assert partner availability, contracting status, or legal approval.
+These are stub capability names only except for the D-017 Uber selection. The D-017 selection does not assert production availability, contracting status, legal approval, readiness, funding, or permission to create real rides before SPEC-018.
 
 **Waymo is out of scope.** Do not use an unofficial API.
 
@@ -105,7 +105,7 @@ This file does not define billing, reimbursement, or Medi-Cal eligibility.
 - Replacing the Service Request state machine
 - Sending check-in, reason-for-travel, or distress details to ride providers
 - Auto-dispatch from a Support Signal
-- Claiming provider partnerships that are not specified
+- Claiming provider partnerships, production availability, or legal approval that are not specified
 - Using unofficial Waymo APIs
 
 ---

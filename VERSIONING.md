@@ -1,8 +1,8 @@
 # VERSIONING.md — Specification and artifact versioning (SUAS v0.1)
 
-**Stack:** `0.1.1` / `released`  
-**Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`  
-**Release manifest:** [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)
+**Stack:** `0.1.2` / `released`
+**Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`
+**Release manifest:** [RELEASE_MANIFEST-0.1.2.md](RELEASE_MANIFEST-0.1.2.md)
 
 ## 1. Lifecycle
 
@@ -12,6 +12,7 @@ Each specification artifact lifecycle is `draft`, `accepted`, `released`, or `su
 
 - `0.1.0` — first implementation-authoritative release.
 - `0.1.1` — patch-level handoff/environment clarification; no product/domain/API semantic change.
+- `0.1.2` — D-017 transportation adapter decision patch selecting Uber for adapter-local implementation; no product/domain/API semantic change and no production-operating approval.
 
 Version rules:
 
@@ -25,10 +26,10 @@ Git commit SHA is provenance, not the specification version.
 
 Do not conflate:
 
-1. **Specification stack version** — currently `0.1.1`.
+1. **Specification stack version** — currently `0.1.2`.
 2. **Application version** — owned by `scrimshawlife-ctrl/SUAS`; must declare which released spec it implements.
-3. **API version** — `/api/v0`; unchanged by v0.1.1.
-4. **Event schema version** — `0.1.0`; unchanged by v0.1.1.
+3. **API version** — `/api/v0`; unchanged by v0.1.2.
+4. **Event schema version** — `0.1.0`; unchanged by v0.1.2.
 5. **Database migration/schema version** — implementation-owned mechanism that must be explicit and compatibility-checked.
 6. **Runtime content versions** — QuestionnaireVersion, signal_version, consent/notification templates, approved safety copy when available.
 
@@ -38,7 +39,7 @@ Shared builds must expose application version/commit, released SUAS spec version
 
 ## 5. Release lineage
 
-`0.1.1` supersedes `0.1.0` for implementation handoff. The D-001–D-025 release decision ledger remains [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md) because this patch changes no decision outcome.
+`0.1.1` supersedes `0.1.0` for implementation handoff. `0.1.2` supersedes `0.1.1` for D-017 adapter selection. [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md) controls D-017; [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md) remains the inherited ledger for other D-001–D-025 decisions.
 
 ## 6. Implementation citations
 

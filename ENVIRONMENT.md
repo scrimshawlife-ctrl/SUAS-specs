@@ -1,8 +1,8 @@
-# ENVIRONMENT.md — Environment and configuration contract (SUAS v0.1.1)
+# ENVIRONMENT.md — Environment and configuration contract (SUAS v0.1.2)
 
-**Lifecycle:** `released` with v0.1.1 handoff patch  
-**Authority:** implementation configuration contract  
-**Related:** [DEPLOYMENT.md](DEPLOYMENT.md), [SECURITY.md](SECURITY.md), [ARCHITECTURE.md](ARCHITECTURE.md), [RESILIENCE.md](RESILIENCE.md), [RELEASE_MANIFEST-0.1.1.md](RELEASE_MANIFEST-0.1.1.md)
+**Lifecycle:** `released` with v0.1.2 D-017 patch
+**Authority:** implementation configuration contract
+**Related:** [DEPLOYMENT.md](DEPLOYMENT.md), [SECURITY.md](SECURITY.md), [ARCHITECTURE.md](ARCHITECTURE.md), [RESILIENCE.md](RESILIENCE.md), [RELEASE_MANIFEST-0.1.2.md](RELEASE_MANIFEST-0.1.2.md)
 
 ## 1. Purpose
 
@@ -68,18 +68,18 @@ Until provider decisions close:
 - `SUAS_EMAIL_MODE` = `disabled|fake|sink`
 - `SUAS_SMS_MODE` = `disabled|fake|sink`
 
-Production external modes are not valid in v0.1.1.
+Production notification external modes are not valid in v0.1.2.
 
 ### Fulfillment adapters
 
 For each MVP capability:
 
-- `SUAS_TRANSPORTATION_ADAPTER_MODE` = `manual|fake|disabled`
+- `SUAS_TRANSPORTATION_ADAPTER_MODE` = `manual|fake|uber_api|disabled`
 - `SUAS_SHELTER_ADAPTER_MODE` = `manual|fake|disabled`
 - `SUAS_FOOD_ADAPTER_MODE` = `manual|fake|disabled`
 - `SUAS_PEER_SUPPORT_ADAPTER_MODE` = `manual|fake|disabled`
 
-A future real adapter mode requires the corresponding D-017–D-020 decision and a released manifest update.
+`uber_api` is authorized only as the D-017 transportation adapter mode. It remains invalid for real external effects until `SUAS_ENV=PRODUCTION`, SPEC-018 readiness passes, required secrets/webhook validation are configured, and `SUAS_ALLOW_REAL_EXTERNAL_EFFECTS=true` is valid. Future real modes still require the corresponding D-018–D-020 decision and a released manifest update.
 
 ### Support Signal / safety / reporting
 
@@ -111,7 +111,7 @@ Before serving traffic or running workers, configuration validation must fail cl
 - spec version or release manifest mismatch;
 - real external effects enabled outside an authorized production release;
 - LOCAL/TEST/STAGING points at known production data resources;
-- a real provider adapter is configured without a released provider decision;
+- a real provider adapter is configured without a released provider decision, or `uber_api` is configured for real effects before SPEC-018/readiness authorization;
 - required secrets are absent for an enabled capability;
 - `SUAS_SUPPORT_SIGNAL_MODE` attempts production scoring without a released signal version;
 - official safety copy is requested without an approved released artifact;

@@ -1,15 +1,15 @@
-# HANDOFF.md — Implementation handoff guide (SUAS v0.1.1)
+# HANDOFF.md — Implementation handoff guide (SUAS v0.1.2)
 
-**Audience:** new implementation owner / Fable / engineering agents  
-**Lifecycle:** `released` with v0.1.1 handoff patch  
+**Audience:** new implementation owner / Fable / engineering agents
+**Lifecycle:** `released` with v0.1.2 D-017 patch
 **Canonical implementation repo:** `scrimshawlife-ctrl/SUAS`
 
 ## 1. Start here
 
 Read in this order before changing implementation behavior:
 
-1. `RELEASE_MANIFEST-0.1.1.md`
-2. `RELEASE_DECISIONS-0.1.0.md` plus the v0.1.1 manifest's unchanged decision boundary
+1. `RELEASE_MANIFEST-0.1.2.md`
+2. `RELEASE_DECISIONS-0.1.2.md` for D-017 plus `RELEASE_DECISIONS-0.1.0.md` for inherited decisions
 3. `STATUS.md`
 4. `PRODUCT.md`
 5. `GLOSSARY.md`
@@ -28,12 +28,12 @@ If any implementation requirement conflicts, the release manifest and later rele
 
 ## 2. Current lifecycle
 
-- Released implementation contract: `0.1.1`
+- Released implementation contract: `0.1.2`
 - Current implementation stage: `SPEC-017`
 - Production/pilot readiness: `NOT_READY`
 - Real veteran data: prohibited
 - Production deployment: prohibited
-- Real external provider effects: prohibited
+- Real external provider effects: prohibited; Uber D-017 implementation is adapter-local until SPEC-018
 
 The implementation may build and test the released architecture and workflows with synthetic data, fake adapters, sink communications, and manual adapter paths.
 
@@ -92,7 +92,7 @@ Do not create provider credential files or real-data fixtures.
 
 Three version identities must not be conflated:
 
-1. **Specification stack version** — currently `0.1.1`.
+1. **Specification stack version** — currently `0.1.2`.
 2. **Application version** — chosen/maintained in `SUAS`; must identify which released spec it conforms to.
 3. **Runtime artifact/schema versions** — API `/api/v0`, event schema, DB migration/schema version, QuestionnaireVersion, signal version, templates, etc.
 
@@ -138,7 +138,7 @@ Do not implement or imply:
 
 ## 10. Provider handoff
 
-Implement capability ports and Manual/Fake adapters first. Real adapters remain unavailable until corresponding provider decisions close.
+Implement capability ports and Manual/Fake adapters first. Uber is selected for D-017 transportation adapter implementation, but real bookings/effects remain unavailable until SPEC-018. Other real adapters remain unavailable until corresponding provider decisions close.
 
 Never put provider SDK types/statuses in domain packages.
 

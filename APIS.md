@@ -143,11 +143,11 @@ If SMS or email has no configured provider in an environment, mark the channel `
 
 ### 3.2 MVP service-fulfillment capabilities
 
-These are **ports**, not commitments to a commercial provider.
+These are **ports**, not commitments to a commercial provider, except where a released decision names a provider for adapter-local implementation. D-017 v0.1.2 selects Uber as the first API-backed transportation adapter family while preserving the required manual path.
 
 | Capability ID | Canonical category | Port contract | Provider decision | Manual path |
 |---|---|---|---|---|
-| `TRANSPORTATION_FULFILLMENT` | `TRANSPORTATION` | `TransportationPort` | D-017 | Required |
+| `TRANSPORTATION_FULFILLMENT` | `TRANSPORTATION` | `TransportationPort` | D-017: Uber selected for first API-backed adapter; manual remains required | Required |
 | `TEMPORARY_SHELTER_FULFILLMENT` | `SHELTER` | `TemporaryShelterPort` | D-018 | Required |
 | `FOOD_SUPPORT_FULFILLMENT` | `FOOD` | `FoodSupportPort` | D-019 | Required |
 | `PEER_SUPPORT_FULFILLMENT` | `PEER_SUPPORT` | `PeerSupportPort` | D-020 if external; internal/manual QRF may satisfy | Required |

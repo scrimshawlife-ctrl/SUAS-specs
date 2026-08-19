@@ -38,7 +38,7 @@ May manage, all with MFA and audit:
 
 ## 3. Provider adapter administration
 
-Provider selection remains D-017–D-020 and deployment configuration, not domain architecture.
+Provider selection remains D-017–D-020 and deployment configuration, not domain architecture. D-017 now selects Uber for adapter-local transportation implementation; admin surfaces must not expose provider SDK/status details as canonical state.
 
 Admin surfaces may expose:
 - opaque `adapter_id`;
