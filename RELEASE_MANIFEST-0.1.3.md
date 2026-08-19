@@ -3,7 +3,7 @@
 **Release version:** `0.1.3`
 **Release date:** `2026-08-19` PT
 **Owner:** `@scrimshawlife-ctrl`
-**Substantive spec source commit:** `PENDING_RELEASE_SOURCE_COMMIT`
+**Substantive spec source commit:** `b83a0ed0249010a036e71acf926b1e75919ff16b`
 **Supersedes:** `0.1.2`
 **Base release:** [RELEASE_MANIFEST-0.1.2.md](RELEASE_MANIFEST-0.1.2.md)
 **Decision ledgers:** [RELEASE_DECISIONS-0.1.3.md](RELEASE_DECISIONS-0.1.3.md) for D-018; [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md) for D-017; [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md) otherwise unchanged
