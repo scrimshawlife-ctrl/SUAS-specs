@@ -325,6 +325,23 @@ If a provider needs location, contact, accessibility, or destination data, the c
 
 Revocation stops future provider disclosures where the workflow permits; historical provider-side records already lawfully transmitted cannot be silently erased by SUAS unless an accepted retention/deletion process supports that action.
 
+### 13.1 Released `TRANSPORTATION` projection (D-017 v0.1.2)
+
+The SUAS-owned transportation projection may contain only:
+
+- `rider`: `firstName`, `lastName`, and E.164 `phoneNumber`;
+- `pickup`: `latitude`, `longitude`, and optional dispatch address;
+- `dropoff`: `latitude`, `longitude`, and optional dispatch address;
+- optional `productId` selected from a current provider estimate;
+- optional `noteForDriver` limited to necessary accessibility or pickup instructions.
+
+This projection requires an active, use-time `can_share` Consent Grant for
+`service_request_fulfillment` to the selected adapter. `who_pays`, payment-card
+data, Case Notes, Check-In answers, Support Signal basis, Trusted Circle data,
+medical or military records, SSNs, unrelated requests, and continuous location
+history remain outside the provider projection. Provider-specific DTO names and
+payloads remain adapter-local.
+
 ---
 
 ## 14. Configuration and secrets
