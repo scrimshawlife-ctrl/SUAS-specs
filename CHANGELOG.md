@@ -14,6 +14,9 @@ Dates are America/Los_Angeles (PT). Lifecycle changes are owner-controlled.
 - Added [RIDES.md](RIDES.md) — ride-adapter contract with human dispatch, minimized provider payloads, and cost guardrails that fail to a human.
 - Opened D-026 through D-032 for island scope, dispatcher routing operations, resource-list curation, reporting/minimization, dual enrollment/minors, contracting entity, and volunteer-driver screening. D-017 is closed by v0.1.2 for Uber adapter-local implementation; D-018 is closed by v0.1.3 for Amadeus shelter search/inventory; D-019–D-025 remain the released production-adapter / scale / recovery ledger.
 - Added an SB 903 / peer-support register row to [COMPLIANCE.md](COMPLIANCE.md) as a `NOT_COMPUTABLE` note only; no legal or compliance claim.
+- Aligned `SUAS_SHELTER_ADAPTER_MODE` naming across runtime and spec text from prior draft placeholder terminology to `amadeus_lodging`; no product semantics changed.
+- Added runtime hardening guidance for provider endpoints in line with this release’s security contract, including HTTPS-only non-loopback provider URLs, loopback-safe test endpoints, and rejection of URL-embedded credentials.
+- Pushed release pin updates to keep provenance consistent with the final `0.1.3` draft-closure SHA lineage.
 
 No implementation code is included.
 
