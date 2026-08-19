@@ -154,6 +154,7 @@ These are **ports**, not commitments to a commercial provider, except where a re
 
 D-017 Uber Guest Rides adapter facts are adapter-local implementation facts, not Plane A contracts:
 
+- Authentication: OAuth 2.0 `client_credentials` with a server-side client secret through `POST https://auth.uber.com/oauth/v2/token`; credentials and bearer tokens never enter clients, public APIs, logs, or resource rows.
 - OAuth token scope: `guests.trips`.
 - Estimate endpoint: `POST /v1/guests/trips/estimates`.
 - Create trip endpoint: `POST /v1/guests/trips`.

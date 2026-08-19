@@ -139,3 +139,4 @@ Provider-boundary tests must prove:
 - provider credentials never appear in client bundles/log fixtures.
 
 Security tests are mandatory even though `SECURITY` is not a separate readiness-gate label in [STATUS.md](STATUS.md); they support AUTH, CONSENT, PRIVACY, EXTERNAL_FULFILLMENT, SCALE, RESILIENCE, and OPERATIONS.
+- Uber machine authentication uses OAuth 2.0 `client_credentials` with a server-side client secret. The client secret and resulting bearer token are secret material and must never enter browser bundles, client-visible configuration, logs, domain events, or generic resource rows.
