@@ -75,12 +75,12 @@ Production notification external modes are not valid in v0.1.3.
 For each MVP capability:
 
 - `SUAS_TRANSPORTATION_ADAPTER_MODE` = `manual|fake|uber_api|disabled`
-- `SUAS_SHELTER_ADAPTER_MODE` = `manual|fake|amadeus_search|disabled`
+- `SUAS_SHELTER_ADAPTER_MODE` = `manual|fake|amadeus_lodging|disabled`
 - `SUAS_SHELTER_RESERVATION_MODE` = `blocked_by_payment_architecture|card_free_enterprise`
 - `SUAS_FOOD_ADAPTER_MODE` = `manual|fake|disabled`
 - `SUAS_PEER_SUPPORT_ADAPTER_MODE` = `manual|fake|disabled`
 
-`uber_api` is authorized only as the D-017 transportation adapter mode. `amadeus_search` is authorized only as the D-018 temporary-shelter search/inventory adapter mode. Both remain invalid for real external effects until `SUAS_ENV=PRODUCTION`, SPEC-018 readiness passes, required secrets and callback/webhook validation are configured, and `SUAS_ALLOW_REAL_EXTERNAL_EFFECTS=true` is valid.
+`uber_api` is authorized only as the D-017 transportation adapter mode. `amadeus_lodging` is authorized only as the D-018 temporary-shelter search/inventory adapter mode. Both remain invalid for real external effects until `SUAS_ENV=PRODUCTION`, SPEC-018 readiness passes, required secrets and callback/webhook validation are configured, and `SUAS_ALLOW_REAL_EXTERNAL_EFFECTS=true` is valid.
 
 `SUAS_SHELTER_RESERVATION_MODE` defaults to `blocked_by_payment_architecture`. `card_free_enterprise` is valid only when a released, owner-approved deployment record identifies a documented enterprise contract under which the selected reservation can complete without SUAS collecting, transmitting, proxying, tokenizing, or storing raw payment-card data. Configuration alone cannot assert that contract exists. Otherwise reservation initiation fails closed as `BLOCKED_BY_PAYMENT_ARCHITECTURE` and returns to `ManualShelterAdapter` or another explicitly allowed human path.
 
@@ -116,7 +116,7 @@ Before serving traffic or running workers, configuration validation must fail cl
 - spec version or release manifest mismatch;
 - real external effects enabled outside an authorized production release;
 - LOCAL/TEST/STAGING points at known production data resources;
-- a real provider adapter is configured without a released provider decision, or `uber_api`/`amadeus_search` is configured for real effects before SPEC-018/readiness authorization;
+- a real provider adapter is configured without a released provider decision, or `uber_api`/`amadeus_lodging` is configured for real effects before SPEC-018/readiness authorization;
 - `card_free_enterprise` shelter reservation is configured without the documented contract and release/deployment record required above;
 - required secrets are absent for an enabled capability;
 - `SUAS_SUPPORT_SIGNAL_MODE` attempts production scoring without a released signal version;
