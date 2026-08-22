@@ -35,14 +35,14 @@ Required:
 
 - `support_case_id`
 - `due_at`
-- `responsible_type`
-- `responsible_id`
+- `responsible_type` — the closed set `RESPONDER|VETERAN|ORG_ADMIN|SYSTEM` (0.1.4)
+- `responsible_id` — references the actor identified by `responsible_type`
 - `status`
 
 Optional:
 
 - `service_request_id`
-- related `referral_id` linkage through the accepted data model
+- `referral_id` FK (0.1.4) when the Follow-Up is the check-back for a Referral ([REFERRALS.md](REFERRALS.md) §6, [DATA_MODEL.md](DATA_MODEL.md) §6)
 - completion/cancellation/reschedule reason metadata
 
 Veteran may see prompts addressed to them under the MVP visibility rules.
@@ -51,14 +51,14 @@ Veteran may see prompts addressed to them under the MVP visibility rules.
 
 ## 4. Retry semantics
 
-`FollowUp.retry_count` means **coordination-attempt retry count**, not infrastructure/message-delivery attempts.
+The coordination counter is named `coordination_attempt_count` (0.1.4, matching [DATA_MODEL.md](DATA_MODEL.md) §6; earlier drafts called it `retry_count`). It means **coordination-attempt retry count**, not infrastructure/message-delivery attempts.
 
-Examples that may increment Follow-Up coordination retry count:
+Examples that may increment `coordination_attempt_count`:
 
 - responder attempted the required check-back and did not reach the veteran/provider;
 - a scheduled coordination action was attempted but could not be completed and will be retried.
 
-The following do **not** increment `FollowUp.retry_count`:
+The following do **not** increment `coordination_attempt_count`:
 
 - SMS/email provider send retries;
 - webhook retries;
@@ -98,6 +98,7 @@ Rules:
 ### Reschedule
 
 - reason + new `due_at` required;
+- reschedule returns the Follow-Up to `SCHEDULED` with a bumped `schedule_version` (0.1.4); the `RESCHEDULED` value is retained for schema fidelity but is **not** a resting status, so a due-sweep selecting `SCHEDULED` still finds a rescheduled Follow-Up;
 - prior due-time history remains inspectable through Audit/Domain history as accepted;
 - new schedule gets a new durable due-work identity/version so old queued work becomes stale.
 
