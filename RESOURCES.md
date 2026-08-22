@@ -27,6 +27,7 @@ Catalog freshness, provider transactional availability, and actual fulfillment a
 | `coverage_geometry` | optional; D-014/physical representation open |
 | `hours` | optional |
 | `contact_method` | public/operational contact path, no credentials |
+| `contact_method_kind` | optional scheme discriminator for `contact_method` (0.1.4), one of `PHONE`,`EMAIL`,`URL`,`FREEFORM`; absent/`FREEFORM` means unstructured text and no direct action is offered |
 | `referral_method` | how a Referral is initiated |
 | `cost` | optional/informational; not billing authority |
 | `capacity` | optional snapshot; not presumed real-time |
@@ -36,6 +37,8 @@ Catalog freshness, provider transactional availability, and actual fulfillment a
 | `verification_source` | required |
 
 Provider API credentials/secrets are never Resource fields.
+
+`contact_method_kind` (0.1.4) is what lets the veteran-visible surface offer a direct call/email/web action for a recorded `PHONE`/`EMAIL`/`URL` value ([MVP_REFERENCE.md](MVP_REFERENCE.md) §8) instead of guessing a scheme from free text. The discriminator is additive and backward-compatible: a Resource with no kind (or `FREEFORM`) renders `contact_method` as text exactly as before. The vocabulary is owned here, not by a renderer.
 
 ---
 
