@@ -6,7 +6,7 @@ Dates are America/Los_Angeles (PT). Lifecycle changes are owner-controlled.
 
 ## Unreleased — draft Rev 3 fence-post contracts (not a version bump)
 
-**Draft / not implementation authority.** Released `0.1.3` remains the implementation contract. These additions do not bump the stack and do not mark any artifact `accepted` or `released`.
+**Draft / not implementation authority.** Released `0.1.6` remains the implementation contract. These additions do not bump the stack and do not mark any artifact `accepted` or `released`.
 
 - Added [FENCE_POSTS.md](FENCE_POSTS.md) — Rev 3 fence-post outcomes `G1`–`G14` as draft, testable contracts.
 - Added [SURFACES.md](SURFACES.md) — anonymous public front door vs identified opt-in platform; crossing remains an affirmative act and declining costs nothing.
@@ -19,6 +19,19 @@ Dates are America/Los_Angeles (PT). Lifecycle changes are owner-controlled.
 - Pushed release pin updates to keep provenance consistent with the final `0.1.3` draft-closure SHA lineage.
 
 No implementation code is included.
+
+---
+
+## 0.1.6 — 2026-08-22 — `released`
+
+**Wave A editorial hygiene patch. Closes no owner decision; no product roles, safety/privacy, API selector, or event-schema change; production readiness unchanged.**
+
+- Added [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md), superseding v0.1.5 while inheriting every decision ledger (D-012/D-017/D-018/D-001–D-025) unchanged.
+- Aligned D-015 / D-016 domain wording (`CASES.md`, `AUTH.md`, `PRODUCT.md`, `ONBOARDING.md`, `PILOT.md`, `PRIVACY.md`, `GLOSSARY.md`) with the v0.1 defaults already `DECIDED` in [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md). Removed leftover `INFERRED` / "remains open" prose.
+- Pointed SPEC-003 at the 0.1.4 effective-signal selection rule in `SUPPORT_SIGNALS.md` §7.1 / `DATA_MODEL.md` §4, and recorded the already-implemented two-override / chain case (a named target is excluded; remaining candidates ordered by `computed_at DESC`, `support_signal_id DESC`).
+- Stamped leftover high-traffic inline `draft` headers as stale, with an Authority line pointing at this manifest ([VERSIONING.md](VERSIONING.md) §1).
+- Did **not** invent a `ServiceOffer` / `ProviderOffer` join (G-I-4 remains open). Did not change D-011 / D-012 / D-015 / D-016 decision values.
+- Production/pilot readiness, real veteran data, and real external provider effects remain `NOT_READY` / prohibited until SPEC-018.
 
 ---
 

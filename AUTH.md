@@ -4,7 +4,8 @@
 
 **Actors:** Veteran, Responder, Organization Administrator, SUAS System Administrator, Trusted Contact (if enrolled), Service Provider user.
 
-**Status:** `draft` / `0.1.0`. SPEC-007 is dependency-blocked; this is preflight reconciliation.
+**Status:** `draft` / `0.1.0`. SPEC-007 is dependency-blocked; this is preflight reconciliation.  
+**Authority:** released via [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md). The inline `draft` marker is stale and is not authority ([VERSIONING.md](VERSIONING.md) §1).
 
 ---
 
@@ -26,7 +27,7 @@ Veterans use passwordless methods:
 | Email OTP | supported where email provider configured |
 | Phone OTP | supported where phone + SMS provider configured |
 
-At least one usable enrolled channel is required for MVP enrollment under the D-016 `INFERRED` default. Provider selection remains D-003/D-004.
+At least one usable enrolled channel is required for MVP enrollment under the D-016 `DECIDED` v0.1 default (self-attest + working passwordless contact; no VA/DD-214/in-person proofing). Provider selection remains D-003/D-004.
 
 No Veteran password or social login unless a later accepted spec adds it.
 
