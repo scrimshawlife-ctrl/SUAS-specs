@@ -16,7 +16,7 @@ A **Referral** is a directed, consented handoff to a destination Resource or Ser
 ## 2. Required content
 
 - `consent_grant_id` or documented accepted system basis that authorizes the destination/payload at send time;
-- destination type/id;
+- destination as a typed `{destination_type, destination_id}` (0.1.4), where `destination_type` is the closed set of canonical entity-type names `Resource|ServiceProvider|Organization|External` and `destination_id` references the entity of that type (for `External`, an opaque recorded reference for a destination not modeled as a SUAS entity);
 - reason;
 - method (`IN_APP`, `PHONE`, `EMAIL`, or accepted future method);
 - status;
