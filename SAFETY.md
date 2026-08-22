@@ -25,7 +25,7 @@ The product and implementation **must not**:
 5. Imply that SUAS replaces emergency services.
 6. Use a generative model for any safety-critical decision (see §6).
 
-Approved on-screen safety copy is **D-012 `DECISION_PENDING`**. Until D-012 is closed, implementation may reserve a copy slot but must not invent crisis-resource wording presented as official.
+Approved on-screen safety copy is released by **D-012** in [SAFETY_COPY.md](SAFETY_COPY.md) (v0.1.5). Implementations render that approved copy where this document requires it and MUST NOT invent alternative crisis-resource wording presented as official. The only authorized crisis destinations are **911** and the **988 Suicide & Crisis Lifeline** (call or text; Veterans reach the Veterans Crisis Line through 988). Closing D-012 approves copy only; it is not production-operating approval (SPEC-018 still gates real operation).
 
 ---
 
@@ -35,7 +35,7 @@ When the effective signal is `RED`, the system **must**:
 
 ### 3.1 Surface approved crisis resources
 
-- Show the veteran the **approved** crisis-resource list (copy and destinations from D-012 when closed).
+- Show the veteran the **approved** crisis-resource copy and destinations from [SAFETY_COPY.md](SAFETY_COPY.md) (D-012): 911 for immediate danger and 988 (call or text) for suicidal thoughts / emotional crisis.
 - This is a display of resources, not a dispatch.
 - Do not auto-dial, auto-SMS public safety, or auto-create an emergency ticket at an external agency.
 
@@ -69,7 +69,11 @@ Emit and persist:
 
 ## 5. Veteran-initiated emergency
 
-If a Veteran indicates they need emergency services, the UI may display approved copy (D-012) instructing them to contact local emergency services themselves. SUAS still does not auto-dispatch.
+If a Veteran indicates they need emergency services, the UI displays the approved copy in [SAFETY_COPY.md](SAFETY_COPY.md) instructing them to contact 911 / 988 themselves. SUAS still does not auto-dispatch.
+
+### 5.1 State truthfulness (D-012)
+
+Crisis and practical-support surfaces MUST obey the core principle in [SAFETY_COPY.md](SAFETY_COPY.md) §5: never let interface language imply a stronger real-world intervention than the system can prove occurred. The conditions `REQUESTED ≠ ACCEPTED ≠ DISPATCHED ≠ ARRIVED ≠ RESOLVED` are distinct, are part of the domain model (mapped onto the canonical Service Request / Fulfillment states and the [MVP_REFERENCE.md](MVP_REFERENCE.md) §7.2 truthfulness table), and a later state is surfaced only when its recorded fact exists. `DISPATCHED`/`ARRIVED` describe a verified **practical-support** provider only and never emergency-services dispatch. The approved/forbidden phrase lists in [SAFETY_COPY.md](SAFETY_COPY.md) §4 bind every crisis surface.
 
 ---
 
@@ -105,7 +109,8 @@ Listed in §3.4. Notification records must include `consent_basis` ([NOTIFICATIO
 - Suicide-prediction claim
 - Autonomous emergency intervention
 - Replacing emergency services
-- Invented safety copy before D-012
+- Inventing safety copy or crisis destinations outside the D-012 approved set in [SAFETY_COPY.md](SAFETY_COPY.md)
+- Interface language implying a stronger intervention than the recorded facts prove (SAFETY_COPY.md §5)
 
 ---
 
@@ -113,9 +118,9 @@ Listed in §3.4. Notification records must include `consent_basis` ([NOTIFICATIO
 
 Critical suite: **red-state behavior** ([TESTING.md](TESTING.md) SAFETY gate).
 
-- `RED` surfaces the approved-resource slot (or a placeholder when D-012 is open) and does not call an emergency API.
+- `RED` surfaces the approved D-012 crisis copy/destinations from [SAFETY_COPY.md](SAFETY_COPY.md) (911 and 988) and does not call an emergency API.
 - Human review queue priority is set.
 - Trusted Contact is notified only with `can_receive`+`RED`.
 - Revoked grant blocks the alert.
 - No generative function in the red-state decision path.
-- Copy does not claim SUAS is emergency services.
+- Copy does not claim SUAS is emergency services, ships no crisis destination other than 911/988, and never displays a support state (`ACCEPTED`/`DISPATCHED`/`ARRIVED`/`RESOLVED`) whose recorded fact does not exist (SAFETY_COPY.md §4, §5).

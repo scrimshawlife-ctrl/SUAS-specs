@@ -1,12 +1,12 @@
-# Shut Up and Serve (SUAS) — Specification v0.1.4
+# Shut Up and Serve (SUAS) — Specification v0.1.5
 
 **Product:** Shut Up and Serve
 **System:** SUAS
-**Version:** `0.1.4`
+**Version:** `0.1.5`
 **Lifecycle:** `released`
 **Phase:** `IMPLEMENTATION_AUTHORIZED`
 **Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`
-**Release manifest:** [RELEASE_MANIFEST-0.1.4.md](RELEASE_MANIFEST-0.1.4.md)
+**Release manifest:** [RELEASE_MANIFEST-0.1.5.md](RELEASE_MANIFEST-0.1.5.md)
 
 `SUAS-specs` is canonical. `scrimshawlife-ctrl/SUAS` implements released contracts and may not redefine them from code, prototype behavior, provider behavior, deployment state, or traction.
 
@@ -14,7 +14,7 @@ The weekend-build document **HACKATHON BUILD SPECIFICATION Rev 3 (2026-08-14)** 
 
 ## Start here for implementation / Fable handoff
 
-1. [RELEASE_MANIFEST-0.1.4.md](RELEASE_MANIFEST-0.1.4.md)
+1. [RELEASE_MANIFEST-0.1.5.md](RELEASE_MANIFEST-0.1.5.md)
 2. [HANDOFF.md](HANDOFF.md)
 3. [ENVIRONMENT.md](ENVIRONMENT.md)
 4. [STATUS.md](STATUS.md)
@@ -48,7 +48,7 @@ SUAS is not an EHR, diagnosis system, suicide-prediction product, automated emer
 - Production readiness: `NOT_READY`
 - All 12 readiness gates: `NOT_READY`
 
-v0.1.4 is an implementation-conformance codification patch over v0.1.3. It adopts accepted Bucket I gaps (P-1..P-23) that codify already-implemented behavior or clarify editorially; it closes no owner decision and changes no product/domain/API semantics, safety/privacy, or readiness. v0.1.3 (inherited) is a D-018 shelter adapter decision patch: Amadeus may be implemented adapter-locally for commercial shelter search/inventory behind `TemporaryShelterPort`, `ManualShelterAdapter` remains mandatory, and production use remains blocked.
+v0.1.5 is a D-012 safety/crisis copy decision patch over v0.1.4: it approves the on-screen crisis copy and destinations (911 / 988) in [SAFETY_COPY.md](SAFETY_COPY.md) and the `REQUESTED ≠ ACCEPTED ≠ DISPATCHED ≠ ARRIVED ≠ RESOLVED` state-truthfulness contract; it approves copy only (no automated dispatch, no production-operating approval). v0.1.4 (inherited) is an implementation-conformance codification patch adopting accepted Bucket I gaps (P-1..P-23). v0.1.3 (inherited) is a D-018 shelter adapter decision patch: Amadeus may be implemented adapter-locally for commercial shelter search/inventory behind `TemporaryShelterPort`, `ManualShelterAdapter` remains mandatory, and production use remains blocked.
 
 ## Environment and configuration
 
@@ -79,7 +79,7 @@ Until later decisions/evidence close, do not make operational:
 
 - real production infrastructure or real veteran data;
 - production Support Signal scoring;
-- official safety/crisis copy;
+- production safety operation on real veteran data (the on-screen crisis copy/destinations are approved by D-012 in [SAFETY_COPY.md](SAFETY_COPY.md), but real operation remains SPEC-018-gated and SUAS performs no automated emergency dispatch);
 - real food/external peer provider adapters; real transportation bookings; and real Amadeus inventory effects, holds, reservations, or cancellations until SPEC-018 readiness. Shelter reservation also remains `BLOCKED_BY_PAYMENT_ARCHITECTURE` absent a documented card-free enterprise contract;
 - production workload/SLO/RTO/RPO claims;
 - sensitive aggregate reporting;
@@ -93,7 +93,7 @@ See [RELEASE_DECISIONS-0.1.3.md](RELEASE_DECISIONS-0.1.3.md), [RELEASE_DECISIONS
 
 **Architecture/API:** [ARCHITECTURE.md](ARCHITECTURE.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [DATA_MODEL.md](DATA_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [APIS.md](APIS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md).
 
-**Domain:** [AUTH.md](AUTH.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [FULFILLMENT.md](FULFILLMENT.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md).
+**Domain:** [AUTH.md](AUTH.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SAFETY.md](SAFETY.md), [SAFETY_COPY.md](SAFETY_COPY.md), [TRUSTED_CIRCLE.md](TRUSTED_CIRCLE.md), [CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md), [RESOURCES.md](RESOURCES.md), [REFERRALS.md](REFERRALS.md), [FULFILLMENT.md](FULFILLMENT.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [NOTIFICATIONS.md](NOTIFICATIONS.md).
 
 **Draft Rev 3 contracts (not implementation authority):** [FENCE_POSTS.md](FENCE_POSTS.md), [SURFACES.md](SURFACES.md), [ISLANDS.md](ISLANDS.md), [RIDES.md](RIDES.md).
 

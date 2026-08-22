@@ -22,6 +22,18 @@ No implementation code is included.
 
 ---
 
+## 0.1.5 — 2026-08-22 — `released`
+
+**D-012 safety/crisis copy decision patch. Copy approval only; no canonical state-machine/API/event change; no automated dispatch; production readiness unchanged.**
+
+- Added [SAFETY_COPY.md](SAFETY_COPY.md), the released D-012 approved on-screen crisis copy (veteran-facing, banners/footer, operator-side), the approved/forbidden language rules, and the `REQUESTED ≠ ACCEPTED ≠ DISPATCHED ≠ ARRIVED ≠ RESOLVED` state-truthfulness principle.
+- Added [RELEASE_DECISIONS-0.1.5.md](RELEASE_DECISIONS-0.1.5.md) and [RELEASE_MANIFEST-0.1.5.md](RELEASE_MANIFEST-0.1.5.md), superseding v0.1.4 while inheriting the D-017/D-018 and D-001–D-025 ledgers unchanged.
+- Closed D-012 in `DECISIONS.md`; the only authorized crisis destinations are `911` and the `988` Suicide & Crisis Lifeline (call or text; Veterans via `988`).
+- Updated `SAFETY.md` (approved destinations, §5.1 state truthfulness, non-goals, testability), `MVP_REFERENCE.md` §7.3 (crisis copy now `MUST_MATCH` the approved wording), and `ENVIRONMENT.md` (`SUAS_SAFETY_COPY_MODE=approved`).
+- SUAS still performs no automated emergency dispatch, diagnosis, or suicidality determination; copy approval is not production-operating approval. Production/pilot readiness, real veteran data, and real external effects remain `NOT_READY` / prohibited until SPEC-018.
+
+---
+
 ## 0.1.4 — 2026-08-22 — `released`
 
 **Implementation-conformance codification patch. Closes no owner decision; no product roles, safety/privacy, API selector, or event-schema change; production readiness unchanged.**

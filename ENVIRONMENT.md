@@ -91,10 +91,10 @@ Future real food or external peer-support modes still require D-019 or D-020 clo
 Until their owning decisions close:
 
 - `SUAS_SUPPORT_SIGNAL_MODE` = `disabled|fixture`
-- `SUAS_SAFETY_COPY_MODE` = `placeholder_test_only|disabled`
+- `SUAS_SAFETY_COPY_MODE` = `placeholder_test_only|approved|disabled`
 - `SUAS_SENSITIVE_AGGREGATE_REPORTING` = `disabled`
 
-`fixture` and `placeholder_test_only` are never production authority.
+`fixture` and `placeholder_test_only` are never production authority. `approved` (0.1.5) renders the released D-012 copy in [SAFETY_COPY.md](SAFETY_COPY.md) and is valid in any environment; it approves wording only and does not by itself authorize production operation, which remains gated by SPEC-018 and the environment rules above.
 
 ## 4. Configuration precedence
 
