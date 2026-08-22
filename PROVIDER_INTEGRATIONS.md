@@ -49,11 +49,17 @@ Every Resource/Service Provider may declare one or more integration modes:
 
 An API-backed provider is not inherently preferred over a manual provider. Operational policy determines selection.
 
+Three "mode" concepts are drawn from this same enum but are independent (0.1.4): `Resource.integration_modes` is the catalog capability *set* a Resource declares; `FulfillmentAttempt.integration_mode` is the single mode used for *one* attempt; and `ProviderOffer.fulfillment_mode` is the mode of a *specific offer*. No subset or implication relationship holds between them — a Resource declaring several modes does not require any particular attempt or offer mode, and an attempt/offer mode need not appear in the Resource set beyond what routing policy selects.
+
 ---
 
 ## 4. Capability ports
 
 The following port names are logical examples. Exact programming-language interface names may vary, but semantics must not.
+
+### 4.0 Mandatory manual adapter and registry (0.1.4)
+
+Each capability has a mandatory manual adapter named per capability — `ManualShelterAdapter`, `ManualTransportationPort` adapter, `ManualFoodAdapter`, `ManualPeerSupportAdapter` — rather than a single bare "Manual Adapter". Adapters are addressed through a per-capability registry keyed by capability + adapter id, so routing selects a concrete adapter within a capability. Invariant 8 (manual coordination always available) is satisfied by the manual adapter's guaranteed presence in every capability's registry.
 
 ### 4.1 TransportationPort
 
