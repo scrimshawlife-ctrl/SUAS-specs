@@ -29,10 +29,19 @@ A Consent Grant has:
 
 Grants are **revocable, timestamped, versioned, auditable, purpose-scoped**.
 
-### 2.1 Required grant examples (MVP)
+`grantee_id` typing per `grantee_type` (0.1.4): `TRUSTED_CONTACT` → trusted-contact id; `RESPONDER` → user id; `ORGANIZATION` → organization id; `SERVICE_PROVIDER` → provider/adapter id; `SYSTEM` → system-basis code (see §3). `grantee_id` is stored as opaque text keyed this way.
 
-- `can_receive` + `YELLOW` | `ORANGE` | `RED` — whether a Trusted Contact (or other grantee) may be notified at that Support Signal level.
-- `can_view` + `support_signal` | `checkin_answers` | `current_requests` | `location`.
+### 2.1 Permission/scope pairing (closed, 0.1.4)
+
+The permission→scope pairing is a **closed** table; an evaluation with an unlisted pair is rejected (it is not a valid grant shape). Earlier drafts listed these as "e.g." examples; they are the enforced set.
+
+| `permission` | Allowed `scope` values |
+|---|---|
+| `can_receive` | `YELLOW`, `ORANGE`, `RED` |
+| `can_view` | `support_signal`, `checkin_answers`, `current_requests`, `location` |
+| `can_share` | `service_request_fulfillment` |
+
+- `can_receive` + level — whether a Trusted Contact (or other grantee) may be notified at that Support Signal level.
 - `can_share` + `service_request_fulfillment` — permits minimum-necessary Service Request data to be disclosed to a named/selected Service Provider for a fulfillment attempt. Location or other sensitive scopes still require explicit coverage when transmitted.
 
 A grant for `YELLOW` does not imply `ORANGE` or `RED`. A grant for `support_signal` does not imply `checkin_answers`. A grant to fulfill a Service Request does not authorize unrelated Case Notes, Check-In answers, Support Signal basis, or Trusted Circle data.
@@ -52,6 +61,14 @@ A grant for `YELLOW` does not imply `ORANGE` or `RED`. A grant for `support_sign
 9. Provider adapters receive only the minimum fields needed for that capability. The adapter must not receive entire Support Case, Check-In, Case Note, Trusted Circle, or audit payloads by default.
 10. Consent evaluation must occur **before each external mutation that newly discloses data**. A previous quote/search/attempt does not create permanent permission for later booking, reroute, retry, or replacement-provider disclosure.
 11. If a provider is replaced or rerouted, consent must cover the new grantee/provider and projection before disclosure.
+
+### 3.1 System-basis registry (closed, 0.1.4)
+
+The documented in-product system bases are exactly `{SYSTEM_INTERNAL_PROCESSING, RESPONDER_CASE_ASSIGNMENT}`; any other basis denies. `SYSTEM_INTERNAL_PROCESSING` covers non-disclosing system actions under rule 5 (compute a signal, write an audit row); `RESPONDER_CASE_ASSIGNMENT` covers the least-privilege assigned-Responder access under rule 6. The `consent_basis` recorded on an access Audit Event is therefore one of these two system bases or `CONSENT_GRANT`.
+
+### 3.2 Purpose matching (interim, 0.1.4)
+
+Until a released purpose vocabulary exists, an evaluation matches deterministically on `permission` + `scope` + grantee tuple. `purpose` is recorded on the grant, the `ConsentEvent`, and the access Audit Event but is **not** mechanically compared (rule 4 is satisfied by the permission/scope/grantee match plus the recorded purpose). A released purpose vocabulary — an owner decision, not made here — would make purpose mechanically enforceable.
 
 ---
 
