@@ -153,11 +153,11 @@ Class: `MUST_CHANGE_FOR_PRODUCTION` semantics, `MUST_PRESERVE_BEHAVIOR` interact
 
 ### 7.3 Crisis / immediate-resource copy
 
-The reference gives immediate crisis resources prominently. Preserve that placement/immediacy, but exact approved production safety copy/destinations are governed by [SAFETY.md](SAFETY.md) and D-012.
+The reference gives immediate crisis resources prominently. Preserve that placement/immediacy. Exact approved safety copy and destinations are governed by [SAFETY.md](SAFETY.md) and released by D-012 in [SAFETY_COPY.md](SAFETY_COPY.md) (v0.1.5): the authorized crisis destinations are **911** and the **988 Suicide & Crisis Lifeline** (call or text). Render that approved copy; do not treat prototype wording/statistics as accepted clinical/safety claims, and do not ship any other hotline/number/URL as official.
 
-Do not treat prototype wording/statistics as accepted clinical/safety claims.
+Crisis and practical-support surfaces also obey the state-truthfulness rule (SAFETY.md §5.1 / SAFETY_COPY.md §5): `REQUESTED ≠ ACCEPTED ≠ DISPATCHED ≠ ARRIVED ≠ RESOLVED` are distinct and a later state is shown only when its recorded fact exists (consistent with §7.2).
 
-Class: placement `MUST_MATCH`; exact copy `MUST_CHANGE_FOR_PRODUCTION` where not approved.
+Class: placement `MUST_MATCH`; exact copy now `MUST_MATCH` the D-012 approved wording (previously `MUST_CHANGE_FOR_PRODUCTION` while unapproved).
 
 ### 7.4 Mission/statistic/clinical language
 
