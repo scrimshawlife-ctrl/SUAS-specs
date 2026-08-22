@@ -2,6 +2,8 @@
 
 **Related:** [SECURITY.md](SECURITY.md), [COMPLIANCE.md](COMPLIANCE.md), [CONSENT.md](CONSENT.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [PRODUCT.md](PRODUCT.md), [DECISIONS.md](DECISIONS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md)
 
+**Authority:** released via [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md). Any leftover inline `draft` marker is stale and is not authority ([VERSIONING.md](VERSIONING.md) §1).
+
 ---
 
 ## 1. Purpose
@@ -70,7 +72,7 @@ See [CONSENT.md](CONSENT.md) and [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATION
 
 A Veteran may request an export of their profile, check-ins, grants, cases (veteran-visible fields), requests, and settlements. Exact package format `DECISION_PENDING`. Export is audited.
 
-Veteran-visible fields (`INFERRED` MVP default; D-015): own Check-Ins, own Service Request status, Settlement fields written for them, Follow-Up prompts addressed to them, Support Case existence and status. Export **must not** include full Case Notes, Contact Attempts, other veterans, responder internal queue fields, or other Organizations. See [CASES.md](CASES.md) section 8.
+Veteran-visible fields (D-015 `DECIDED` v0.1 default): own Check-Ins, own Service Request status, Settlement fields written for them, Follow-Up prompts addressed to them, Support Case existence and status. Export **must not** include full Case Notes, Contact Attempts, other veterans, responder internal queue fields, or other Organizations. See [CASES.md](CASES.md) section 8.
 
 Provider-side records are not automatically part of the SUAS export unless SUAS stores them as canonical veteran-visible fields. External provider data-rights/export behavior is provider/legal-contract specific and must not be invented.
 
