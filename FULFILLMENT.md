@@ -97,6 +97,19 @@ SUAS must reconcile by idempotency key/external reference/provider status where 
 
 ## 4. Provider-neutral execution
 
+### 4.0 Category ↔ capability ↔ port mapping (0.1.4)
+
+The four MVP categories map one-to-one to a capability id, a provider-neutral port, and the value stored in `FulfillmentAttempt.capability`. Persistence, routing, and consent use the **category value** as the canonical key.
+
+| MVP category | Capability id | Provider-neutral port | `FulfillmentAttempt.capability` |
+|---|---|---|---|
+| `FOOD` | `FOOD` | `FoodSupportPort` | `FOOD` |
+| `TRANSPORTATION` | `TRANSPORTATION` | `TransportationPort` | `TRANSPORTATION` |
+| `SHELTER` | `SHELTER` | `TemporaryShelterPort` | `SHELTER` |
+| `PEER_SUPPORT` | `PEER_SUPPORT` | `PeerSupportPort` | `PEER_SUPPORT` |
+
+This publishes the equivalence the state machines already imply; it introduces no new names. See [ARCHITECTURE.md](ARCHITECTURE.md) §11.
+
 MVP service categories may use:
 
 - `TransportationPort`

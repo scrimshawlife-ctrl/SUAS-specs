@@ -39,6 +39,7 @@ Required logical fields:
 - channel;
 - `consent_basis` or documented system basis;
 - `template_version`;
+- optional subject reference `subject_type` + `subject_id` (0.1.4) linking the send to the workflow entity it was sent for, where `subject_type ∈ {SupportCase, ServiceRequest, Referral}` (the canonical entity-type names); additive and nullable, and required for MVP `RESPONDER_NOTIFIED` to be truthfully reachable ([MVP_REFERENCE.md](MVP_REFERENCE.md) §7.2, [DATA_MODEL.md](DATA_MODEL.md) §9);
 - logical-send `dedupe_key`/equivalent deterministic identity where the generating policy can be delivered more than once;
 - `delivery_status`;
 - `attempt_count`, `last_attempt_at`, `sent_at` as applicable;

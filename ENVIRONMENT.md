@@ -168,7 +168,7 @@ These values may be shown in an admin/debug build-info surface without secrets o
 - Migrations cite the released data/domain contract they implement.
 - Destructive migrations require an explicit migration/rollback or forward-fix plan.
 - A code build must reject a database schema state it cannot safely operate against.
-- Schema compatibility cannot be inferred only from application version; use an explicit migration/schema version mechanism.
+- Schema compatibility cannot be inferred only from application version; use an explicit migration/schema version mechanism. That mechanism (0.1.4): the schema version is a monotonic integer equal to the highest applied numbered migration, recorded in a runner-owned bookkeeping table; the build declares the schema version it requires and refuses to operate against a state below it ([VERSIONING.md](VERSIONING.md) §3).
 - Rollback must not re-run external provider effects or lose idempotency/event/Settlement/FulfillmentAttempt history.
 
 ## 10. Handoff acceptance

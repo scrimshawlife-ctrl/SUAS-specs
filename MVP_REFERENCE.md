@@ -135,7 +135,19 @@ Production must not:
 
 Truthful states may include `REQUESTED`, `SEARCHING`, `RESPONDER_NOTIFIED`, `RESPONDER_ACCEPTED`, `NO_RESPONDER_CURRENTLY_AVAILABLE`, `DEGRADED`, `CANCELLED` as **UI labels mapped to canonical Case/Request/notification facts**, not new hidden domain states.
 
-`Call` and `Message` appear only when an authorized contact path actually exists.
+QRF label → canonical fact mapping (0.1.4):
+
+| UI label | Canonical fact that backs it |
+|---|---|
+| `REQUESTED` | a `PEER_SUPPORT` Service Request has been created/submitted |
+| `SEARCHING` | the request is in matching (or assigned without a recorded responder notification delivery) — the resting state absent a stronger fact |
+| `RESPONDER_NOTIFIED` | a Notification about **this** request, addressed to the active responder, reached a sent/delivered status ([DATA_MODEL.md](DATA_MODEL.md) §9 subject reference); absent that linked delivery the surface rests on `SEARCHING` |
+| `RESPONDER_ACCEPTED` | the request/assignment records responder acceptance evidence |
+| `NO_RESPONDER_CURRENTLY_AVAILABLE` | matching is exhausted with no available responder |
+| `DEGRADED` | a truthful degraded/no-availability operational state |
+| `CANCELLED` | the request reached `CANCELLED` |
+
+`RESPONDER_NOTIFIED` specifically requires a recorded delivery linked to the request; an assignment alone is not sufficient. `Call` and `Message` appear only when an authorized contact path actually exists.
 
 Class: `MUST_CHANGE_FOR_PRODUCTION` semantics, `MUST_PRESERVE_BEHAVIOR` interaction.
 

@@ -42,6 +42,8 @@ A case may be requested when:
 
 MVP operating default remains one non-closed coordination Case per Veteran (`INFERRED`; later multi-case policy requires a spec change).
 
+The Case carries a nullable `priority_signal_level` (0.1.4) tracking the effective Support Signal level as a queue-filter fact only ([DATA_MODEL.md](DATA_MODEL.md) §6); the command that writes it from a signal change remains an owner decision (G-I-28).
+
 ### 3.1 Atomic creation invariant
 
 Signal/event/job delivery may be duplicated or concurrent. Therefore case creation must be idempotent against a stable **case-open intent** and must not rely on `read no case → insert` without conflict protection.
@@ -68,7 +70,7 @@ Every transition records source, target, actor, prerequisites, timestamps, audit
 | `OPEN` | `TRIAGED` | Responder | authorized queue access | — |
 | `TRIAGED` | `ASSIGNED` | Responder claim / Org-admin assign | target membership ACTIVE; atomic assignment succeeds | `CASE_ASSIGNED` |
 | `OPEN` | `ASSIGNED` | Responder claim / Org-admin assign | target membership ACTIVE; atomic assignment succeeds | `CASE_ASSIGNED` |
-| `ASSIGNED` | `ACTIVE` | assigned Responder | first qualifying work action or explicit activate command | — |
+| `ASSIGNED` | `ACTIVE` | assigned Responder | explicit `ACTIVATE` command (0.1.4); no work action implicitly activates a Case | — |
 | `ACTIVE` | `FOLLOWUP` | assigned Responder | Follow-Up exists or explicit transition with documented reason | `FOLLOWUP_CREATED` only if created |
 | `FOLLOWUP` | `ACTIVE` | assigned Responder | new coordination work required | — |
 | `ACTIVE` | `RESOLVED` | assigned Responder | Settlement present; no blocking non-terminal Service Requests | `CASE_RESOLVED` |
@@ -81,6 +83,10 @@ Every transition records source, target, actor, prerequisites, timestamps, audit
 | `ACTIVE` | `ACTIVE` | assigned Responder | `ESCALATE` with reason | `CASE_ESCALATED` |
 | `FOLLOWUP` | `ACTIVE` | assigned Responder | `ESCALATE` with reason; new active work required | `CASE_ESCALATED` |
 
+### 4.0 Case commands (0.1.4)
+
+The named case commands are `TRIAGE`, `CLAIM_CASE`/`ASSIGN_CASE`, `ACTIVATE`, `ESCALATE`, `RESOLVE`, `CLOSE`, and `REOPEN`. `ACTIVATE` is the only edge from `ASSIGNED` to `ACTIVE`: activation is always an explicit command, never an implicit side effect of recording work.
+
 ### 4.1 Escalation correction
 
 `ESCALATE` is **not** a universal state jump from any non-terminal state. An unassigned `OPEN`/`TRIAGED` case cannot be escalated by an "assigned Responder" because no such assignment exists.
@@ -89,7 +95,7 @@ For unassigned high-priority cases, queue priority/Org-admin assignment is the m
 
 ### 4.2 Reopen
 
-`CLOSED` → `OPEN` is allowed only through a documented reopen command by an authorized owning-org actor or SUAS-admin break-glass path with reason and audit. Prior Settlement/history remain immutable; resolution of the reopened cycle requires a new Settlement record/linkage as later data-model semantics specify.
+`CLOSED` → `OPEN` is the only reopen edge (0.1.4): a `RESOLVED` Case is closed before it can be reopened into a new resolution cycle, so there is no `RESOLVED → OPEN` edge. It is allowed only through a documented reopen command by an authorized owning-org actor or SUAS-admin break-glass path with reason and audit. Prior Settlement/history remain immutable; resolution of the reopened cycle requires a new Settlement record/linkage as later data-model semantics specify.
 
 ---
 
@@ -124,7 +130,7 @@ Queue read freshness is advisory; authorization/claim validity is always re-chec
 ## 7. Resolution and closure
 
 - `RESOLVED` requires a Settlement.
-- Blocking Service Requests/Follow-Ups must satisfy the documented terminal rules.
+- Blocking Service Requests/Follow-Ups must satisfy the documented terminal rules. A Service Request **blocks** Case resolution iff its status is **not** one of the terminal statuses `{CLOSED, CANCELLED, EXPIRED, UNFULFILLABLE}` (0.1.4); a request in any other status (including `CONFIRMED`, which is non-terminal for this rule) still blocks resolution.
 - `CLOSED` retains all history.
 - Signal returning `GREEN` does not auto-close a Case.
 - Generative AI must not determine resolution/closure.
