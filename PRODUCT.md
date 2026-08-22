@@ -3,6 +3,7 @@
 **Related:** [README.md](README.md), [GLOSSARY.md](GLOSSARY.md), [SAFETY.md](SAFETY.md), [PILOT.md](PILOT.md), [SETTLEMENT.md](SETTLEMENT.md), [DECISIONS.md](DECISIONS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [MVP_REFERENCE.md](MVP_REFERENCE.md)
 
 **Status:** `draft` / `0.1.0` / not implementation authority.  
+**Authority:** released via [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md). The inline `draft` marker is stale and is not authority ([VERSIONING.md](VERSIONING.md) §1).  
 **SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))
 
 ---
@@ -49,9 +50,9 @@ SUAS does not serve clinicians-as-clinicians. A Responder who happens to hold a 
 
 The person whose need is coordinated. Owns Check-Ins, Consent Grants, Trusted Circle membership, and the right to revoke consent. May open or confirm needs, confirm or dispute Fulfillment, and complete Follow-Up responses when asked. Authentication: passwordless (see [AUTH.md](AUTH.md)).
 
-MVP enrollment (`INFERRED` operational default; D-016 remains open): self-attested veteran status plus a working email and/or phone via passwordless auth. No VA identity API, no DD-214 upload, and no in-person proofing are required for the 25–50 Santa Clara County pilot. Do not invent a VA partnership. See [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [AUTH.md](AUTH.md).
+MVP enrollment (D-016 `DECIDED` v0.1 default): self-attested veteran status plus a working email and/or phone via passwordless auth. No VA identity API, no DD-214 upload, and no in-person proofing are required for the 25–50 Santa Clara County pilot. Do not invent a VA partnership. A later proofing step would require a new released decision. See [ONBOARDING.md](ONBOARDING.md), [PILOT.md](PILOT.md), [AUTH.md](AUTH.md).
 
-MVP visibility (`INFERRED` operational default; D-015 remains open): the Veteran can see their own Check-Ins, their own Service Request status, Settlement fields written for them, and Follow-Up prompts addressed to them. The Veteran cannot see full Case Notes, other veterans, responder internal queue fields, or other Organizations. This is not a clinical chart. See [CASES.md](CASES.md) section 8.
+MVP visibility (D-015 `DECIDED` v0.1 default): the Veteran can see their own Check-Ins, their own Service Request status, Settlement fields written for them, and Follow-Up prompts addressed to them. The Veteran cannot see full Case Notes, other veterans, responder internal queue fields, or other Organizations. This is not a clinical chart. See [CASES.md](CASES.md) section 8.
 
 ### 4.2 Responder
 
@@ -252,7 +253,7 @@ Detailed conformance semantics remain governed by later roadmap artifacts such a
 - Responders are humans operating a coordination console, not an EHR.
 - Resources in the catalog may be stale; freshness bands are operational recommendations, not legal coverage claims. See [RESOURCES.md](RESOURCES.md).
 - Exact signal scoring is D-011 `DECISION_PENDING`.
-- Approved safety copy is D-012 `DECISION_PENDING`.
+- Approved safety copy is D-012 `DECIDED` in [SAFETY_COPY.md](SAFETY_COPY.md) (copy approval only; not production-operating approval).
 
 ---
 

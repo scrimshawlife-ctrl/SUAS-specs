@@ -2,7 +2,8 @@
 
 **Related:** [ADMIN.md](ADMIN.md), [AUTH.md](AUTH.md), [PILOT.md](PILOT.md), [SAFETY.md](SAFETY.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [RESOURCES.md](RESOURCES.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [API.md](API.md), [DEPLOYMENT.md](DEPLOYMENT.md), [DECISIONS.md](DECISIONS.md), [FRICTION.md](FRICTION.md)
 
-**Status:** `draft` / `0.1.0`. First-run is a **gated bootstrap**, not a growth tour.
+**Status:** `draft` / `0.1.0`. First-run is a **gated bootstrap**, not a growth tour.  
+**Authority:** released via [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md). The inline `draft` marker is stale and is not authority ([VERSIONING.md](VERSIONING.md) §1).
 
 **Actors:** SUAS System Administrator, Organization Administrator, Responder, Veteran, Trusted Contact, Service Provider.
 
@@ -81,7 +82,7 @@ Order is gated. A later step must not become available in a way that bypasses an
 6. **Publish a support-signal rule version.** D-011 is still open: the published artifact may be an **unreleased fixture** labeled `UNRELEASED_FIXTURE`. Do not invent weights as policy ([SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [TESTING.md](TESTING.md)).
 7. **Load or verify a minimum Resource catalog** for Santa Clara County with `last_verified_at`, covering `FOOD`, `TRANSPORTATION`, `SHELTER`, `PEER_SUPPORT`. Stale or unverified resources must be **visible as stale**, not silently used ([RESOURCES.md](RESOURCES.md)).
 8. **Configure notification templates + channels.** SMS provider D-003 and email provider D-004 stay `DECISION_PENDING`. If a channel has no provider, mark it `UNAVAILABLE`. Do not fake-send ([NOTIFICATIONS.md](NOTIFICATIONS.md), [APIS.md](APIS.md)).
-9. **Set the approved safety / crisis-resource copy slot (D-012).** If unset: red-state still must **not** imply SUAS replaces 911; show a **blocked / incomplete banner to admins**; do **not** show invented copy to veterans ([SAFETY.md](SAFETY.md), [COMPLIANCE.md](COMPLIANCE.md)).
+9. **Set the environment to render the D-012 approved copy** in [SAFETY_COPY.md](SAFETY_COPY.md) (`SUAS_SAFETY_COPY_MODE=approved` per [ENVIRONMENT.md](ENVIRONMENT.md)). If the environment is not in `approved` mode: red-state still must **not** imply SUAS replaces 911; show a **blocked / incomplete banner to admins**; do **not** show invented copy to veterans ([SAFETY.md](SAFETY.md), [SAFETY_COPY.md](SAFETY_COPY.md)).
 10. **Record `Pilot` + `PilotEnrollment` config** (approximately 25–50 veterans, Santa Clara County) ([PILOT.md](PILOT.md)).
 11. **Persist the bootstrap checklist** and close it. Closing emits Audit Events. The checklist is readable via `GET /admin/bootstrap/status`.
 
@@ -108,7 +109,7 @@ Closing the checklist (`CHECKLIST_COMPLETE` → environment first-run `ACTIVE`) 
 | 6 Signal-rule version | Hard before Check-In completion can compute a signal. Fixture allowed if labeled. |
 | 7 Minimum resources | Hard before referrals / matching in PRODUCTION. TEST/STAGING may use labeled fixture resources. |
 | 8 Notification channels | Hard to mark each channel `AVAILABLE` or `UNAVAILABLE`. SMS/EMAIL may be `UNAVAILABLE`. |
-| 9 Safety-copy slot | Hard **acknowledgment**. Copy may remain unset (D-012 open) if the admin records that veterans will not see invented copy. |
+| 9 Safety-copy slot | Hard **acknowledgment**. D-012 copy is released in [SAFETY_COPY.md](SAFETY_COPY.md); the environment may remain not-`approved` if the admin records that veterans will not see invented copy. |
 | 10 Pilot config | Hard before enrollment. |
 | 11 Checklist close | Hard before `Pilot` operations begin. D-013 (counsel review of [COMPLIANCE.md](COMPLIANCE.md)) remains a **pilot-operation** gate, not a bootstrap-UI gate. |
 
@@ -153,8 +154,8 @@ Do **not** seed fake veteran cases in `PRODUCTION`.
 1. **Passwordless auth:** magic link / email OTP / phone OTP where supported ([AUTH.md](AUTH.md)). Phone OTP depends on D-003; if SMS is `UNAVAILABLE`, do not offer phone OTP as if it worked.
 2. **Enrollment into the Pilot.** This is consent **to participate** in the Pilot, not a Trusted Circle boolean and not a blanket share grant ([CONSENT.md](CONSENT.md), [PILOT.md](PILOT.md)).
 
-   MVP identity-proofing (`INFERRED` operational default; D-016 remains open): enrollment is **self-attested veteran status** plus a working email and/or phone via passwordless auth ([AUTH.md](AUTH.md)). No VA identity API, no DD-214 upload, and no in-person proofing are required for the 25–50 Santa Clara County pilot. Do not invent a VA partnership. Whether a later proofing step is required is D-016.
-3. **Explain what SUAS is and is not:** not 911, not an EHR, not a diagnosis tool. Use approved copy where it exists. If D-012 / product-explainer copy is unset, use the standing non-goal statements from [PRODUCT.md](PRODUCT.md) / [SAFETY.md](SAFETY.md) — do not invent marketing or compliance claims. Do not claim HIPAA.
+   MVP identity-proofing (D-016 `DECIDED` v0.1 default): enrollment is **self-attested veteran status** plus a working email and/or phone via passwordless auth ([AUTH.md](AUTH.md)). No VA identity API, no DD-214 upload, and no in-person proofing are required for the 25–50 Santa Clara County pilot. Do not invent a VA partnership. A later proofing step would require a new released decision.
+3. **Explain what SUAS is and is not:** not 911, not an EHR, not a diagnosis tool. Crisis/safety wording is the D-012 approved copy in [SAFETY_COPY.md](SAFETY_COPY.md). Use the standing non-goal statements from [PRODUCT.md](PRODUCT.md) / [SAFETY.md](SAFETY.md) for everything else — do not invent marketing or compliance claims. Do not claim HIPAA.
 4. **First Check-In after enrollment.** The veteran **can abandon**. Incomplete / abandoned is handled per [CHECKINS.md](CHECKINS.md). A Check-In is not a Support Signal.
 5. **Optional Trusted Circle invites.** Not required to complete first-run.
 6. **Service request without a completed Check-In** is allowed if the veteran **explicitly** requests help. NEED can start from an explicit request ([CASES.md](CASES.md), [DISPATCH.md](DISPATCH.md)).
@@ -196,7 +197,7 @@ Onboarding copy must not:
 - Claim "HIPAA compliant", "CCPA compliant", or any compliance badge ([COMPLIANCE.md](COMPLIANCE.md))
 - Imply SUAS replaces 911
 - Invent partner names
-- Invent safety / crisis-resource wording when D-012 is open (admin banner only)
+- Invent safety / crisis-resource wording other than [SAFETY_COPY.md](SAFETY_COPY.md) (non-`approved` environments: admin banner only)
 - Use marketing language forbidden in [README.md](README.md) ("AI-powered", "smart matching", "seamless", "intelligent", "automatically handles")
 - Dark-pattern the veteran into Trusted Circle, SMS, or shares
 
@@ -261,7 +262,7 @@ Illegal: completing enrollment without a published questionnaire → `409` or `4
 | Fixture label | Signal-rule fixture is labeled `UNRELEASED_FIXTURE`; not shippable as production `signal_version` policy. |
 | Stale resources | Unverified / stale resources render as stale; not silently selected. |
 | UNAVAILABLE channel | SMS or EMAIL without a provider is `UNAVAILABLE`; send path does not fake-send. |
-| Safety copy | Unset D-012 → admin blocked/incomplete banner; veteran red-state does not show invented crisis copy and does not imply SUAS replaces 911. |
+| Safety copy | Non-`approved` / unset mode → admin blocked/incomplete banner; veteran red-state does not show invented crisis copy and does not imply SUAS replaces 911. |
 | No prod seed | PRODUCTION has no fixture veterans / demo cases. |
 | Veteran skip | First-run can complete without Trusted Circle invites. |
 | Explicit NEED | Veteran can create a Service Request without a completed Check-In when they explicitly request help. |
