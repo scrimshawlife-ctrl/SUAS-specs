@@ -60,13 +60,13 @@ Required semantics:
 | `CONFIRMED` | `CLOSED` | assigned Responder | no unresolved confirmation dispute | — |
 | `ASSIGNED` | `DECLINED` | authorized provider identity / assigned Responder-on-behalf | decline evidence + reason | — |
 | `DECLINED` | `MATCHING` | assigned Responder | prior attempt terminal/recorded; deliberate rematch | — |
-| allowed non-terminal | `CANCELLED` | Veteran / assigned Responder | reason; cancellation authority checked | — |
-| `CREATED`/`SUBMITTED`/`TRIAGED`/`MATCHING`/`ASSIGNED` | `EXPIRED` | System | documented TTL elapsed; stale-state check passes | — |
+| `{CREATED, SUBMITTED, TRIAGED, MATCHING, ASSIGNED, ACCEPTED, IN_PROGRESS}` | `CANCELLED` | Veteran / assigned Responder | reason; cancellation authority checked | — |
+| `{CREATED, SUBMITTED, TRIAGED, MATCHING, ASSIGNED}` | `EXPIRED` | System | documented TTL elapsed; stale-state check passes | — |
 | `TRIAGED`/`MATCHING`/`ASSIGNED`/`DECLINED` | `UNFULFILLABLE` | assigned Responder | reason; no acceptable current path | — |
-| assigned non-terminal workflow state | `ESCALATED` | assigned Responder | reason | may emit `CASE_ESCALATED` only when Case escalation is also performed |
-| `ESCALATED` | `TRIAGED` or `MATCHING` | assigned Responder | escalation review complete | — |
+| `{TRIAGED, MATCHING, ASSIGNED, ACCEPTED, IN_PROGRESS}` | `ESCALATED` | assigned Responder | reason | may emit `CASE_ESCALATED` only when Case escalation is also performed |
+| `ESCALATED` | `TRIAGED` or `MATCHING` | assigned Responder | escalation review complete; caller names the intended target | — |
 
-Exact `allowed non-terminal` cancellation edges are the currently documented pre-closed states excluding already-terminal exception states; implementation must encode the explicit set, not a wildcard that accidentally permits `CLOSED` or invalid historical transitions.
+Closed edge sets (0.1.4): cancellation, expiry, and escalation are the enumerated source sets in the table above (no wildcard). `RETURN_FROM_ESCALATION` has exactly two documented targets — `TRIAGED` and `MATCHING` — and the caller names the intended one. Implementation encodes these explicit sets, never a wildcard that could permit `CLOSED` or an invalid historical transition.
 
 ---
 
@@ -106,7 +106,7 @@ Provider/resource assignment is a contested mutation when multiple responders or
 - The losing command conflicts and must not create a second logical `SERVICE_REQUEST_ASSIGNED` event.
 - A later deliberate rematch is represented by the documented decline/escalate/cancel/re-match flow, not by silently overwriting provider identity.
 
-The exact current-provider/assignment storage representation is reconciled in SPEC-006.
+Current-assignment projection (0.1.4): the current owner is the single `case_assignments` row with `status = ACTIVE`, and there is at most one `ACTIVE` assignment per Case ([DATA_MODEL.md](DATA_MODEL.md) §6). A Service Request has at most one `ServiceFulfillment`, which may have many `FulfillmentAttempt`s; an attempt with an ambiguous external outcome carries `PROVIDER_UNKNOWN` plus reconciliation bookkeeping and must reconcile before any duplicate-risk retry ([DATA_MODEL.md](DATA_MODEL.md) §7, [RESILIENCE.md](RESILIENCE.md)).
 
 ---
 
