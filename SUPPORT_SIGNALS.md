@@ -116,7 +116,9 @@ No silent mutation of historical calculations.
 - Red-state behavior in [SAFETY.md](SAFETY.md) applies to the effective signal used for coordination.
 - Lowering a `RED` is audited and cannot retroactively remove already-surfaced safety UI or historical actions.
 
-The exact rule for selecting the current effective signal from a chain of primary calculations/overrides must be deterministic and reconciled in [DATA_MODEL.md](DATA_MODEL.md) / [CASES.md](CASES.md) before release; implementation must not infer it from row insertion order alone.
+### 7.1 Effective-signal selection (deterministic, 0.1.4)
+
+The current effective signal is selected deterministically from the chain of primary calculations/overrides: the **most recent by `computed_at`**, with ties broken by **`support_signal_id` descending**, and an `OVERRIDE` **superseding the signal it overrides**. This is selection, not scoring, and is independent of the D-011 threshold decision; implementation must never infer it from row insertion order alone. Reconciled into [DATA_MODEL.md](DATA_MODEL.md) §4. (Owner-confirm follow-up: behavior when two overrides target the same signal.)
 
 ---
 
