@@ -2,7 +2,8 @@
 
 **Related:** [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [EVENT_MODEL.md](EVENT_MODEL.md), [ARCHITECTURE.md](ARCHITECTURE.md), [AUTH.md](AUTH.md), [NOTIFICATIONS.md](NOTIFICATIONS.md), [CONSENT.md](CONSENT.md), [CHECKINS.md](CHECKINS.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [SETTLEMENT.md](SETTLEMENT.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
-**Status:** `draft` / `0.1.0`. Normalized logical schema only; physical migrations remain implementation work after release. SPEC-006 remains dependency-blocked; this is cross-stage draft reconciliation, not acceptance.
+**Status:** `draft` / `0.1.0`. Normalized logical schema only; physical migrations remain implementation work after release. SPEC-006 remains dependency-blocked; this is cross-stage draft reconciliation, not acceptance.  
+**Authority:** released via [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md). The inline `draft` marker is stale and is not authority ([VERSIONING.md](VERSIONING.md) §1).
 
 ---
 
@@ -60,7 +61,7 @@ Check-In/question links, answer/free-text, timestamp; completed history preserve
 - Primary uniqueness by logical computation identity; explicit-need sources cannot use nullable Check-In as identity.
 
 ### effective signal projection
-Deterministic and efficient projection/current pointer over durable signal history; never insertion-order-only. The deterministic rule (0.1.4, reconciled from [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md) §7): the effective signal is the most recent by `computed_at`, ties broken by `support_signal_id` descending, with an `OVERRIDE` superseding the signal it overrides. This is selection, not scoring, and is independent of the D-011 threshold decision.
+Deterministic and efficient projection/current pointer over durable signal history; never insertion-order-only. The deterministic rule (0.1.4, reconciled from [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md) §7.1): the effective signal is the most recent by `computed_at`, ties broken by `support_signal_id` descending, with an `OVERRIDE` superseding the signal it overrides. Two overrides of the same target both remain candidates and recency (then id) wins; a sequential override chain excludes each named target. This is selection, not scoring, and is independent of the D-011 threshold decision.
 
 ---
 

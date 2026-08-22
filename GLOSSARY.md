@@ -1,6 +1,6 @@
 # GLOSSARY.md — Canonical terms (SUAS v0.1)
 
-**Authority:** This file is the terminology authority. All other specs must use these terms exactly.  
+**Authority:** This file is the terminology authority. All other specs must use these terms exactly. Released via [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md).  
 **SPEC-001 status:** `READY_FOR_REVIEW` (not `accepted`; not `released`; see [SPEC-001.md](SPEC-001.md))  
 **Related:** [PRODUCT.md](PRODUCT.md), [README.md](README.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md), [COMPLIANCE.md](COMPLIANCE.md), [APIS.md](APIS.md), [PROVIDER_INTEGRATIONS.md](PROVIDER_INTEGRATIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [ONBOARDING.md](ONBOARDING.md), [SPEC-001.md](SPEC-001.md), [FRICTION.md](FRICTION.md)
 
@@ -21,7 +21,7 @@ The system identifier for Shut Up and Serve. SUAS is a consent-governed veteran 
 
 The person whose need is being coordinated. The primary data subject and the only party who can grant or revoke Consent Grants about their own data, except where a documented legal process applies (`DECISION_PENDING`; do not invent). A Veteran has a `VeteranProfile` and may enroll in a Pilot.
 
-MVP enrollment (`INFERRED`; D-016): self-attested veteran status plus a working email and/or phone via passwordless auth. No VA identity API, no DD-214 upload, no in-person proofing for the Santa Clara County pilot. See [ONBOARDING.md](ONBOARDING.md).
+MVP enrollment (D-016 `DECIDED` v0.1 default): self-attested veteran status plus a working email and/or phone via passwordless auth. No VA identity API, no DD-214 upload, no in-person proofing for the Santa Clara County pilot. See [ONBOARDING.md](ONBOARDING.md).
 
 ---
 
@@ -199,7 +199,7 @@ The binding of a Responder (or Service Provider) to a Support Case or Service Re
 
 A timestamped note on a Support Case. Notes are not Follow-Ups, not Settlements, not state transitions, and not Contact Attempts.
 
-MVP visibility (`INFERRED`; D-015): veterans cannot see full Case Notes. See [CASES.md](CASES.md) section 8. Do not invent a clinical chart.
+MVP visibility (D-015 `DECIDED` v0.1 default): veterans cannot see full Case Notes. See [CASES.md](CASES.md) section 8. Do not invent a clinical chart.
 
 ---
 

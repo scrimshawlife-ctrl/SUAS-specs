@@ -1,6 +1,7 @@
 # CASES.md — Support Case state machine (SUAS v0.1)
 
 **Status:** `draft` / `0.1.0` / SPEC-004 preflight; not implementation authority.  
+**Authority:** released via [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md). The inline `draft` marker is stale and is not authority ([VERSIONING.md](VERSIONING.md) §1).
 **Related:** [DISPATCH.md](DISPATCH.md), [RESPONDER_WORKFLOWS.md](RESPONDER_WORKFLOWS.md), [FOLLOWUP.md](FOLLOWUP.md), [SETTLEMENT.md](SETTLEMENT.md), [SUPPORT_SIGNALS.md](SUPPORT_SIGNALS.md), [EVENT_MODEL.md](EVENT_MODEL.md), [API.md](API.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md), [DECISIONS.md](DECISIONS.md)
 
 **Actors:** System, Responder, Organization Administrator, Veteran (limited), SUAS System Administrator (audited break-glass where specified).
@@ -145,7 +146,7 @@ Queue read freshness is advisory; authorization/claim validity is always re-chec
 - Trusted Contact: explicit grants only.
 - SUAS-admin access is audited and does not imply routine workflow ownership.
 
-### 8.1 Veteran visibility (MVP `INFERRED`; D-015 open)
+### 8.1 Veteran visibility (D-015 `DECIDED`, v0.1.0)
 
 Veteran can see own:
 

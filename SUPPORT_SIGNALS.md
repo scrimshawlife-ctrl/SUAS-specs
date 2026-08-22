@@ -1,6 +1,7 @@
 # SUPPORT_SIGNALS.md — Deterministic coordination signals (SUAS v0.1)
 
 **Status:** `draft` / `0.1.0` / SPEC-003 preflight; not implementation authority.  
+**Authority:** released via [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md). The inline `draft` marker is stale and is not authority ([VERSIONING.md](VERSIONING.md) §1).  
 **Related:** [CHECKINS.md](CHECKINS.md), [SAFETY.md](SAFETY.md), [CASES.md](CASES.md), [CONSENT.md](CONSENT.md), [EVENT_MODEL.md](EVENT_MODEL.md), [TESTING.md](TESTING.md), [DECISIONS.md](DECISIONS.md), [SCALING.md](SCALING.md), [RESILIENCE.md](RESILIENCE.md)
 
 **Actors:** System (compute), Veteran (source of Check-In), Responder (may override with reason), SUAS System Administrator (publishes `signal_version`).
@@ -118,7 +119,12 @@ No silent mutation of historical calculations.
 
 ### 7.1 Effective-signal selection (deterministic, 0.1.4)
 
-The current effective signal is selected deterministically from the chain of primary calculations/overrides: the **most recent by `computed_at`**, with ties broken by **`support_signal_id` descending**, and an `OVERRIDE` **superseding the signal it overrides**. This is selection, not scoring, and is independent of the D-011 threshold decision; implementation must never infer it from row insertion order alone. Reconciled into [DATA_MODEL.md](DATA_MODEL.md) §4. (Owner-confirm follow-up: behavior when two overrides target the same signal.)
+The current effective signal is selected deterministically from the chain of primary calculations/overrides: the **most recent by `computed_at`**, with ties broken by **`support_signal_id` descending**, and an `OVERRIDE` **superseding the signal it overrides**. This is selection, not scoring, and is independent of the D-011 threshold decision; implementation must never infer it from row insertion order alone. Reconciled into [DATA_MODEL.md](DATA_MODEL.md) §4.
+
+Two-override / chain rule (0.1.6, transcribes the 0.1.4 selection already implemented): a row is **excluded** from the candidate set if **any** later row names it in `override_of_signal_id`. Remaining candidates are ordered by `computed_at DESC`, then `support_signal_id DESC`; the first remaining row is effective. Therefore:
+
+- two overrides of the **same** target both remain candidates; recency (then id) wins;
+- a sequential override chain (`A` ← `B` ← `C`) excludes each named target, so `C` wins if it is the newest remaining row.
 
 ---
 
@@ -159,6 +165,6 @@ Critical suite: **support-signal determinism and settlement**.
 - duplicate job replay emits no duplicate logical change event;
 - new signal version creates a distinct immutable calculation;
 - override creates a linked immutable row;
-- effective-signal selection is deterministic once its rule is accepted;
+- effective-signal selection is deterministic under the accepted 0.1.4/§7.1 rule, including the two-override / chain case;
 - committed Check-In + interrupted worker can be recovered to the correct settlement;
 - no generative path exists in primary compute.
