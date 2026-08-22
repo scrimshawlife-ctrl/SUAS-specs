@@ -99,6 +99,7 @@ A revoked user cannot refresh or act. In-flight authorization after revocation m
 - Org actions require active `OrganizationMembership` with the needed role.
 - Roles: `RESPONDER`, `ORG_ADMIN`, `SERVICE_PROVIDER_USER`; global `SUAS_ADMIN` is distinct.
 - Org-admin cannot become SUAS-admin by self-service role mutation.
+- The global `SUAS_ADMIN` role is represented as an auditable grant record (0.1.4), not a boolean on the user row: a user holds the role iff they have an `ACTIVE` `suas_admin_grants` entry, and grant/revoke record `granted_by`/`revoked_by` and timestamps so "who made this person a SUAS admin, and when" is answerable ([DATA_MODEL.md](DATA_MODEL.md) §2).
 - Tenant/org context is server-derived and audited for privileged cross-scope actions.
 
 ---
