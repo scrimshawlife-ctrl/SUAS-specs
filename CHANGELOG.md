@@ -22,6 +22,18 @@ No implementation code is included.
 
 ---
 
+## 0.1.4 — 2026-08-22 — `released`
+
+**Implementation-conformance codification patch. Closes no owner decision; no product roles, safety/privacy, API selector, or event-schema change; production readiness unchanged.**
+
+- Added [RELEASE_MANIFEST-0.1.4.md](RELEASE_MANIFEST-0.1.4.md), superseding v0.1.3 while inheriting every decision ledger (D-017/D-018/D-001–D-025) unchanged.
+- Adopted accepted Bucket I gaps P-1 through P-23 (from `scrimshawlife-ctrl/SUAS` `docs/SPEC_DESIGN_GAPS.md` / `docs/SPEC_GAP_PROPOSALS.md`) into DATA_MODEL, NOTIFICATIONS, RESOURCES, REFERRALS, AUTH, CASES, FOLLOWUP, DISPATCH, PROVIDER_INTEGRATIONS, FULFILLMENT, CONSENT, SUPPORT_SIGNALS, MVP_REFERENCE, VERSIONING, and ENVIRONMENT. Each change codifies implemented+tested behavior or is a pure editorial clarification; none invents product/domain behavior.
+- Documented two additive, backward-compatible logical-model fields already carried by merged, tested implementation: `notifications.subject_type`/`subject_id` (P-12, makes MVP `RESPONDER_NOTIFIED` truthfully reachable) and `resources.contact_method_kind` (P-13, enables direct call/email/web actions). Both additive and nullable; absent them prior behavior is unchanged. Adopted at patch level as owner-accepted codifications with this explicit notice (VERSIONING.md §2).
+- Bucket II (`D-0xx`) owner decisions and Bucket III contradictions remain owner-only and unaddressed.
+- Production/pilot readiness, real veteran data, and real external provider effects remain `NOT_READY` / prohibited until SPEC-018.
+
+---
+
 ## 0.1.3 — 2026-08-19 — `released`
 
 **D-018 shelter adapter decision patch. Product/domain/API semantics and production readiness unchanged.**
