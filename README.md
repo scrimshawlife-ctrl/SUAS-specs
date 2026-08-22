@@ -1,12 +1,12 @@
-# Shut Up and Serve (SUAS) — Specification v0.1.5
+# Shut Up and Serve (SUAS) — Specification v0.1.6
 
 **Product:** Shut Up and Serve
 **System:** SUAS
-**Version:** `0.1.5`
+**Version:** `0.1.6`
 **Lifecycle:** `released`
 **Phase:** `IMPLEMENTATION_AUTHORIZED`
 **Implementation authority:** `RELEASED_FOR_IMPLEMENTATION`
-**Release manifest:** [RELEASE_MANIFEST-0.1.5.md](RELEASE_MANIFEST-0.1.5.md)
+**Release manifest:** [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md)
 
 `SUAS-specs` is canonical. `scrimshawlife-ctrl/SUAS` implements released contracts and may not redefine them from code, prototype behavior, provider behavior, deployment state, or traction.
 
@@ -14,7 +14,7 @@ The weekend-build document **HACKATHON BUILD SPECIFICATION Rev 3 (2026-08-14)** 
 
 ## Start here for implementation / Fable handoff
 
-1. [RELEASE_MANIFEST-0.1.5.md](RELEASE_MANIFEST-0.1.5.md)
+1. [RELEASE_MANIFEST-0.1.6.md](RELEASE_MANIFEST-0.1.6.md)
 2. [HANDOFF.md](HANDOFF.md)
 3. [ENVIRONMENT.md](ENVIRONMENT.md)
 4. [STATUS.md](STATUS.md)
@@ -48,7 +48,7 @@ SUAS is not an EHR, diagnosis system, suicide-prediction product, automated emer
 - Production readiness: `NOT_READY`
 - All 12 readiness gates: `NOT_READY`
 
-v0.1.5 is a D-012 safety/crisis copy decision patch over v0.1.4: it approves the on-screen crisis copy and destinations (911 / 988) in [SAFETY_COPY.md](SAFETY_COPY.md) and the `REQUESTED ≠ ACCEPTED ≠ DISPATCHED ≠ ARRIVED ≠ RESOLVED` state-truthfulness contract; it approves copy only (no automated dispatch, no production-operating approval). v0.1.4 (inherited) is an implementation-conformance codification patch adopting accepted Bucket I gaps (P-1..P-23). v0.1.3 (inherited) is a D-018 shelter adapter decision patch: Amadeus may be implemented adapter-locally for commercial shelter search/inventory behind `TemporaryShelterPort`, `ManualShelterAdapter` remains mandatory, and production use remains blocked.
+v0.1.6 is a Wave A editorial hygiene patch over v0.1.5: it aligns D-015/D-016 domain wording with the already-decided v0.1 defaults, points SPEC-003 at the 0.1.4 effective-signal rule (including the two-override / chain case), and stamps leftover high-traffic `draft` headers as stale. It closes no D-0xx and invents no product behavior. v0.1.5 (inherited) is a D-012 safety/crisis copy decision patch: it approves the on-screen crisis copy and destinations (911 / 988) in [SAFETY_COPY.md](SAFETY_COPY.md) and the `REQUESTED ≠ ACCEPTED ≠ DISPATCHED ≠ ARRIVED ≠ RESOLVED` state-truthfulness contract; it approves copy only (no automated dispatch, no production-operating approval). v0.1.4 (inherited) is an implementation-conformance codification patch adopting accepted Bucket I gaps (P-1..P-23). v0.1.3 (inherited) is a D-018 shelter adapter decision patch: Amadeus may be implemented adapter-locally for commercial shelter search/inventory behind `TemporaryShelterPort`, `ManualShelterAdapter` remains mandatory, and production use remains blocked.
 
 ## Environment and configuration
 
