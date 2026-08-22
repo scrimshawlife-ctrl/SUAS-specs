@@ -1,7 +1,7 @@
 # DECISIONS.md — SUAS decision register
 
-**Stack:** `0.1.5` / `released`
-**Release decision ledger:** [RELEASE_DECISIONS-0.1.5.md](RELEASE_DECISIONS-0.1.5.md) for D-012; [RELEASE_DECISIONS-0.1.3.md](RELEASE_DECISIONS-0.1.3.md) for D-018; [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md) for D-017; [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md) otherwise
+**Stack:** `0.1.6` / `released`
+**Release decision ledger:** inherited unchanged — [RELEASE_DECISIONS-0.1.5.md](RELEASE_DECISIONS-0.1.5.md) for D-012; [RELEASE_DECISIONS-0.1.3.md](RELEASE_DECISIONS-0.1.3.md) for D-018; [RELEASE_DECISIONS-0.1.2.md](RELEASE_DECISIONS-0.1.2.md) for D-017; [RELEASE_DECISIONS-0.1.0.md](RELEASE_DECISIONS-0.1.0.md) otherwise. v0.1.6 is editorial hygiene and closes no D-0xx.
 
 Global decisions remain open until explicitly decided. A release-specific `DEFERRED_FOR_RELEASE` boundary does not globally close the decision; it only makes the affected capability unavailable/manual/future for that release.
 
