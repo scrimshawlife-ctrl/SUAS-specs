@@ -30,7 +30,7 @@ The weekend-build document **HACKATHON BUILD SPECIFICATION Rev 3 (2026-08-14)** 
 
 ## Mission
 
-Coordinate the shortest safe and consented path between a veteran’s current need and an available human or material support resource.
+Coordinate the shortest safe and consented path between a veteran's current need and an available human or material support resource.
 
 `SIGNAL → NEED → CONSENT → COORDINATION → FULFILLMENT → FOLLOW-UP → SETTLEMENT`
 
